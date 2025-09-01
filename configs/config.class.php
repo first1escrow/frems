@@ -27,6 +27,6 @@ $GLOBALS['DB_ESCROW_LOCATION'] = $env['db']['197']['host'];
 $GLOBALS['DB_ESCROW_PORT']     = $env['db']['197']['port'];
 
 // 確保 session 正確啟動
-// if (session_status() === PHP_SESSION_NONE) {
-//     session_start();
-// }
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}

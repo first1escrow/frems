@@ -123,6 +123,10 @@ class Member extends Advance
         setcookie('member_id', '', time() - 3600, '/');
         setcookie('member_pDep', '', time() - 3600, '/');
         setcookie('member_session', '', time() - 3600, '/');
+
+        // 登出後導回登入首頁
+        header('Location: /');
+        exit();
     }
 
 }
