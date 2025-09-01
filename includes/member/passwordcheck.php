@@ -1,8 +1,4 @@
 ﻿<?php
-// 確保輸出緩衝和錯誤處理
-ob_start();
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
-
 require_once dirname(dirname(__DIR__)) . '/configs/config.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/SmartyMain.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/member.class.php';
