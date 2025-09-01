@@ -1,9 +1,4 @@
 <?php
-// 啟動輸出緩衝以防止 header 錯誤
-if (! ob_get_level()) {
-    ob_start();
-}
-
 require_once __DIR__ . '/advance.class.php';
 require_once __DIR__ . '/staff.class.php';
 
@@ -124,9 +119,10 @@ class Member extends Advance
 
         unset($_COOKIE['member_id'], $_COOKIE['member_pDep'], $_COOKIE['member_session']);
 
-        setcookie('member_id', null, -1, '/');
-        setcookie('member_pDep', null, -1, '/');
-        setcookie('member_session', null, -1, '/');
+        // 修正 PHP 8+ setcookie null 參數問題 - 使用空字串替代 null
+        setcookie('member_id', '', time() - 3600, '/');
+        setcookie('member_pDep', '', time() - 3600, '/');
+        setcookie('member_session', '', time() - 3600, '/');
     }
 
 }

@@ -1,7 +1,4 @@
 ﻿<?php
-// 立即啟動輸出緩衝，防止任何意外輸出造成 headers already sent
-ob_start();
-
 require_once dirname(dirname(__DIR__)) . '/configs/config.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/SmartyMain.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/member.class.php';
