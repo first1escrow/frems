@@ -48,8 +48,6 @@ if (! is_array($review)) {
 
 //save
 if ($cat == 'add') {
-    echo '<pre>';
-    print_r($_POST);exit;
     $sql    = "SELECT I.`cTotalMoney`, I.`cCertifiedMoney`, S.`cScrivener` FROM `tContractIncome` AS I  LEFT JOIN `tContractScrivener` AS S ON I.cCertifiedId = S.cCertifiedId  WHERE I.cCertifiedId = '" . $id . "'";
     $res    = $conn->Execute($sql);
     $income = $res->fields;
@@ -146,7 +144,7 @@ if ($cat == 'add') {
 			fCaseFeedback,
 			fFeedbackTarget,
 			fFeedbackStoreId,";
-    if ($_POST['cFeedbackTarget_2'] == 2 and $feedbackDataId != 0) {
+    if (isset($_POST['cFeedbackTarget_2']) && $_POST['cFeedbackTarget_2'] == 2 and $feedbackDataId != 0) {
         $sql .= "fFeedbackDataId,";
     }
     $sql .= "fCaseFeedBackMoney
@@ -154,10 +152,10 @@ if ($cat == 'add') {
 			'" . $id . "',
 			'" . $rid . "',
 			'2',
-			'" . $_POST['cCaseFeedback_2'] . "',
-			'" . $_POST['cFeedbackTarget_2'] . "',
-			'" . $_POST['cFeedbackStoreId_2'] . "',";
-    if ($_POST['cFeedbackTarget_2'] == 2 and $feedbackDataId != 0) {
+			'" . (isset($_POST['cCaseFeedback_2']) ? $_POST['cCaseFeedback_2'] : '0') . "',
+			'" . (isset($_POST['cFeedbackTarget_2']) ? $_POST['cFeedbackTarget_2'] : '1') . "',
+			'" . (isset($_POST['cFeedbackStoreId_2']) ? $_POST['cFeedbackStoreId_2'] : '') . "',";
+    if (isset($_POST['cFeedbackTarget_2']) && $_POST['cFeedbackTarget_2'] == 2 and $feedbackDataId != 0) {
         $sql .= "" . $feedbackDataId . ",";
     }
     $sql .= "'" . (isset($_POST['cCaseFeedBackMoney_2']) ? $_POST['cCaseFeedBackMoney_2'] : '') . "'
@@ -203,7 +201,7 @@ if ($cat == 'add') {
 			fCaseFeedback,
 			fFeedbackTarget,
 			fFeedbackStoreId,";
-    if ($_POST['cFeedbackTarget_3'] == 2 and $feedbackDataId != 0) {
+    if (isset($_POST['cFeedbackTarget_3']) && $_POST['cFeedbackTarget_3'] == 2 and $feedbackDataId != 0) {
         $sql .= "fFeedbackDataId,";
     }
     $sql .= "fCaseFeedBackMoney
@@ -211,10 +209,10 @@ if ($cat == 'add') {
 			'" . $id . "',
 			'" . $rid . "',
 			'3',
-			'" . $_POST['cCaseFeedback_3'] . "',
-			'" . $_POST['cFeedbackTarget_3'] . "',
-			'" . $_POST['cFeedbackStoreId_3'] . "',";
-    if ($_POST['cFeedbackTarget_3'] == 2 and $feedbackDataId != 0) {
+			'" . (isset($_POST['cCaseFeedback_3']) ? $_POST['cCaseFeedback_3'] : '0') . "',
+			'" . (isset($_POST['cFeedbackTarget_3']) ? $_POST['cFeedbackTarget_3'] : '1') . "',
+			'" . (isset($_POST['cFeedbackStoreId_3']) ? $_POST['cFeedbackStoreId_3'] : '') . "',";
+    if (isset($_POST['cFeedbackTarget_3']) && $_POST['cFeedbackTarget_3'] == 2 and $feedbackDataId != 0) {
         $sql .= "" . $feedbackDataId . ",";
     }
     $sql .= "'" . (isset($_POST['cCaseFeedBackMoney_3']) ? $_POST['cCaseFeedBackMoney_3'] : '') . "'
@@ -260,7 +258,7 @@ if ($cat == 'add') {
 			fCaseFeedback,
 			fFeedbackTarget,
 			fFeedbackStoreId,";
-    if ($_POST['cFeedbackTarget_6'] == 2 and $feedbackDataId != 0) {
+    if (isset($_POST['cFeedbackTarget_6']) && $_POST['cFeedbackTarget_6'] == 2 and $feedbackDataId != 0) {
         $sql .= "fFeedbackDataId,";
     }
     $sql .= "fCaseFeedBackMoney
@@ -268,10 +266,10 @@ if ($cat == 'add') {
 			'" . $id . "',
 			'" . $rid . "',
 			'6',
-			'" . $_POST['cCaseFeedback_6'] . "',
-			'" . $_POST['cFeedbackTarget_6'] . "',
-			'" . $_POST['cFeedbackStoreId_6'] . "',";
-    if ($_POST['cFeedbackTarget_6'] == 2 and $feedbackDataId != 0) {
+			'" . (isset($_POST['cCaseFeedback_6']) ? $_POST['cCaseFeedback_6'] : '0') . "',
+			'" . (isset($_POST['cFeedbackTarget_6']) ? $_POST['cFeedbackTarget_6'] : '1') . "',
+			'" . (isset($_POST['cFeedbackStoreId_6']) ? $_POST['cFeedbackStoreId_6'] : '') . "',";
+    if (isset($_POST['cFeedbackTarget_6']) && $_POST['cFeedbackTarget_6'] == 2 and $feedbackDataId != 0) {
         $sql .= "" . $feedbackDataId . ",";
     }
     $sql .= "'" . (isset($_POST['cCaseFeedBackMoney_6']) ? $_POST['cCaseFeedBackMoney_6'] : '') . "'
@@ -309,7 +307,7 @@ if ($cat == 'add') {
 
     }
     //地政士特殊回饋
-    if ($_POST['scrivenerId'] != 0 && $_POST['scrivenerId'] != '') {
+    if (isset($_POST['scrivenerId']) && $_POST['scrivenerId'] != 0 && $_POST['scrivenerId'] != '') {
         $sql = "INSERT INTO tFeedBackMoneyReviewList (
 				fCertifiedId,
 				fRId,
@@ -757,6 +755,7 @@ $spRecall = (
 $chekcsp               = ($spRecall > 0) ? 1 : 0;
 $feedBackScrivener     = (int) $feedBackScrivener + $chekcsp;
 $otherScrivenerAccount = [];
+$otherFeed2            = []; // 初始化變數
 if ($cat == 'search') {
     //scrivener
     $scrivenerDetail['cSpCaseFeedBackMoney'] = $data_case['cSpCaseFeedBackMoney'];
@@ -782,7 +781,7 @@ if ($cat == 'search') {
     while (! $rs->EOF) {
         if ($rs->fields['fDelete'] == 0) {
             if ($rs->fields['fCategory'] <= 3 || $rs->fields['fCategory'] == 6) { //仲介回饋
-                if (is_array($store[$rs->fields['fCategory']])) {
+                if (isset($store[$rs->fields['fCategory']]) && is_array($store[$rs->fields['fCategory']])) {
                     $store[$rs->fields['fCategory']]['feedbackmoney']  = $rs->fields['fCaseFeedBackMoney'];
                     $store[$rs->fields['fCategory']]['caseFeedback0']  = ($rs->fields['fCaseFeedback'] == 0) ? 'checked=checked' : '';
                     $store[$rs->fields['fCategory']]['caseFeedback1']  = ($rs->fields['fCaseFeedback'] == 1) ? 'checked=checked' : '';

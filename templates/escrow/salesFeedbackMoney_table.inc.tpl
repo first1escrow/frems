@@ -140,7 +140,7 @@
 <tr>
     <td colspan="6" class="tb-title">其他回饋對象</td>                              
 </tr>
-<{foreach from=$item.data key=key item=item2}>
+<{if isset($item.data)}><{foreach from=$item.data key=key item=item2}>
 <tr>
     <th>回饋對象：</th>
     <td>
@@ -163,7 +163,7 @@
     <td colspan="5"><{$item2.fCaseFeedBackNote}></td>
 </tr>
 <{/if}>
-<{/foreach}>
+<{/foreach}><{/if}>
 <{foreach from=$delNote key=key item=item}>
     <{if $item.fNote != ''}>       
         <tr>

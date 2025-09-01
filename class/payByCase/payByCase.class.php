@@ -39,22 +39,22 @@ class PayByCase
         }
         $detail = [];
         foreach ($cases as $k => $case) {
-            unset($case['sales']);
-            $detail[] = $case;
-
             if ($case['cCaseFeedBackMoney'] > 0) {
                 $feedbackScrivener  = $case['scrivener'];
                 $feedbackcScrivener = $case['cScrivener'];
-                $feedbackSales      = $case['sales'];
+                $feedbackSales      = isset($case['sales']) ? $case['sales'] : '';
             }
+
+            unset($case['sales']);
+            $detail[] = $case;
         }
 
         $case = [
             'case'       => $detail,
-            'scrivener'  => isset($feedbackScrivener) ? $feedbackScrivener : $cases[0]['scrivener'],
-            'cScrivener' => isset($feedbackcScrivener) ? $feedbackcScrivener : $cases[0]['cScrivener'],
+            'scrivener'  => isset($feedbackScrivener) ? $feedbackScrivener : (isset($cases[0]['scrivener']) ? $cases[0]['scrivener'] : ''),
+            'cScrivener' => isset($feedbackcScrivener) ? $feedbackcScrivener : (isset($cases[0]['cScrivener']) ? $cases[0]['cScrivener'] : ''),
             'total'      => $this->calculateFeedbackMoney($feedback_case, $review_case),
-            'sales'      => isset($feedbackSales) ? $feedbackSales : $cases[0]['sales'],
+            'sales'      => isset($feedbackSales) ? $feedbackSales : (isset($cases[0]['sales']) ? $cases[0]['sales'] : ''),
         ];
 
         return $case;
@@ -1271,16 +1271,16 @@ class PayByCase
         $fDetail           = json_decode($record['fDetail'], true);
 
         foreach ($fDetail['case'] as $v) {
-            if ($v['cOtherFeedBack'] == '1') {
+            if (isset($v['cOtherFeedBack']) && $v['cOtherFeedBack'] == '1') {
                 $oldOtherScrivener .= $v['cScrivener'] . ',';
             }
             $oldTarget .= $v['cFeedbackTarget'];
         }
 
         $branchNum = [];
-        foreach ($feedback_case['case'] as $v) {
+        foreach ((isset($feedback_case['case']) ? $feedback_case['case'] : []) as $v) {
             if ($v['cBranchNum'] > 0) {$branchNum[] = $v['cBranchName'];}
-            if ($v['cOtherFeedBack'] == '1') {
+            if (isset($v['cOtherFeedBack']) && $v['cOtherFeedBack'] == '1') {
                 $newOtherScrivener .= $v['cScrivener'] . ',';
             }
             $newTarget .= $v['cFeedbackTarget'];
@@ -1302,7 +1302,7 @@ class PayByCase
             $fMemo[] = '回饋對象異動(' . $scrivenerData[$fDetail['cScrivener']] . '=>' . implode(',', $branchNum) . ')';
         }
 
-        if ($fDetail['total'] != $feedback_case['total']) {
+        if (isset($fDetail['total']) && isset($feedback_case['total']) && $fDetail['total'] != $feedback_case['total']) {
             $fMemo[] = '回饋金額異動(' . $fDetail['total'] . '=>' . (int) $feedback_case['total'] . ')';
         }
 
@@ -1518,10 +1518,10 @@ class PayByCase
 
         $case = [
             'case'       => $detail,
-            'scrivener'  => $cases[0]['scrivener'],
-            'cScrivener' => $cases[0]['cScrivener'],
+            'scrivener'  => isset($cases[0]) ? $cases[0]['scrivener'] : '',
+            'cScrivener' => isset($cases[0]) ? $cases[0]['cScrivener'] : '',
             'total'      => $this->calculateFeedbackMoney($feedback_case, $review_case),
-            'sales'      => $cases[0]['sales'],
+            'sales'      => isset($cases[0]) ? $cases[0]['sales'] : '',
         ];
 
         return $case;

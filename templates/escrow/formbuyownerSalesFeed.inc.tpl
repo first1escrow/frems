@@ -691,12 +691,12 @@ textarea{
             <{/foreach}>
             
             
-            <{if $scrivenerDetail.cSpCaseFeedBackMoney > 0 || $chekcsp == 1}>                                 
+            <{if ($scrivenerDetail.cSpCaseFeedBackMoney|default:0) > 0 || $chekcsp == 1}>                                 
             <tr> 
                 <th>地政士事務所</th>
                 <td colspan="2"><{$scrivenerDetail.sOffice}></td>
                 <th>特殊回饋︰</td>
-                <td colspan="3"><input type="text" class="feedbackClose feedbackmoneysum" style="width:80px;text-align:right;" name="cSpCaseFeedBackMoney" maxlength="8" value="<{$scrivenerDetail.cSpCaseFeedBackMoney}>" <{if $item.caseFeedTarget == 2 }> <{$scrivenerDisabled}> <{/if}>>&nbsp;元 <input type="hidden" name="scrivenerId" value="<{$scrivenerDetail.sId}>" ></td>
+                <td colspan="3"><input type="text" class="feedbackClose feedbackmoneysum" style="width:80px;text-align:right;" name="cSpCaseFeedBackMoney" maxlength="8" value="<{$scrivenerDetail.cSpCaseFeedBackMoney|default:0}>" <{if $item.caseFeedTarget == 2}><{$scrivenerDisabled}><{/if}> />&nbsp;元 <input type="hidden" name="scrivenerId" value="<{$scrivenerDetail.sId}>" /></td>
             </tr>
             <{/if}>                                   
         </table>
@@ -738,7 +738,7 @@ textarea{
                     </tr>
                     <tr>
                         <th>原因：</th>
-                        <td colspan="5"><textarea name="newotherFeedMoneyNote0"><{$item.fNote}></textarea>
+                        <td colspan="5"><textarea name="newotherFeedMoneyNote0"><{$item.fNote|default:""}></textarea></td>
                     </tr>
                 </tbody>
             <{/if}>
@@ -775,7 +775,7 @@ textarea{
                 </tr>
                 <tr>
                     <th>原因：</th>
-                    <td colspan="5"><textarea name="newotherFeedMoneyNote<{$key}>"><{$item.fNote ?? ''}></textarea>
+                    <td colspan="5"><textarea name="newotherFeedMoneyNote<{$key}>"><{$item.fNote|default:""}></textarea></td>
                 </tr>
             </tbody>
             <{/foreach}> 
@@ -791,7 +791,7 @@ textarea{
                 </tr>
                 <tr>
                     <th>刪除原因:</th>
-                    <td colspan="5"><{$item.fNote}></td>
+                    <td colspan="5"><{$item.fNote|default:""}></td>
                 </tr>
             </tbody>
             <{/foreach}> 
@@ -799,7 +799,7 @@ textarea{
                 <td colspan="6" class="tb-title">備註</td>
             </tr>
             <tr>
-                <td colspan="6"><textarea name="note" id="" cols="120" rows="5"><{$review.fNote}></textarea></td>
+                <td colspan="6"><textarea name="note" id="" cols="120" rows="5"><{$review.fNote|default:""}></textarea></td>
             </tr>
             <tr>
                 <td colspan="6" id="delete"></td>
