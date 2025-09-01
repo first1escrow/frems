@@ -1,4 +1,9 @@
 <?php
+// 立即啟動輸出緩衝，防止任何輸出造成 headers already sent
+if (! ob_get_level()) {
+    ob_start();
+}
+
 require_once dirname(__DIR__) . '/.env.php';
 
 define('FIRST198', '/home/first198/firstschedule');
@@ -26,7 +31,7 @@ $GLOBALS['DB_ESCROW_NAME']     = $env['db']['197']['database'];
 $GLOBALS['DB_ESCROW_LOCATION'] = $env['db']['197']['host'];
 $GLOBALS['DB_ESCROW_PORT']     = $env['db']['197']['port'];
 
-// 確保在任何輸出之前啟動 session
+// 確保 session 正確啟動
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
