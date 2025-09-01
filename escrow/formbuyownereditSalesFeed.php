@@ -28,7 +28,7 @@ $cat = isset($_POST['cat']) ? $_POST['cat'] : (isset($_GET['cat']) ? $_GET['cat'
 $certifyDate = isset($_POST['certifyDate']) ? $_POST['certifyDate'] : (isset($_GET['certifyDate']) ? $_GET['certifyDate'] : ''); //履保費出款日
 
 // if incoming request asked to add but no rId supplied, fall back to search
-if ($cat == 'add' && $rid == '') {
+if ($cat == 'add' && ! empty($rid)) {
     $cat = 'search';
 }
 ##

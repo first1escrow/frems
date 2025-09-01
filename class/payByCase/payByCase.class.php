@@ -1279,7 +1279,10 @@ class PayByCase
 
         $branchNum = [];
         foreach ((isset($feedback_case['case']) ? $feedback_case['case'] : []) as $v) {
-            if ($v['cBranchNum'] > 0) {$branchNum[] = $v['cBranchName'];}
+            if ($v['cBranchNum'] > 0) {
+                $branchName  = isset($v['cBranchName']) ? $v['cBranchName'] : $this->getBranchName($v['cBranchNum']);
+                $branchNum[] = $branchName;
+            }
             if (isset($v['cOtherFeedBack']) && $v['cOtherFeedBack'] == '1') {
                 $newOtherScrivener .= $v['cScrivener'] . ',';
             }
