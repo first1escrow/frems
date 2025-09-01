@@ -26,6 +26,7 @@ $GLOBALS['DB_ESCROW_NAME']     = $env['db']['197']['database'];
 $GLOBALS['DB_ESCROW_LOCATION'] = $env['db']['197']['host'];
 $GLOBALS['DB_ESCROW_PORT']     = $env['db']['197']['port'];
 
-if (session_status() != 2) {
+// 確保在任何輸出之前啟動 session
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

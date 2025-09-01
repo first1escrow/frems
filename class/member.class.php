@@ -1,4 +1,9 @@
 <?php
+// 啟動輸出緩衝以防止 header 錯誤
+if (! ob_get_level()) {
+    ob_start();
+}
+
 require_once __DIR__ . '/advance.class.php';
 require_once __DIR__ . '/staff.class.php';
 
@@ -24,16 +29,16 @@ class Member extends Advance
 
     public function CheckPassword($account, $password)
     {
-        $authority           = array();
-        $peopleInfoAuthority = array();
-        $temp                = array();
+        $authority           = [];
+        $peopleInfoAuthority = [];
+        $temp                = [];
         $is_pass             = false;
         $sql                 = " SELECT * FROM  `tPeopleInfo` WHERE pAccount = '" . $account . "' AND pPassword = '" . $password . "'; ";
         $stmt                = $this->dbh->prepare($sql);
         $stmt->execute();
         $member = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $is_pass = !empty($member);
+        $is_pass = ! empty($member);
 
         if ($is_pass) {
             $staff = new Staff;
@@ -85,7 +90,7 @@ class Member extends Advance
 
                 //20220713 修正指定部門以外權限無法指定問題
                 foreach ($Personalauthority as $k => $v) {
-                    if (!array_key_exists($k, $authority)) {
+                    if (! array_key_exists($k, $authority)) {
                         $authority[$k] = $Personalauthority[$k];
                     }
                 }
@@ -93,8 +98,11 @@ class Member extends Advance
             }
 
             foreach ($authority as $k => $v) {
-                $k                                  = str_replace('authority_', '', $k);
-                $_SESSION[$peopleInfoAuthority[$k]] = $v;
+                $k = str_replace('authority_', '', $k);
+                // 檢查 $peopleInfoAuthority 中是否存在該鍵值
+                if (isset($peopleInfoAuthority[$k])) {
+                    $_SESSION[$peopleInfoAuthority[$k]] = $v;
+                }
             }
             ##
 

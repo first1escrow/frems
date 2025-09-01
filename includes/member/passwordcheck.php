@@ -1,4 +1,8 @@
 ﻿<?php
+// 確保輸出緩衝和錯誤處理
+ob_start();
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
+
 require_once dirname(dirname(__DIR__)) . '/configs/config.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/SmartyMain.class.php';
 require_once dirname(dirname(__DIR__)) . '/class/member.class.php';
@@ -10,8 +14,11 @@ $logs   = new Intolog();
 
 $_POST = escapeStr($_POST);
 
-// set cookies
-if (preg_match("/1/", $_POST["remembered"])) {
+// 檢查 remembered 是否存在，避免未定義陣列鍵值錯誤
+$remembered = isset($_POST["remembered"]) ? $_POST["remembered"] : "";
+
+// set cookies - 修正 preg_match null 參數問題
+if (! empty($remembered) && preg_match("/1/", $remembered)) {
     setcookie("act", $_POST["account"], time() + (3600 * 24 * 30), "/");
     setcookie("psd", $_POST['password'], time() + (3600 * 24 * 30), "/");
 } else {
