@@ -1,0 +1,57 @@
+<?php
+include_once '../openadodb.php';
+
+$_POST = escapeStr($_POST) ;
+$id = substr($_POST['id'], -9);
+
+$sql  = "SELECT cb.cName AS buyer,co.cName AS owner FROM tContractBuyer AS cb,tContractOwner AS co WHERE cb.cCertifiedId=co.cCertifiedId AND cb.cCertifiedId ='".$id."'";
+
+$rs = $conn->Execute($sql);
+
+$txt = mb_substr(n_to_w($rs->fields['owner']), 0,9).mb_substr(n_to_w($rs->fields['buyer']), 0,9);
+
+
+echo $txt;
+
+//半形<=>全形
+Function n_to_w($strs, $types = '0'){  // narrow to wide , or wide to narrow
+	$nt = array(
+        "(", ")", "[", "]", "{", "}", ".", ",", ";", ":",
+        "-", "?", "!", "@", "#", "$", "%", "&", "|", "\\",
+        "/", "+", "=", "*", "~", "`", "'", "\"", "<", ">",
+        "^", "_",
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
+        "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+        "u", "v", "w", "x", "y", "z",
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+        "U", "V", "W", "X", "Y", "Z",
+        " "
+	);
+	$wt = array(
+        "（", "）", "〔", "〕", "｛", "｝", "﹒", "，", "；", "：",
+        "－", "？", "！", "＠", "＃", "＄", "％", "＆", "｜", "＼",
+        "／", "＋", "＝", "＊", "～", "、", "、", "＂", "＜", "＞",
+        "︿", "＿",
+        "０", "１", "２", "３", "４", "５", "６", "７", "８", "９",
+        "ａ", "ｂ", "ｃ", "ｄ", "ｅ", "ｆ", "ｇ", "ｈ", "ｉ", "ｊ",
+        "ｋ", "ｌ", "ｍ", "ｎ", "ｏ", "ｐ", "ｑ", "ｒ", "ｓ", "ｔ",
+        "ｕ", "ｖ", "ｗ", "ｘ", "ｙ", "ｚ",
+        "Ａ", "Ｂ", "Ｃ", "Ｄ", "Ｅ", "Ｆ", "Ｇ", "Ｈ", "Ｉ", "Ｊ",
+        "Ｋ", "Ｌ", "Ｍ", "Ｎ", "Ｏ", "Ｐ", "Ｑ", "Ｒ", "Ｓ", "Ｔ",
+        "Ｕ", "Ｖ", "Ｗ", "Ｘ", "Ｙ", "Ｚ",
+        "　"
+	);
+ 
+	if ($types == '0') {		//半形轉全形
+		// narrow to wide
+		$strtmp = str_replace($nt, $wt, $strs);
+	}
+	else {						//全形轉半形
+		// wide to narrow
+		$strtmp = str_replace($wt, $nt, $strs);
+	}
+	return $strtmp;
+}
+?>

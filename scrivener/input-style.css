@@ -1,0 +1,526 @@
+@charset "utf-8";
+/* CSS Document */
+/* CSS style */
+/*------- 前後變更動畫視覺效果 Start -------*/
+a, abbr, acronym, address, applet, article, aside, audio, b, blockquote, big, body, center, canvas, caption, cite, code, command, datalist, dd, del, details, dfn, dl, div, dt, em, embed, fieldset, figcaption, figure, font, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i,  img, ins, kbd, keygen, label, legend, li, meter, nav, object, ol, output, p, pre, progress, q, s, samp, small, span, source, strike, strong, sub, sup, table, tbody, tfoot, thead, th, tr, tdvideo, tt, u,  var, button {
+	transition: all 0.3s ease 0s;
+	-webkit-transition: all 0.3s ease 0s;
+}
+input {
+	
+}
+select {
+	transition: all 0.3s ease 0s;
+	-webkit-transition: all 0.3s ease 0s;
+}
+html, 
+section, 
+iframe {
+	transition: none;
+	-webkit-transition: none;
+}
+/*divLoading*/
+#divLoading div {
+	transition: none;
+	-webkit-transition: none;
+}
+/*owl-carousel*/
+#owl-demo2, 
+#owl-demo2 div {
+	transition: none;
+	-webkit-transition: none;
+}
+.owl-carousel, 
+.owl-carousel div {
+	transition: none;
+	-webkit-transition: none;
+}
+/*colorbox*/
+#cboxOverlay, 
+#colorbox, 
+#colorbox div, 
+#colorbox button, 
+#colorbox a {
+	transition:none !important;
+	-webkit-transition:none !important;
+}
+.fancybox-wrap, 
+.fancybox-wrap div, 
+.fancybox-wrap a, 
+.fancybox-overlay {
+	transition:none !important;
+	-webkit-transition:none !important;
+}
+/*------- 前後變更動畫視覺效果 End -------*/
+html, body, form {
+	height: 100%;
+	margin: 0;
+}
+body {
+	font-family: "微軟正黑體", "Microsoft JhengHei", "新細明體", "PMingLiU", "細明體", "MingLiU", "黑體-繁", "Heiti TC", "華文黑體", "STHeiti", "儷黑 Pro", "LiHei Pro Medium", "serif";
+	line-height: normal;
+	font-size: 100%;
+}
+@media screen and (-webkit-min-device-pixel-ratio:0){
+body {
+	line-height: normal;
+}
+}
+
+/*使用背景圖替代文字並消失*/
+.textnone {
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+/*checkbox*/
+.cb1 {
+	padding:0px 10px;
+}
+.cb1 input[type="checkbox"] {/*隱藏原生*/
+    /*display:none;*/
+    position: absolute;
+    left: -9999px;
+}
+.cb1 input[type="checkbox"] + label span {
+    display:inline-block;
+    width:20px;
+    height:20px;
+    margin:-3px 4px 0 0;
+    vertical-align:middle;
+    background:url(../images/check_radio_sheet2.png) left top no-repeat;
+    cursor:pointer;
+	background-size:80px 20px;
+	transition: none;
+	-webkit-transition:none;
+}
+.cb1 input[type="checkbox"]:checked + label span {
+    background:url(../images/check_radio_sheet2.png)  -20px top no-repeat;
+	background-size:80px 20px;
+	transition: none;
+	-webkit-transition:none;
+}
+.cb1 label {
+	cursor:pointer;
+	display: inline-block;
+	white-space: nowrap;
+	margin-right: 10px;
+	/*-webkit-appearance: push-button;
+	-moz-appearance: button;*/
+}
+
+/*radio*/
+.ra1 {
+	padding:0px 10px;
+}
+.ra1 input[type="radio"] {/*隱藏原生*/
+    /*display:none;*/
+    position: absolute;
+    left: -9999px;
+}
+.ra1 input[type="radio"] + label span {
+    display:inline-block;
+    width:20px;
+    height:20px;
+    margin:-3px 4px 0 0;
+    vertical-align:middle;
+    background:url(../images/check_radio_sheet2.png)  -40px top no-repeat;
+    cursor:pointer;
+	background-size:80px 20px;
+	transition: none;
+	-webkit-transition:none;
+}
+.ra1 input[type="radio"]:checked + label span {
+    background:url(../images/check_radio_sheet2.png)  -60px top no-repeat;
+	background-size:80px 20px;
+	transition: none;
+	-webkit-transition:none;
+}
+.ra1 label {
+	cursor:pointer;
+	display: inline-block;
+	white-space: nowrap;
+	margin-right: 10px;
+	/*-webkit-appearance: push-button;
+	-moz-appearance: button;*/
+}
+
+/*input*/
+.xxx-input {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	text-align:left;
+	height:34px;
+	padding:0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+}
+.xxx-input:focus {
+    border-color: rgba(82, 168, 236, 0.8) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+    outline: 0 none;
+}
+
+/*textarea*/
+.xxx-textarea {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	line-height:normal;
+	background-color:#FFFFFF;
+	text-align:left;
+	height:100px;
+	padding:5px 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+}
+.xxx-textarea:focus {
+    border-color: rgba(82, 168, 236, 0.8) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+    outline: 0 none;
+}
+
+
+/*select*/
+/*ie8-9下拉清單*/
+.xxx-select {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	text-align:left;
+	height:34px;
+	padding:0 0px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0em;
+}
+.xxx-select-2 {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	text-align:left;
+	height:34px;
+	padding:0 0px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0em;
+}
+
+/*moz下拉清單*/
+@-moz-document url-prefix(){
+.xxx-select {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+.xxx-select-2 {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+}
+/*google下拉清單*/
+@media screen and (-webkit-min-device-pixel-ratio:0){
+.xxx-select {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+.xxx-select-2 {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+}
+/*ie10-11下拉清單*/
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none){
+.xxx-select {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+.xxx-select::-ms-expand {
+    display: none;
+}
+
+}
+.xxx-select:focus {
+    border-color: rgba(82, 168, 236, 0.8) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+    outline: 0 none;
+}
+.xxx-select-2 {
+	color:#666666;
+	font-size:16px;
+	font-weight:normal;
+	background-color:#FFFFFF;
+	background-image:url("../images/select_icon1.png");
+	background-repeat:no-repeat;
+	background-position:center right;
+	background-size: 18px auto;
+	text-align:left;
+	height:34px;
+	padding:0 23px 0 5px;
+	border:1px solid #CCCCCC;
+	border-radius: 0.35em;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+}
+.xxx-select-2::-ms-expand {
+    display: none;
+}
+
+}
+.xxx-select-2:focus {
+    border-color: rgba(82, 168, 236, 0.8) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+    outline: 0 none;
+}
+
+
+
+
+
+/* input placeholder */
+placeholder {
+    color: #999999;
+	opacity: 1.0;
+}
+:-moz-placeholder {
+    color: #999999;
+	opacity: 1.0;
+}
+::-moz-placeholder {
+    color: #999999;
+	opacity: 1.0;
+}
+::-webkit-input-placeholder {
+    color: #999999;
+	opacity: 1.0;
+}
+:-ms-input-placeholder {
+   color: #999999;
+   opacity: 1.0;
+}
+
+/*button*/
+.xxx-button {
+	color:#FFFFFF;
+	font-size:16px;
+	font-weight:normal;
+	line-height:1.5em;
+	background-color:#ff8714;
+	text-align: center;
+	white-space:nowrap;
+	height:34px;
+	padding:0 10px;
+	border:1px solid #ff8714;
+	border-radius: 0.35em;
+}
+.xxx-button:hover {
+	background-color:#333333;
+	border:1px solid #333333;
+}
+
+
+/*左右拉霸icon箭頭提示*/
+.xxx-lr-arrow {
+	display: none;
+	background-color: transparent;
+	background-image: url("../images/lr_icon.png");
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 47px 9px;
+	text-align: left;
+	font-family: "微軟正黑體", "Microsoft JhengHei", "新細明體", "PMingLiU", "細明體", "MingLiU", "標楷體", "DFKai-sb", "serif";
+	font-size: 13px;
+	margin: 5px 0 10px 0;
+	color: #BBBBBB;
+}
+
+
+
+
+/*checkbox*/
+input[type="checkbox"] {/*隱藏原生*/
+	/*display:none;*/
+	position: absolute;
+	left: -9999px;
+}
+input[type="checkbox"] + label span {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	margin: -1px 4px 0 0;
+	vertical-align: middle;
+	background: url(../images/check_radio_sheet2.png)left top no-repeat;
+	cursor: pointer;
+	background-size: 80px 20px;
+}
+input[type="checkbox"]:checked + label span {
+	background: url(../images/check_radio_sheet2.png) -20px top no-repeat;
+	background-size: 80px 20px;
+}
+label {
+	cursor: pointer;/*-webkit-appearance: push-button;
+    -moz-appearance: button;*/
+}
+/* border:1px solid #000;*/
+
+
+
+
+
+
+
+
+
+
+/*ie10-11 class辨識區*/
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none){
+}
+
+/*ie10-11 class自適應辨識區*/
+@media screen and (-ms-high-contrast: active) and (max-width: 1024px),
+(-ms-high-contrast: none) and (max-width: 1024px) {
+}
+
+@media only screen and (max-width: 1440px){
+}
+
+@media only screen and (max-width: 1366px){
+}
+
+/*1000-1280dpi 針對1920寬螢幕以及筆電最高寬度解析度(多數)到1366和1400*/
+@media only screen and (max-width: 1280px){
+}
+
+@media only screen and (max-width: 1100px){
+}
+
+/*960-1024dpi 針對老舊型電腦1024x768解析度使用者以及iPad平板(橫式)*/
+@media only screen and (max-width: 1024px){
+/*input*/
+.xxx-input {
+	font-size:16px;
+	height:40px;
+}
+/*textarea*/
+.xxx-textarea {
+	font-size:16px;
+}
+/*select*/
+.xxx-select {
+	font-size:16px;
+	height:40px;
+}
+/*button*/
+.xxx-button {
+	font-size:16px;
+	height:40px;
+}
+}
+
+@media only screen and (max-width: 920px){
+}
+
+/*720-780dpi 針對各廠牌平板解析度使用(直式)*/
+@media only screen and (max-width: 780px){
+/*左右拉霸icon箭頭提示*/
+.xxx-lr-arrow {
+	display: block;
+}
+}
+
+/*520-640dpi 針對各廠牌智慧型手機螢幕解析度使用；除非有使用寬度百分比自動縮放，可省略設定*/
+@media only screen and (max-width: 640px){
+}
+
+/*320-480dpi 針對各廠牌智慧型手機螢幕解析度使用(直式)*/
+@media only screen and (max-width: 480px){
+}

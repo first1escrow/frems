@@ -1,0 +1,91 @@
+.custom-combobox {
+    position: relative;
+    display: inline-block;
+   /* border: 1px solid #cccccc;*/
+     
+     
+
+}
+.custom-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+
+}
+.custom-combobox-input {
+    margin: 0;
+    padding: 2px 2px;
+    width:120px;
+    font-size: 12px;
+    /*color: #1c94c4;*/
+    font-weight: bold;
+    /*background: #f6f6f6;*/
+}
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;   /* prevent horizontal scrollbar */
+    overflow-x: hidden; /* add padding to account for vertical scrollbar */
+    /*z-index:1000 !important;*/
+}
+
+.ui-menu .ui-menu-item-wrapper {
+   font-weight: normal;
+    margin: -1px;
+
+}
+/*.ui-menu .ui-menu-item a {
+    text-decoration:none;
+    display:block;
+    padding:0.2em 0.4em;
+    line-height:1.5;
+    zoom:1;
+}
+.ui-menu .ui-menu-item-wrapper {
+   font-weight: normal;
+    margin: -1px;
+}*/
+/*.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { 
+    border: 1px solid #cccccc; background: #f6f6f6 url(images/ui-bg_glass_100_f6f6f6_1x400.png) 50% 50% repeat-x; font-weight: bold; color: #1c94c4; }*/
+
+
+
+/*.ui-combobox {
+    position: relative;
+    display: inline-block;
+}
+.ui-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+    *height: 1.5em;
+    *top: 0.1em;
+    width: 20px;
+}
+.ui-combobox-input {
+    margin: 0;
+    padding: 0.1em;
+    width:160px;
+}
+.ui-autocomplete {
+    width:160px;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 20px;
+}
+.ui-autocomplete {
+    width:160px;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 20px;
+    font-size: 12px;
+}
+.ui-autocomplete-input {
+    width:120px;
+    font-size: 12px;
+}*/

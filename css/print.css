@@ -1,0 +1,245 @@
+@charset "utf-8";
+/* 列印頁內容CSS*/
+body{
+	margin:0;
+	padding:0;
+	font-family: "微軟正黑體", "Microsoft JhengHei", "新細明體", "PMingLiU", "細明體", "MingLiU", "標楷體", "DFKai-sb", "serif";
+}
+.container{
+	position:relative;
+	width:715px;
+	height:auto;
+	border-style:double;
+	border-color:#9a1f1b;
+	white-space-collapse:1px;
+	margin:10px;
+	padding:5px;
+}
+
+/*第一建經 logo-----------------------------------------大小*/
+.first-logo{
+	float:left;
+	margin-top:13px;
+	margin-left:15px;
+	margin-bottom:10px;
+	overflow:hidden;
+}
+.first-logo img{
+	width:233px;
+}
+/*============價金履約保證系統-買賣方登入---查詢結果頁============*/
+#page-part33 {
+	display: block;
+	width: 100%;
+	clear: both;
+	margin: 0 0;
+	padding: 0 0;
+	box-sizing: border-box;
+	background-color: white;/*padding-top: 50px;*//* padding-bottom: 50px;*/
+}
+.price-content{
+	padding:0 30px;
+}
+span.datetime{
+	display: inline-block;
+	float:right;
+	font-weight:normal;
+	font-size: 15px;
+}
+.price-user {
+	width: 100%;
+	float: left;
+	border-bottom: 1px solid #999999;
+	margin: 0;
+	padding: 0 0;
+	padding-bottom:10px;
+}
+.price-user-w {
+	color: #333;
+	line-height: 28px;
+	font-size: 14px;
+}
+.price-user-w span {
+	font-size: 1.2em;
+	color: #900;
+	font-weight: bold;
+	padding: 0px 10px;
+}
+.price-user-w b {
+	color: #900;
+	font-weight: bold;
+}
+.price-user-1 {
+	widht: 100%;
+	margin: 0 0;
+	padding: 0 0;
+	margin-bottom: 30px;
+}
+.price-user-2 {
+	width: 100%;
+	float: left;
+	padding-bottom: 20px;
+	margin: 0 auto;
+	position: relative;
+	/*background-color: #EEEEEE;*/
+	/*border-bottom: 1px solid #999999;*/
+}
+.price-user-2 h3 {
+	font-size: 15px;
+	padding: 0px 30px;
+	margin-top: 10px;
+}
+.price-user-2 ul {
+}
+.price-user-2 ul li {
+	float: left;
+	list-style:none;
+}
+.price-user-2 ul li img {
+	vertical-align: middle;
+	margin-top: 20px;
+	text-align: center;
+}
+.price-user-2 ul li .user-2active {
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	float: left;
+	padding: 5px;
+	position: relative;
+	opacity: 1;
+}
+.price-user-2 ul li .user-2 {
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	float: left;
+	padding: 5px;
+	position: relative;
+	opacity: 0.4;
+}
+.price-user-2 ul li .user-2 .seven-other, .price-user-2 ul li .user-2active .seven-other {
+	width: 50px;
+	height: 40px;
+	background-color: #f74545;
+	border-radius: 50%;
+	text-align: center;
+	padding-top: 10px;
+	line-height: -2px;
+	vertical-align: middle;
+	color: #FFF;
+	font-size: 10px;
+}
+.price-user-2 ul li .user-2 .seven-other span, .price-user-2 ul li .user-2 .seven-1 span {
+	font-size: 10px;
+	color: #FFF;
+}
+.price-user-2 ul li .user-2 .seven-1, .price-user-2 ul li .user-2active .seven-1 {
+	width: 50px;
+	height: 50px;
+	background-color: #f74545;
+	border-radius: 50%;
+	text-align: center;
+	line-height: 50px;
+	vertical-align: middle;
+	color: #FFF;
+}
+/*價金履約保證系統-買賣方登入---查詢結果頁=======table部分==============================================*/
+.b-form01-333 {
+	margin: 0 auto;
+	padding: 0;
+	margin-bottom: 30px;
+}
+.other-ps {
+	width: 100%;
+	padding: 0 0;
+	border-radius: 0px 0px 10px 10px;
+}
+.other-ps-w {
+	width: 100%;
+	margin: 0 auto;
+}
+.other-ps-w h3 {
+	font-size: 1em;
+	color: #300;
+	line-height: 5px;
+}
+.other-ps-w p {
+	font-size: 0.8em;
+	color: #300;
+	line-height: 1.5;
+}
+/*==================================================*/
+
+section .e-table {
+	margin: 20px auto;
+}
+.ct_table {
+	border: 1px solid #666;
+	background: none repeat scroll 0 0 #FEFEFE;
+	font-size: 1em;
+	margin: auto;
+	line-height: 1.5;
+	width: 100%;
+	border-collapse: inherit;
+}
+.ct_table tr th{
+
+}
+.ct_table .intable {
+	vertical-align: middle;
+	height: 2em;
+	overflow: hidden;
+}
+.ct_table td {
+	font-size: 15px;
+	text-align: center;
+	border: 1px dotted #CCCCCC;
+	vertical-align: middle;
+	padding: 3px;
+}
+.ct_table td.w-right{
+	text-align: right;
+	padding-right:10px;
+}
+
+/*價金履約保證系統---第二頁---表格部分==================================================*/
+.div-tables {
+}
+.rwd-tables {
+	width: 100%;
+	border-collapse: collapse;
+}
+.rwd-tables tr:nth-of-type(odd) {
+	background-color: #F5F5F5;
+}
+.rwd-tables th {
+	padding: 12px;
+	border: 1px solid #CCCCCC;
+	text-align: center;
+}
+.rwd-tables td {
+	padding: 12px;
+	border: 1px solid #CCCCCC;
+	text-align: left;
+	padding-left: 10px;
+}
+.rwd-tables td.td_3 {
+    padding: 5px;
+    border: 1px solid #CCCCCC;
+    text-align: left;
+    padding-left: 10px;
+    font-size:0.9em;
+}
+.rwd-tables th {
+	color: #000000;
+	font-family: "微軟正黑體", "Microsoft JhengHei", "新細明體", "PMingLiU", "細明體", "MingLiU", "標楷體", "DFKai-sb", "serif";
+	font-size: 1em;
+	font-weight: bold;
+	background-color: #EEEEEE;
+}
+.rwd-tables td {
+	color: #333333;
+	font-family: "微軟正黑體", "Microsoft JhengHei", "新細明體", "PMingLiU", "細明體", "MingLiU", "標楷體", "DFKai-sb", "serif";
+	font-size: 100%;
+}

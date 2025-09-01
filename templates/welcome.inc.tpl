@@ -1,0 +1,1 @@
+迎登入 第一建經履保價金系統 官網網址：<a href="http://www.first1.com.tw">www.first1.com.tw</a> 今天是 <{$smarty.now|date_format:"%Y-%m-%d (%A)"}> 

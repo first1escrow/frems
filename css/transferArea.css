@@ -1,0 +1,17 @@
+@charset "utf-8";
+
+.transfer-class {
+  float: left;
+  width: 150px;
+  padding: 5px;
+}
+
+.transfer-power {
+  padding: 5px;
+}
+
+.transfer-before {
+  font-size: 10pt;
+  border-bottom: 1px dashed;
+  padding: 1px;
+}

@@ -1,0 +1,78 @@
+@charset "utf-8";
+/* CSS Document */
+
+body,td,th {
+	font-family: "微軟正黑體";
+	border-style : solid;
+	border-color:#cccccc;
+	border-width: 1px;
+}
+
+#table {
+	border:0;
+	border-collpase:collpase;
+	width:800px;
+	font-size: 15px;
+	
+} 
+
+tr {
+	border-bottom:1px solid #000;
+	font-size: 14px;
+	font-family: "微軟正黑體";
+	color: #000;
+} 
+
+#header h1{
+	font-size:15px;
+    text-align:center;
+}
+#container {
+	margin: 0 auto;
+	width: 98%;
+}
+
+fieldset {
+	width:850px;
+	border:#900 3px double;
+	padding-top:0;
+	padding-right:1em;
+	padding-bottom:1em;
+	padding-left:1em;
+	font-weight: normal;
+	font-size: 15px;
+}	
+ 
+legend {
+	color:#000;
+	background:#CCC;
+	margin:1em;
+	width:15em;
+	padding-top: 0.2em;
+	padding-right: 0.5em;
+	padding-bottom: 0.2em;
+	padding-left: 1em;
+}
+body p {
+	font-size: 18px;
+	text-align: center;
+	font-weight: bold;
+}
+#table2 td {
+	font-size: 14px;
+}
+
+.content1 {
+	font-size: 15px;
+	font-weight: bold;
+}
+.content1 strong {
+	font-size: 15px;
+}
+.content2 {
+	font-size: 15px;
+	font-weight: bold;
+}
+.content3 {
+	font-size: 14px;
+}

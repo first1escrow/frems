@@ -1,0 +1,17 @@
+{
+    "name": "first198/first.twhg.com.tw",
+    "autoload": {
+        "psr-4": {
+            "First198\\FirstTwhgComTw\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "jing",
+            "email": "jing.lou@twhg.com.tw"
+        }
+    ],
+    "require": {
+		"phpoffice/phpspreadsheet": "*"
+	}
+}

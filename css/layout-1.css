@@ -1,0 +1,128 @@
+@charset "utf-8";
+/* CSS Document */
+
+*{
+	padding:0;
+	margin:0;
+	font-size: 15px;
+}
+
+#wrapper{
+	width:1000px;
+	height:768px;
+	margin:0 auto;
+	background-image:url(/images/info-bg.gif)
+}
+
+#logo {
+	float: left;
+	height: 88px;
+	width: 1000px;
+}
+
+#content h1{
+	text-align:center;
+	font-size: 12px;
+}
+#content h2{
+	font-size: 12px;
+}
+#content h3 {
+	text-align: left;
+	font-size: 12px;
+}
+
+#content p {
+	font-size: 12px;
+}
+
+#footer {
+	text-align: center;
+	font-size: 10px;
+	font-size: 12px;
+	font-size: 12px;
+}
+#header h1 {
+	font-size: 15px;
+	color:#000;
+}
+#header h2 {
+	font-size: 13px;
+	color:#900;
+}
+#header h3 {
+	font-size: 13px;
+	text-decoration:underline;
+	color:#900;
+}
+	ul, li {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.abgne_tab {
+	clear: left;
+	width: 1000px;
+	margin-top: 10px;
+	margin-right: 0;
+	margin-bottom: 10px;
+	margin-left: 0;
+	}
+	.abgne_tab1 {
+	clear: left;
+	width: 960px;
+	margin-top: 0;
+	margin-right: 0;
+	margin-bottom: 10px;
+	margin-left: 0;
+	}
+	ul.tabs {
+	width: 100%;
+	height: 32px;
+	border-bottom: 1px solid #999;
+	border-left: 1px solid #999;
+	text-align: center;
+	}
+	ul.tabs li {
+	float: left;
+	height: 31px;
+	line-height: 31px;
+	overflow: hidden;
+	position: relative;
+	margin-bottom: -1px;	/* 讓 li 往下移來遮住 ul 的部份 border-bottom */
+	border: 1px solid #999;
+	border-left: none;
+	background: #e1e1e1;
+	}
+	ul.tabs li a {
+		display: block;
+		padding: 0 20px;
+		color: #000;
+		border: 1px solid #fff;
+		text-decoration: none;
+	}
+	ul.tabs li a:hover {
+		background: #ccc;
+	}
+	ul.tabs li.active  {
+		background: #fff;
+		border-bottom: 1px solid #fff;
+	}
+	ul.tabs li.active a:hover {
+		background: #fff;
+	}
+	div.tab_container {
+		clear: left;
+		width: 100%;
+		border: 1px solid #999;
+		border-top: none;
+		background: #fff;
+	}
+	div.tab_container .tab_content {
+		padding: 10px;
+	}
+	div.tab_container .tab_content h2 {
+	margin: 0 0 20px;
+	font-size: 12px;
+	}
+.style7 {font-size: 15px}

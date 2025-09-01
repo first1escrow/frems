@@ -1,0 +1,48 @@
+@charset "utf-8";
+/* CSS Document */
+
+#table {
+	border:0;
+	border-collpase:collpase;
+	width:800px;
+} 
+
+tr {
+	border-bottom:1px solid #000;
+	font-size: 18px;
+	font-family: "細明體";
+	color: #000;
+	text-align: left;
+} 
+
+#header h1{
+	font-size:15px;
+    text-align:center;
+}
+#container {
+	margin: 0 auto;
+	width: 98%;
+}
+
+fieldset {
+	width:850px;
+	border:#900 3px double;
+	padding-top:0;
+	padding-right:1em;
+	padding-bottom:1em;
+	padding-left:1em;
+}	
+ 
+legend {
+	color:#000;
+	background:#CCC;
+	padding:0.2em 0.5em 0.2em 1em;
+	margin:1em;
+	width:10em;
+}
+body p {
+	font-size: 13px;
+}
+#table2 td {
+	font-size: 15px;
+}

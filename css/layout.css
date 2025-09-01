@@ -1,0 +1,66 @@
+@charset "utf-8";
+/* CSS Document */
+
+*{
+	padding:0;
+	margin:0;
+	font-size: 10px;
+}
+
+body{
+	background-color:#B91C23;
+	color:#B91C23;
+}
+
+table{
+	width:800px;
+}
+td{
+	padding:10px;
+	color:#F30;
+}
+
+
+#wrapper{
+	width:1000px;
+	height:768px;
+	margin:0 auto;
+	background-image:url(/images/frem-bg.jpg)
+}
+
+#header{ height:300px;}
+#header h1{}
+
+#mainNav ul{}
+#mainNav li{}
+#mainNav li a{}
+#mainNav li a:hover{}
+
+#content{ height:270px;
+          align:center;
+}
+#content img{}
+#content p{
+	font-size:24px;
+	font-family:Microsoft;
+	color:#000;
+	text-align:center;
+	align:center;
+}
+
+#footer{ font-size:24px;
+         font-family:\5FAE\8EDF\6B63\9ED1\9AD4, \65B0\7D30\660E\9AD4;
+         color:#FFF;
+		 text-align:center;
+		 
+}
+#footer h3{}
+#wrapper #footer p {
+	font-size: 14px;
+}
+#wrapper #content #content p table {
+	text-align: center;
+}
+#wrapper #content #content p table {
+	text-align: center;
+}
