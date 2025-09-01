@@ -48,6 +48,8 @@ if (! is_array($review)) {
 
 //save
 if ($cat == 'add') {
+    echo '<pre>';
+    print_r($_POST);exit;
     $sql    = "SELECT I.`cTotalMoney`, I.`cCertifiedMoney`, S.`cScrivener` FROM `tContractIncome` AS I  LEFT JOIN `tContractScrivener` AS S ON I.cCertifiedId = S.cCertifiedId  WHERE I.cCertifiedId = '" . $id . "'";
     $res    = $conn->Execute($sql);
     $income = $res->fields;

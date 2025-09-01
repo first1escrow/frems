@@ -127,13 +127,13 @@
     </td>
 </tr>
 <{/if}>
-<{if $item.ScrivenerSPFeedMoney > 0}>
+<{if isset($item.ScrivenerSPFeedMoney) && $item.ScrivenerSPFeedMoney > 0}>
 <tr> 
     <th>地政士事務所</th>
     <td colspan="2"><{$scrivener_office}></td>
     <th>特殊回饋︰</td>
     <td colspan="3">
-        <span style="background-color:#CCC;"><{$item.ScrivenerSPFeedMoney|number_format:0}>元</span>
+        <span style="background-color:#CCC;"><{if $item.ScrivenerSPFeedMoney}><{$item.ScrivenerSPFeedMoney|number_format:0}><{else}>0<{/if}>元</span>
     </td>
 </tr>
 <{/if}>

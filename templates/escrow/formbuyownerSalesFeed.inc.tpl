@@ -716,7 +716,6 @@ textarea{
                 <tbody class="row" id="row0" style="display:none;">
                     <tr> 
                         <th width="10%">回饋對象：
-
                             <input type="hidden" name="oId0" value="">
                             <input type="hidden" name="otherFeedId0" value="">
                             <input type="hidden" name="change0">
@@ -727,8 +726,7 @@ textarea{
                         <td>
                         <select name="newotherFeedstoreId0" id="newotherFeedstoreId0" class=" checkStoreO combox" onchange="otherFeedChangeMark(0);showOtherFeedBackAcc(this.value, 'newotherFeedType0')">
                             <{foreach from=$menuotherFeedStore  key=k item=i}>
-                                   
-                                    <option value="<{$k}>" <{$ck}>><{$i}></option>
+                            <option value="<{$k}>" <{$ck}>><{$i}></option>
                             <{/foreach}>
                         </select>
                         </td>
@@ -752,7 +750,7 @@ textarea{
                     <th width="10%">回饋對象：
 
                         <input type="hidden" name="oId<{$key}>" value="<{$item.id}>">
-                        <input type="hidden" name="otherFeedId<{$key}>" value="<{$item.fId}>">
+                        <input type="hidden" name="otherFeedId<{$key}>" value="<{$item.fId ?? ''}>">
                         <input type="hidden" name="change<{$key}>">
                     </th>
                     <td><{html_radios name="newotherFeedType<{$key}>" options=$menuOTarget onClick="ChangeFeedStore($(this),'newotherFeedstoreId<{$key}>')" checked="<{$item.fType}>" }></td>
@@ -777,7 +775,7 @@ textarea{
                 </tr>
                 <tr>
                     <th>原因：</th>
-                    <td colspan="5"><textarea name="newotherFeedMoneyNote<{$key}>"><{$item.fNote}></textarea>
+                    <td colspan="5"><textarea name="newotherFeedMoneyNote<{$key}>"><{$item.fNote ?? ''}></textarea>
                 </tr>
             </tbody>
             <{/foreach}> 
@@ -854,6 +852,3 @@ textarea{
     </script>
 </body>
 </html>
-
-
-   
