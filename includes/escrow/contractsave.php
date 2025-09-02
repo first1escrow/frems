@@ -163,8 +163,8 @@ if ($data_realestate['cBranchNum'] != $_POST['realestate_branchnum'] || $data_re
 //契約書用印仲介店
 if ($_POST['cAffixBranch']) {
     $checkAffix = $_POST['cAffixBranch'];
-    if(is_array($checkAffix)) {
-        $_POST['cAffixBranch'] = in_array('b', $checkAffix) ? '1' : '0';
+    if (is_array($checkAffix)) {
+        $_POST['cAffixBranch']  = in_array('b', $checkAffix) ? '1' : '0';
         $_POST['cAffixBranch1'] = in_array('b1', $checkAffix) ? '1' : '0';
         $_POST['cAffixBranch2'] = in_array('b2', $checkAffix) ? '1' : '0';
         $_POST['cAffixBranch3'] = in_array('b3', $checkAffix) ? '1' : '0';
@@ -184,9 +184,13 @@ $contract->SaveScrivener($_POST);
 
 //20231030 轉換土地使用分區
 $land_category_options = $contract->GetCategoryAreaMenuList();
-foreach ($land_category_options as $v) {
-    if ($_POST['land_category'] == $v['cName']) {
-        $_POST['land_category'] = $v['cId'];
+// 檢查 land_category 是否存在且是字符串
+if (isset($_POST['land_category']) && is_string($_POST['land_category'])) {
+    foreach ($land_category_options as $id => $name) {
+        if ($_POST['land_category'] == $name) {
+            $_POST['land_category'] = $id;
+            break;
+        }
     }
 }
 $land_category_options = null;unset($land_category_options);
@@ -226,6 +230,11 @@ $contract->saveOwnerSales($_POST);
 $contract->SaveBuyer($_POST);
 $contract->SaveBuyerSales($_POST);
 $contract->SaveContractRent($_POST);
+
+// 確保 LandFee 有值
+if (! isset($_POST['LandFee']) || empty($_POST['LandFee'])) {
+    $_POST['LandFee'] = '1'; // 預設為 1 (買方負擔)
+}
 
 if ($contract->GetContractLandCategory($_POST['certifiedid'])) {
     $contract->SavelandCategoryLand($_POST);

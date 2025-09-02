@@ -1,58 +1,58 @@
- <?php
-require_once __DIR__ . '/advance.class.php';
-require_once dirname(__DIR__) . '/includes/writelog.php';
+<?php
+    require_once __DIR__ . '/advance.class.php';
+    require_once dirname(__DIR__) . '/includes/writelog.php';
 
-class Contract extends Advance
-{
-
-    public function __construct()
+    class Contract extends Advance
     {
-        parent::__construct();
-    }
 
-    public function GetContract($id)
-    {
-        $sql  = " SELECT * FROM  `tContractCase` Where `cCertifiedId` = '" . $id . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        public function __construct()
+        {
+            parent::__construct();
+        }
 
-    public function GetFurniture($id)
-    {
-        $sql  = " SELECT * FROM  `tContractFurniture` Where `cCertifyId` = '" . $id . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        public function GetContract($id)
+        {
+            $sql  = " SELECT * FROM  `tContractCase` Where `cCertifiedId` = '" . $id . "' ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-    public function GetRent($id)
-    {
-        $sql  = " SELECT * FROM  `tContractRent` Where `cCertifiedId` = '" . $id . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        public function GetFurniture($id)
+        {
+            $sql  = " SELECT * FROM  `tContractFurniture` Where `cCertifyId` = '" . $id . "' ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-    public function GetAscription($id)
-    {
-        $sql  = " SELECT * FROM  `tContractAscription` Where `cCertifiedId` = '" . $id . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        public function GetRent($id)
+        {
+            $sql  = " SELECT * FROM  `tContractRent` Where `cCertifiedId` = '" . $id . "' ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-    public function GetContractLandCategory($id)
-    {
-        $sql  = "SELECT * FROM tContractLandCategory WHERE `cCertifiedId` = '" . $id . "'";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        public function GetAscription($id)
+        {
+            $sql  = " SELECT * FROM  `tContractAscription` Where `cCertifiedId` = '" . $id . "' ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-    public function GetRealstate($id)
-    {
-        $sql = 'SELECT
+        public function GetContractLandCategory($id)
+        {
+            $sql  = "SELECT * FROM tContractLandCategory WHERE `cCertifiedId` = '" . $id . "'";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        public function GetRealstate($id)
+        {
+            $sql = 'SELECT
                     *,
                     (SELECT bStore FROM tBranch WHERE rea.cBranchNum=bId) AS cStore,
                     (SELECT bCategory FROM tBranch WHERE rea.cBranchNum=bId) AS bCategory,
@@ -82,176 +82,176 @@ class Contract extends Advance
                     tContractRealestate AS rea
                 WHERE
                     cCertifyId="' . $id . '";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetScrivener($id)
-    {
-        $sql  = "SELECT * FROM  `tContractScrivener` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetProperty($id, $item = 0)
-    {
-        $sql  = "SELECT * FROM  `tContractProperty` Where `cCertifiedId` = '" . $id . "' And cItem = '" . $item . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetPropertyOther($id)
-    {
-        $sql  = "SELECT * FROM  `tContractProperty` Where `cCertifiedId` = '" . $id . "' And cItem <> '0';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function GetParking($id)
-    {
-        $sql  = "SELECT * FROM  `tContractParking` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function GetIncome($id)
-    {
-        $sql  = "SELECT * FROM  `tContractIncome` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetExpenditure($id)
-    {
-        $sql  = "SELECT * FROM  `tContractExpenditure` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetBuyer($id)
-    {
-        $sql  = "SELECT * FROM  `tContractBuyer` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetOwner($id)
-    {
-        $sql  = "SELECT * FROM  `tContractOwner` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetOthers($id, $ide)
-    {
-        $sql  = "SELECT * FROM  `tContractOthers` Where `cCertifiedId` = '" . $id . "' AND cIdentity='" . $ide . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function GetInvoice($id)
-    {
-        $sql  = "SELECT * FROM  `tContractInvoice` Where `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetLandFirst($id, $item)
-    {
-        $sql  = "SELECT * FROM  `tContractLand` Where cItem = '" . $item . "' And `cCertifiedId` = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function GetLandList($id)
-    {
-        $sql  = "SELECT * FROM  `tContractLand` Where cItem <> '0' And `cCertifiedId` = '" . $id . "' Order by cItem;";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function CheckLandExist($id, $item)
-    {
-        $sql  = "SELECT count(*) cnt FROM  `tContractLand` Where cItem = '" . $item . "' And `cCertifiedId` = '" . $id . "' ;";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['cnt'] != '0';
-    }
-
-    public function GetBuildMax($id)
-    {
-        $sql  = "SELECT max(cItem) max FROM `tContractProperty` Where cCertifiedId = '" . $id . "';";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $row['max']++;
-        return $row['max'];
-    }
-
-    public function AddContract($data)
-    {
-
-        if ($data['realestate_branch'] == '505') {
-            $data['cFeedbackTarget'] = '2';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_branch1'] == '505') {
-            $data['cFeedbackTarget1'] = '2';
+        public function GetScrivener($id)
+        {
+            $sql  = "SELECT * FROM  `tContractScrivener` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_branch2'] == '505') {
-            $data['cFeedbackTarget2'] = '2';
+        public function GetProperty($id, $item = 0)
+        {
+            $sql  = "SELECT * FROM  `tContractProperty` Where `cCertifiedId` = '" . $id . "' And cItem = '" . $item . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_branch3'] == '505') {
-            $data['cFeedbackTarget3'] = '2';
+        public function GetPropertyOther($id)
+        {
+            $sql  = "SELECT * FROM  `tContractProperty` Where `cCertifiedId` = '" . $id . "' And cItem <> '0';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bRecall1'] == '') {
-            $data['realestate_bRecall1'] = 0;
+        public function GetParking($id)
+        {
+            $sql  = "SELECT * FROM  `tContractParking` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bRecall2'] == '') {
-            $data['realestate_bRecall2'] = 0;
+        public function GetIncome($id)
+        {
+            $sql  = "SELECT * FROM  `tContractIncome` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bRecall3'] == '') {
-            $data['realestate_bRecall3'] = 0;
+        public function GetExpenditure($id)
+        {
+            $sql  = "SELECT * FROM  `tContractExpenditure` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bScrRecall'] == '') {
-            $data['realestate_bScrRecall'] = 0;
+        public function GetBuyer($id)
+        {
+            $sql  = "SELECT * FROM  `tContractBuyer` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bScrRecall1'] == '') {
-            $data['realestate_bScrRecall1'] = 0;
+        public function GetOwner($id)
+        {
+            $sql  = "SELECT * FROM  `tContractOwner` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bScrRecall2'] == '') {
-            $data['realestate_bScrRecall2'] = 0;
+        public function GetOthers($id, $ide)
+        {
+            $sql  = "SELECT * FROM  `tContractOthers` Where `cCertifiedId` = '" . $id . "' AND cIdentity='" . $ide . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        if ($data['realestate_bScrRecall3'] == '') {
-            $data['realestate_bScrRecall3'] = 0;
+        public function GetInvoice($id)
+        {
+            $sql  = "SELECT * FROM  `tContractInvoice` Where `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        $data['case_cancellingClause'] = (empty($data['case_cancellingClause'])) ? 0 : $data['case_cancellingClause'];
+        public function GetLandFirst($id, $item)
+        {
+            $sql  = "SELECT * FROM  `tContractLand` Where cItem = '" . $item . "' And `cCertifiedId` = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-        $sql = "INSERT INTO
+        public function GetLandList($id)
+        {
+            $sql  = "SELECT * FROM  `tContractLand` Where cItem <> '0' And `cCertifiedId` = '" . $id . "' Order by cItem;";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        public function CheckLandExist($id, $item)
+        {
+            $sql  = "SELECT count(*) cnt FROM  `tContractLand` Where cItem = '" . $item . "' And `cCertifiedId` = '" . $id . "' ;";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row['cnt'] != '0';
+        }
+
+        public function GetBuildMax($id)
+        {
+            $sql  = "SELECT max(cItem) max FROM `tContractProperty` Where cCertifiedId = '" . $id . "';";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row['max']++;
+            return $row['max'];
+        }
+
+        public function AddContract($data)
+        {
+
+            if ($data['realestate_branch'] == '505') {
+                $data['cFeedbackTarget'] = '2';
+            }
+
+            if ($data['realestate_branch1'] == '505') {
+                $data['cFeedbackTarget1'] = '2';
+            }
+
+            if ($data['realestate_branch2'] == '505') {
+                $data['cFeedbackTarget2'] = '2';
+            }
+
+            if ($data['realestate_branch3'] == '505') {
+                $data['cFeedbackTarget3'] = '2';
+            }
+
+            if ($data['realestate_bRecall1'] == '') {
+                $data['realestate_bRecall1'] = 0;
+            }
+
+            if ($data['realestate_bRecall2'] == '') {
+                $data['realestate_bRecall2'] = 0;
+            }
+
+            if ($data['realestate_bRecall3'] == '') {
+                $data['realestate_bRecall3'] = 0;
+            }
+
+            if ($data['realestate_bScrRecall'] == '') {
+                $data['realestate_bScrRecall'] = 0;
+            }
+
+            if ($data['realestate_bScrRecall1'] == '') {
+                $data['realestate_bScrRecall1'] = 0;
+            }
+
+            if ($data['realestate_bScrRecall2'] == '') {
+                $data['realestate_bScrRecall2'] = 0;
+            }
+
+            if ($data['realestate_bScrRecall3'] == '') {
+                $data['realestate_bScrRecall3'] = 0;
+            }
+
+            $data['case_cancellingClause'] = (empty($data['case_cancellingClause'])) ? 0 : $data['case_cancellingClause'];
+
+            $sql = "INSERT INTO
                     `tContractCase`
                 (
                     `cId`,
@@ -370,51 +370,54 @@ class Contract extends Advance
                     '" . $data['case_cancellingClauseNote'] . "',
                     '" . $data['case_reportupload'] . "'
                 );";
-        $stmt    = $this->dbh->prepare($sql);
-        $is_pass = $stmt->execute();
-        if ($is_pass) {
-            $sql  = "UPDATE  `tBankCode` SET  `bUsed` =  '1' WHERE `bAccount` = " . $data['scrivener_bankaccount'] . ";";
+            $stmt    = $this->dbh->prepare($sql);
+            $is_pass = $stmt->execute();
+            if ($is_pass) {
+                $sql  = "UPDATE  `tBankCode` SET  `bUsed` =  '1' WHERE `bAccount` = " . $data['scrivener_bankaccount'] . ";";
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+
+                //20231016 建檔後計算已存在銷帳檔內的帳戶金額
+                $this->updateNewContractCaseMoney($data['scrivener_bankaccount']);
+            }
+        }
+
+        //建檔後計算已存在銷帳檔內的帳戶金額
+        private function updateNewContractCaseMoney($cId)
+        {
+            $sql  = 'SELECT SUM(eDebit) as D, SUM(eLender) as L FROM tExpense WHERE eDepAccount = "00' . $cId . '";';
             $stmt = $this->dbh->prepare($sql);
             $stmt->execute();
+            $rs = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            //20231016 建檔後計算已存在銷帳檔內的帳戶金額
-            $this->updateNewContractCaseMoney($data['scrivener_bankaccount']);
-        }
-    }
+            if (empty($rs)) {
+                return true;
+            }
 
-    //建檔後計算已存在銷帳檔內的帳戶金額
-    private function updateNewContractCaseMoney($cId)
-    {
-        $sql  = 'SELECT SUM(eDebit) as D, SUM(eLender) as L FROM tExpense WHERE eDepAccount = "00' . $cId . '";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $rs = $stmt->fetch(PDO::FETCH_ASSOC);
+            $_balance_money = ($rs['L'] - $rs['D']) / 100;
+            if (empty($_balance_money)) {
+                return true;
+            }
 
-        if (empty($rs)) {
-            return true;
-        }
+            $sql  = 'UPDATE tContractCase SET cCaseMoney = :money WHERE cEscrowBankAccount = :cId;';
+            $stmt = $this->dbh->prepare($sql);
 
-        $_balance_money = ($rs['L'] - $rs['D']) / 100;
-        if (empty($_balance_money)) {
-            return true;
+            $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
+            $stmt->bindParam('money', $_balance_money, PDO::PARAM_INT);
+
+            return $stmt->execute();
         }
 
-        $sql  = 'UPDATE tContractCase SET cCaseMoney = :money WHERE cEscrowBankAccount = :cId;';
-        $stmt = $this->dbh->prepare($sql);
+        public function AddlandCategoryLand($data)
+        {
+            // 確保 landCategoryLand 和 landCategoryBuild 是陣列
+            $landCategoryLand  = isset($data['landCategoryLand']) && is_array($data['landCategoryLand']) ? $data['landCategoryLand'] : [];
+            $landCategoryBuild = isset($data['landCategoryBuild']) && is_array($data['landCategoryBuild']) ? $data['landCategoryBuild'] : [];
 
-        $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
-        $stmt->bindParam('money', $_balance_money, PDO::PARAM_INT);
+            $land  = implode(',', $landCategoryLand);
+            $build = implode(',', $landCategoryBuild);
 
-        return $stmt->execute();
-    }
-
-    public function AddlandCategoryLand($data)
-    {
-
-        $land  = empty($data['landCategoryLand']) ? '' : implode(',', $data['landCategoryLand']);
-        $build = empty($data['landCategoryBuild']) ? '' : implode(',', $data['landCategoryBuild']);
-
-        $sql = "INSERT INTO
+            $sql = "INSERT INTO
                     `tContractLandCategory`
                 (
                     `cId`,
@@ -429,13 +432,13 @@ class Contract extends Advance
                     '" . $build . "',
                     '" . $data['LandFee'] . "'
                 );";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddContract_Sales($cid, $target, $sid, $branch)
-    {
-        $sql = "INSERT INTO
+        public function AddContract_Sales($cid, $target, $sid, $branch)
+        {
+            $sql = "INSERT INTO
                     `tContractSales`
                 (
                     `cId`,
@@ -450,29 +453,29 @@ class Contract extends Advance
                     '" . $sid . "',
                     '" . $branch . "'
                 );";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function AddContractAscription($data)
-    {
-        $cOwner = '';
-        if ($data['ascription_owner']) {
-            $cOwner = implode(',', $data['ascription_owner']);
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        $cBuyer = '';
-        if ($data['ascription_buy']) {
-            $cBuyer = implode(',', $data['ascription_buy']);
-        }
+        public function AddContractAscription($data)
+        {
+            $cOwner = '';
+            if ($data['ascription_owner']) {
+                $cOwner = implode(',', $data['ascription_owner']);
+            }
 
-        if ($data['certifiedid']) {
-            $certifyid = $data['certifiedid'];
-        } else {
-            $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
-        }
+            $cBuyer = '';
+            if ($data['ascription_buy']) {
+                $cBuyer = implode(',', $data['ascription_buy']);
+            }
 
-        $sql = " INSERT INTO `tContractAscription`
+            if ($data['certifiedid']) {
+                $certifyid = $data['certifiedid'];
+            } else {
+                $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
+            }
+
+            $sql = " INSERT INTO `tContractAscription`
             (`cId`,
              `cCertifiedId`,
              `cContribute`,
@@ -490,21 +493,21 @@ class Contract extends Advance
              '" . $data['ascription_ownerother'] . "'
               );";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-    }
-
-    public function AddContractFurniture($data)
-    {
-
-        if ($data['certifiedid']) {
-            $certifyid = $data['certifiedid'];
-        } else {
-            $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
         }
 
-        $sql = " INSERT INTO `tContractFurniture`
+        public function AddContractFurniture($data)
+        {
+
+            if ($data['certifiedid']) {
+                $certifyid = $data['certifiedid'];
+            } else {
+                $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
+            }
+
+            $sql = " INSERT INTO `tContractFurniture`
             (`cId`,
              `cCertifyId`,
              `cLamp`,
@@ -542,20 +545,20 @@ class Contract extends Advance
              '" . $data['furniture_gas'] . "'
               );";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-    }
-
-    public function AddContractRent($data)
-    {
-
-        if ($data['certifiedid']) {
-            $certifyid = $data['certifiedid'];
-        } else {
-            $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
         }
-        $sql = " INSERT INTO `tContractRent`
+
+        public function AddContractRent($data)
+        {
+
+            if ($data['certifiedid']) {
+                $certifyid = $data['certifiedid'];
+            } else {
+                $certifyid = $this->CutToCertifyId($data['scrivener_bankaccount']);
+            }
+            $sql = " INSERT INTO `tContractRent`
             (`cId`,
              `cCertifiedId`,
              `cRentDate`,
@@ -569,38 +572,38 @@ class Contract extends Advance
              '" . $data['rent_cOther'] . "'
               );";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-    }
-
-    public function AddRealstate($data)
-    {
-
-        if (($data['realestate_branchnum1'] == 0) || ($data['realestate_branchnum1'] == '')) {
-            $data['realestate_brand1'] = 0;
         }
 
-        //·s¼W²Ä¤@²Õ¥ò¤¶ªº¹w³]Â²°T¹ï¶H
-        if ($data['realestate_branchnum']) {
-            $data['cSmsTarget'] = $this->addSmsDefault($data['realestate_branchnum']);
-            write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum'] . ':' . $data['cSmsTarget'], 'contract_branchsms');
-        }
-        ##
+        public function AddRealstate($data)
+        {
 
-        //·s¼W²Ä¤G²Õ¹w³]ªºÂ²°T¹ï¶H
-        if ($data['realestate_branchnum1']) {
-            $data['cSmsTarget1'] = $this->addSmsDefault($data['realestate_branchnum1']);
-            write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum1'] . ':' . $data['cSmsTarget1'], 'contract_branchsms');
-        }
-        ##
-        if ($data['realestate_branchnum2']) {
-            $data['cSmsTarget1'] = $this->addSmsDefault($data['realestate_branchnum2']);
-            write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum2'] . ':' . $data['cSmsTarget2'], 'contract_branchsms');
-        }
-        ##
+            if (($data['realestate_branchnum1'] == 0) || ($data['realestate_branchnum1'] == '')) {
+                $data['realestate_brand1'] = 0;
+            }
 
-        $sql = " INSERT INTO `tContractRealestate` (
+            //·s¼W²Ä¤@²Õ¥ò¤¶ªº¹w³]Â²°T¹ï¶H
+            if ($data['realestate_branchnum']) {
+                $data['cSmsTarget'] = $this->addSmsDefault($data['realestate_branchnum']);
+                write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum'] . ':' . $data['cSmsTarget'], 'contract_branchsms');
+            }
+            ##
+
+            //·s¼W²Ä¤G²Õ¹w³]ªºÂ²°T¹ï¶H
+            if ($data['realestate_branchnum1']) {
+                $data['cSmsTarget1'] = $this->addSmsDefault($data['realestate_branchnum1']);
+                write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum1'] . ':' . $data['cSmsTarget1'], 'contract_branchsms');
+            }
+            ##
+            if ($data['realestate_branchnum2']) {
+                $data['cSmsTarget1'] = $this->addSmsDefault($data['realestate_branchnum2']);
+                write_log($this->CutToCertifyId($data['scrivener_bankaccount']) . ',帶入簡訊對象' . $data['realestate_branchnum2'] . ':' . $data['cSmsTarget2'], 'contract_branchsms');
+            }
+            ##
+
+            $sql = " INSERT INTO `tContractRealestate` (
             `cId`,
             `cCertifyId`,
             `cBrand`,
@@ -659,20 +662,20 @@ class Contract extends Advance
             '" . $data['cAffixBranch'] . "',
             '" . $data['cAffixBranch1'] . "'
             );";
-        // echo $sql;
+            // echo $sql;
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function AddScrivener($data)
-    {
-
-        if ($data['scrivener_print'] == '') {
-            $data['scrivener_print'] = 'N';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        $sql = " INSERT INTO `tContractScrivener` (
+        public function AddScrivener($data)
+        {
+
+            if ($data['scrivener_print'] == '') {
+                $data['scrivener_print'] = 'N';
+            }
+
+            $sql = " INSERT INTO `tContractScrivener` (
                     `cId`,
                     `cCertifiedId`,
                     `cScrivener`,
@@ -681,13 +684,13 @@ class Contract extends Advance
                     '" . $this->CutToCertifyId($data['scrivener_bankaccount']) . "',
                     '" . $data['scrivener_id'] . "',
                     '" . $data['scrivener_assistant'] . "')";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function addLandPrice($data)
-    {
-        $sql = "INSERT INTO
+        public function addLandPrice($data)
+        {
+            $sql = "INSERT INTO
                         tContractLandPrice
                     SET
                         cCertifiedId = '" . $data['cCertifiedId'] . "',
@@ -697,13 +700,13 @@ class Contract extends Advance
                         cLandPrice = '" . $data['cLandPrice'] . "',
                         cPower1 = '" . $data['cPower1'] . "',
                         cPower2 = '" . $data['cPower2'] . "'";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function saveLandPrice($data)
-    {
-        $sql = "UPDATE
+        public function saveLandPrice($data)
+        {
+            $sql = "UPDATE
                     tContractLandPrice
                 SET
                     cMoveDate = '" . $data['cMoveDate'] . "',
@@ -712,20 +715,20 @@ class Contract extends Advance
                     cPower2 = '" . $data['cPower2'] . "'
                  WHERE
                     cId = '" . $data['cId'] . "'";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function AddLand($data, $item)
-    {
-        $data['land_landprice'] = str_replace(',', '', $data['land_landprice']);
-        $data['land_money']     = str_replace(',', '', $data['land_money']);
-        if (!empty($data['land_movedate'])) {
-            $data['land_movedate'] = $data['land_movedate'] . "-00";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
-        $cId = empty($this->CutToCertifyId($data['scrivener_bankaccount'])) ? $this->CutToCertifyId($data['scrivener_bankaccount2']) : $this->CutToCertifyId($data['scrivener_bankaccount']);
 
-        $sql = " INSERT INTO `tContractLand`
+        public function AddLand($data, $item)
+        {
+            $data['land_landprice'] = str_replace(',', '', $data['land_landprice']);
+            $data['land_money']     = str_replace(',', '', $data['land_money']);
+            if (! empty($data['land_movedate'])) {
+                $data['land_movedate'] = $data['land_movedate'] . "-00";
+            }
+            $cId = empty($this->CutToCertifyId($data['scrivener_bankaccount'])) ? $this->CutToCertifyId($data['scrivener_bankaccount2']) : $this->CutToCertifyId($data['scrivener_bankaccount']);
+
+            $sql = " INSERT INTO `tContractLand`
                     (`cId`,
                     `cCertifiedId`,
                     `cItem`,
@@ -760,16 +763,16 @@ class Contract extends Advance
                     '" . $data['land_movedate'] . "',
                     '" . $data['land_farmland'] . "',
                     '" . $data['land_landprice'] . "');";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function AddLand2($data, $item)
-    {
-        if (!empty($data['land_movedate'])) {
-            $data['land_movedate'] = $data['land_movedate'] . "-00";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
-        $sql = " INSERT INTO `tContractLand`
+
+        public function AddLand2($data, $item)
+        {
+            if (! empty($data['land_movedate'])) {
+                $data['land_movedate'] = $data['land_movedate'] . "-00";
+            }
+            $sql = " INSERT INTO `tContractLand`
                     (`cId`,
                     `cCertifiedId`,
                     `cItem`,
@@ -802,19 +805,19 @@ class Contract extends Advance
                     '" . $data['lpower2'] . "',
                     '" . $data['land_movedate'] . "',
                     '" . $data['land_landprice'] . "');";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddLand3($id, $item)
-    {
+        public function AddLand3($id, $item)
+        {
 
-        $sql  = 'SELECT * FROM tContractLand WHERE cCertifiedId="' . $id . '" AND cItem = "0";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $rs = $stmt->fetch(PDO::FETCH_ASSOC);
+            $sql  = 'SELECT * FROM tContractLand WHERE cCertifiedId="' . $id . '" AND cItem = "0";';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $rs = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = " INSERT INTO `tContractLand`  (`cId`,
+            $sql = " INSERT INTO `tContractLand`  (`cId`,
                     `cCertifiedId`,
                     `cItem`,
                     `cZip`,
@@ -826,26 +829,26 @@ class Contract extends Advance
                     '" . $rs['cZip'] . "',
                     '" . $rs['cLand1'] . "',
                     '" . $rs['cLand2'] . "' ); ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddLand4($data, $count)
-    {
+        public function AddLand4($data, $count)
+        {
 
-        $cnt = (is_array($data['new_land_item'])) ? count($data['new_land_item']) : 0;
+            $cnt = (is_array($data['new_land_item'])) ? count($data['new_land_item']) : 0;
 
-        for ($i = 0; $i < $cnt; $i++) {
-            $count++;
+            for ($i = 0; $i < $cnt; $i++) {
+                $count++;
 
-            if ($data['new_land_measure'][$i] != '') {
-                $data['new_land_landprice'][$i] = str_replace(',', '', $data['new_land_landprice'][$i]);
-                $data['new_land_money'][$i]     = str_replace(',', '', $data['new_land_money'][$i]);
-                if (!empty($data['new_land_movedate'][$i])) {
-                    $data['new_land_movedate'][$i] = $data['new_land_movedate'][$i] . "-00";
-                }
+                if ($data['new_land_measure'][$i] != '') {
+                    $data['new_land_landprice'][$i] = str_replace(',', '', $data['new_land_landprice'][$i]);
+                    $data['new_land_money'][$i]     = str_replace(',', '', $data['new_land_money'][$i]);
+                    if (! empty($data['new_land_movedate'][$i])) {
+                        $data['new_land_movedate'][$i] = $data['new_land_movedate'][$i] . "-00";
+                    }
 
-                $sql = " INSERT INTO `tContractLand`
+                    $sql = " INSERT INTO `tContractLand`
                             (`cId`,
                             `cCertifiedId`,
                             `cItem`,
@@ -880,69 +883,69 @@ class Contract extends Advance
                             '" . $data['new_land_movedate'][$i] . "',
                             '" . $data['new_land_farmland'][$i] . "',
                             '" . $data['new_land_landprice'][$i] . "');";
-                // echo $sql;
-                $stmt = $this->dbh->prepare($sql);
-                $stmt->execute();
+                    // echo $sql;
+                    $stmt = $this->dbh->prepare($sql);
+                    $stmt->execute();
 
-                for ($j = 0; $j <= 1; $j++) {
-                    $dataPrice                 = array();
-                    $dataPrice['cCertifiedId'] = $data['certifiedid'];
-                    $dataPrice['cLandItem']    = $count;
-                    $dataPrice['cItem']        = $j;
+                    for ($j = 0; $j <= 1; $j++) {
+                        $dataPrice                 = [];
+                        $dataPrice['cCertifiedId'] = $data['certifiedid'];
+                        $dataPrice['cLandItem']    = $count;
+                        $dataPrice['cItem']        = $j;
 
-                    $date = explode('-', $data['new_land_movedate'][$j]);
+                        $date = explode('-', $data['new_land_movedate'][$j]);
 
-                    $dataPrice['cMoveDate']  = (empty($data['new_land_movedate'][$j])) ? '0000-00-00' : ($date[0] + 1911) . "-" . $date[1] . "-00";
-                    $dataPrice['cLandPrice'] = str_replace(',', '', $data['new_land_landprice'][$j]);
-                    $dataPrice['cPower1']    = $data['new_land_landprice_power1'][$j];
-                    $dataPrice['cPower2']    = $data['new_land_landprice_power2'][$j];
+                        $dataPrice['cMoveDate']  = (empty($data['new_land_movedate'][$j])) ? '0000-00-00' : ($date[0] + 1911) . "-" . $date[1] . "-00";
+                        $dataPrice['cLandPrice'] = str_replace(',', '', $data['new_land_landprice'][$j]);
+                        $dataPrice['cPower1']    = $data['new_land_landprice_power1'][$j];
+                        $dataPrice['cPower2']    = $data['new_land_landprice_power2'][$j];
 
-                    $this->addLandPrice($dataPrice);
-                    unset($dataPrice);unset($date);
+                        $this->addLandPrice($dataPrice);
+                        unset($dataPrice);unset($date);
+                    }
+
                 }
 
             }
 
         }
 
-    }
+        // save new_property_item
+        public function AddProperty2($data)
+        {
 
-    // save new_property_item
-    public function AddProperty2($data)
-    {
+            if (is_array($data['new_property_Item'])) {
 
-        if (is_array($data['new_property_Item'])) {
+                for ($i = 0; $i <= count($data['new_property_Item']); $i++) {
+                    // echo 'C'.$i;
+                    $objuse = '';
+                    $object = '';
+                    $item   = ($i == 0) ? (count($data['property_Item']) + 1) : ($item + 1);
 
-            for ($i = 0; $i <= count($data['new_property_Item']); $i++) {
-                // echo 'C'.$i;
-                $objuse = '';
-                $object = '';
-                $item   = ($i == 0) ? (count($data['property_Item']) + 1) : ($item + 1);
+                    if ($data['new_property_zip' . $data['new_property_Item'][$i]]) {
+                        // echo 'D'.$i;
+                        $data['new_property_builddate' . $data['new_property_Item'][$i]]  = date_convert($data['new_property_builddate' . $data['new_property_Item'][$i]]);
+                        $data['new_property_closingday' . $data['new_property_Item'][$i]] = date_convert($data['new_property_closingday' . $data['new_property_Item'][$i]]);
 
-                if ($data['new_property_zip' . $data['new_property_Item'][$i]]) {
-                    // echo 'D'.$i;
-                    $data['new_property_builddate' . $data['new_property_Item'][$i]]  = date_convert($data['new_property_builddate' . $data['new_property_Item'][$i]]);
-                    $data['new_property_closingday' . $data['new_property_Item'][$i]] = date_convert($data['new_property_closingday' . $data['new_property_Item'][$i]]);
-
-                    if ($data['new_property_objuse' . $data['new_property_Item']]) { //new_property_Item
-                        $objuse = implode(',', $data['new_property_objuse' . $data['new_property_Item'][$i]]);
-                    }
-
-                    if ($data['new_property_cPropertyObject' . $data['new_property_Item' . $data['new_property_Item'][$i]]]) {
-                        $object = implode(',', $data['new_property_cPropertyObject' . $data['new_property_Item'][$i]]);
-                    }
-
-                    if ($data['certifiedid'] == '') {
-                        $data['certifiedid'] = $this->CutToCertifyId($data['scrivener_bankaccount']);
-                    }
-
-                    if ($data['new_property_actualArea' . $data['new_property_Item'][$i]] == 0) {
-                        if ($data['new_property_power2' . $data['new_property_Item'][$i]] > 0) {
-                            $data['new_property_actualArea' . $data['new_property_Item'][$i]] = $data['new_property_measuretotal' . $data['new_property_Item'][$i]] * ($data['new_property_power1' . $data['new_property_Item'][$i]] / $data['new_property_power2' . $data['new_property_Item'][$i]]);
+                        if ($data['new_property_objuse' . $data['new_property_Item']]) { //new_property_Item
+                            $objuse = implode(',', $data['new_property_objuse' . $data['new_property_Item'][$i]]);
                         }
-                    }
 
-                    $sql = " INSERT INTO `tContractProperty` (
+                        if ($data['new_property_cPropertyObject' . $data['new_property_Item' . $data['new_property_Item'][$i]]]) {
+                            $object = implode(',', $data['new_property_cPropertyObject' . $data['new_property_Item'][$i]]);
+                        }
+
+                        if ($data['certifiedid'] == '') {
+                            $data['certifiedid'] = $this->CutToCertifyId($data['scrivener_bankaccount']);
+                        }
+
+                        if ($data['new_property_actualArea' . $data['new_property_Item'][$i]] == 0) {
+                            if ($data['new_property_power2' . $data['new_property_Item'][$i]] > 0) {
+                                $data['new_property_actualArea' . $data['new_property_Item'][$i]] = $data['new_property_measuretotal' . $data['new_property_Item'][$i]] * ($data['new_property_power1' . $data['new_property_Item'][$i]] / $data['new_property_power2' . $data['new_property_Item'][$i]]);
+                            }
+                        }
+
+                        $sql = " INSERT INTO `tContractProperty` (
                                 `cId`,
                                 `cCertifiedId`,
                                 `cItem`,
@@ -1010,66 +1013,66 @@ class Contract extends Advance
                                 '" . $data['new_property_publicmeasuremain' . $data['new_property_Item'][$i]] . "'
                                 );";
 
-                    // echo $sql;
+                        // echo $sql;
 
-                    $stmt = $this->dbh->prepare($sql);
-                    $stmt->execute();
+                        $stmt = $this->dbh->prepare($sql);
+                        $stmt->execute();
 
-                    $this->AddProperty2BuildingLanNo($data['new_property_Item'][$i], $item, $data);
+                        $this->AddProperty2BuildingLanNo($data['new_property_Item'][$i], $item, $data);
 
-                }
-            }
-        }
-
-    }
-
-    public function AddProperty2BuildingLanNo($index, $item, $data)
-    {
-        $this->dbh->beginTransaction();
-
-        try {
-            $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
-
-            //插入紀錄
-            if (!empty($data['new_buildingLandNo_' . $index])) {
-                $row = [];
-                foreach ($data['new_buildingLandSession_' . $index] as $k => $v) {
-                    if (!empty($data['new_buildingLandNo_' . $index][$k])) {
-                        $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['new_buildingLandSession_' . $index][$k] . '", "' . $data['new_buildingLandSessionExt_' . $index][$k] . '", "' . $data['new_buildingLandNo_' . $index][$k] . '")';
                     }
                 }
-
-                $this->InsertBuildingLandNo($row);
-                $row = null;unset($row);
             }
 
-            $this->dbh->commit();
-        } catch (Exception $e) {
-            $this->dbh->rollBack();
-            echo $e->getMessage();
-        }
-    }
-
-    // save property_item
-    public function AddProperty($data)
-    {
-        $objuse = '';
-        $object = '';
-        $itemNo = isset($data['item']) ? $data['item'] : 0;
-
-        if ($data['property_objuse']) {
-            $objuse = implode(',', $data['property_objuse']);
         }
 
-        if ($data['property_cPropertyObject']) {
-            $object = implode(',', $data['property_cPropertyObject']);
+        public function AddProperty2BuildingLanNo($index, $item, $data)
+        {
+            $this->dbh->beginTransaction();
+
+            try {
+                $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
+
+                //插入紀錄
+                if (! empty($data['new_buildingLandNo_' . $index])) {
+                    $row = [];
+                    foreach ($data['new_buildingLandSession_' . $index] as $k => $v) {
+                        if (! empty($data['new_buildingLandNo_' . $index][$k])) {
+                            $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['new_buildingLandSession_' . $index][$k] . '", "' . $data['new_buildingLandSessionExt_' . $index][$k] . '", "' . $data['new_buildingLandNo_' . $index][$k] . '")';
+                        }
+                    }
+
+                    $this->InsertBuildingLandNo($row);
+                    $row = null;unset($row);
+                }
+
+                $this->dbh->commit();
+            } catch (Exception $e) {
+                $this->dbh->rollBack();
+                echo $e->getMessage();
+            }
         }
 
-        if ($data['certifiedid'] == '') {
-            $data['certifiedid'] = $this->CutToCertifyId($data['scrivener_bankaccount']);
-        }
+        // save property_item
+        public function AddProperty($data)
+        {
+            $objuse = '';
+            $object = '';
+            $itemNo = isset($data['item']) ? $data['item'] : 0;
 
-        $sql = " INSERT INTO `tContractProperty` (
+            if ($data['property_objuse']) {
+                $objuse = implode(',', $data['property_objuse']);
+            }
+
+            if ($data['property_cPropertyObject']) {
+                $object = implode(',', $data['property_cPropertyObject']);
+            }
+
+            if ($data['certifiedid'] == '') {
+                $data['certifiedid'] = $this->CutToCertifyId($data['scrivener_bankaccount']);
+            }
+
+            $sql = " INSERT INTO `tContractProperty` (
             `cId`,
             `cCertifiedId`,
             `cItem`,
@@ -1130,68 +1133,68 @@ class Contract extends Advance
             '" . $data['property_power10'] . "',
             '" . $data['property_power20'] . "'
             );";
-        // echo $sql;
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            // echo $sql;
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-        $this->AddPropertyBuildingLanNo($itemNo, $data);
-    }
+            $this->AddPropertyBuildingLanNo($itemNo, $data);
+        }
 
-    public function AddPropertyBuildingLanNo($item, $data)
-    {
-        $this->dbh->beginTransaction();
+        public function AddPropertyBuildingLanNo($item, $data)
+        {
+            $this->dbh->beginTransaction();
 
-        try {
-            $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
+            try {
+                $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
 
-            //插入紀錄
-            if (!empty($data['new_buildingLandNo_' . $item])) {
-                $row = [];
-                foreach ($data['new_buildingLandSession_' . $item] as $k => $v) {
-                    if (!empty($data['buildingLandNo_' . $item][$k])) {
-                        $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['new_buildingLandSession_' . $item][$k] . '", "' . $data['new_buildingLandSessionExt_' . $item][$k] . '", "' . $data['new_buildingLandNo_' . $item][$k] . '")';
+                //插入紀錄
+                if (! empty($data['new_buildingLandNo_' . $item])) {
+                    $row = [];
+                    foreach ($data['new_buildingLandSession_' . $item] as $k => $v) {
+                        if (! empty($data['buildingLandNo_' . $item][$k])) {
+                            $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['new_buildingLandSession_' . $item][$k] . '", "' . $data['new_buildingLandSessionExt_' . $item][$k] . '", "' . $data['new_buildingLandNo_' . $item][$k] . '")';
+                        }
                     }
+
+                    $this->InsertBuildingLandNo($row);
+                    $row = null;unset($row);
                 }
 
-                $this->InsertBuildingLandNo($row);
-                $row = null;unset($row);
+                $this->dbh->commit();
+            } catch (Exception $e) {
+                $this->dbh->rollBack();
+                // echo $e->getMessage();InsertBuildingLandNo
             }
-
-            $this->dbh->commit();
-        } catch (Exception $e) {
-            $this->dbh->rollBack();
-            // echo $e->getMessage();InsertBuildingLandNo
         }
-    }
 
-    private function RemovePropertyBuildingLanNo($item, $cId)
-    {
-        $sql  = 'DELETE FROM tContractPropertyBuildingLandNo WHERE cCertifiedId = "' . $cId . '" AND cItem = "' . $item . '";';
-        $stmt = $this->dbh->prepare($sql);
-        return $stmt->execute();
-    }
+        private function RemovePropertyBuildingLanNo($item, $cId)
+        {
+            $sql  = 'DELETE FROM tContractPropertyBuildingLandNo WHERE cCertifiedId = "' . $cId . '" AND cItem = "' . $item . '";';
+            $stmt = $this->dbh->prepare($sql);
+            return $stmt->execute();
+        }
 
-    private function InsertBuildingLandNo($values)
-    {
-        $sql = 'INSERT INTO
+        private function InsertBuildingLandNo($values)
+        {
+            $sql = 'INSERT INTO
                     tContractPropertyBuildingLandNo
                 (
                     cUUID, cCertifiedId, cItem, cBuildingSession, cBuildingSessionExt, cBuildingLandNo
                 )
                 VALUES
                 ' . implode(',', $values) . ';';
-        $stmt = $this->dbh->prepare($sql);
-        return $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            return $stmt->execute();
+        }
 
-    public function AddPropertyItem($data)
-    {
-        $count = (is_array($data['property_item'])) ? count($data['property_item']) : 0;
-        $sql   = " Delete from tContractProperty where cCertifiedId = '" . $data['certifiedid'] . "'; ";
-        $stmt  = $this->dbh->prepare($sql);
-        $stmt->execute();
-        for ($i = 0; $i < $count; $i++) {
-            $sql .= " INSERT INTO
+        public function AddPropertyItem($data)
+        {
+            $count = (is_array($data['property_item'])) ? count($data['property_item']) : 0;
+            $sql   = " Delete from tContractProperty where cCertifiedId = '" . $data['certifiedid'] . "'; ";
+            $stmt  = $this->dbh->prepare($sql);
+            $stmt->execute();
+            for ($i = 0; $i < $count; $i++) {
+                $sql .= " INSERT INTO
                         `tContractProperty` (`cId`,
                                             `cCertifiedId`,
                                             `cItem`,
@@ -1211,35 +1214,35 @@ class Contract extends Advance
                                             '" . $data['property_power1'][$i] . "',
                                             '" . $data['property_power2'][$i] . "');";
 
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
         }
-    }
 
-    public function AddIncome($data)
-    {
-        $data['income_loanmoney']            = str_replace(',', '', $data['income_loanmoney']);
-        $data['income_signmoney']            = str_replace(',', '', $data['income_signmoney']);
-        $data['income_affixmoney']           = str_replace(',', '', $data['income_affixmoney']);
-        $data['income_dutymoney']            = str_replace(',', '', $data['income_dutymoney']);
-        $data['income_estimatedmoney']       = str_replace(',', '', $data['income_estimatedmoney']);
-        $data['income_totalmoney']           = str_replace(',', '', $data['income_totalmoney']);
-        $data['income_certifiedmoney']       = str_replace(',', '', $data['income_certifiedmoney']);
-        $data['income_addedtaxmoney']        = str_replace(',', '', $data['income_addedtaxmoney']);
-        $data['income_paycash']              = str_replace(',', '', $data['income_paycash']);
-        $data['income_ticket']               = str_replace(',', '', $data['income_ticket']);
-        $data['income_paycommercialpaper']   = str_replace(',', '', $data['income_paycommercialpaper']);
-        $data['income_firstmoney']           = str_replace(',', '', $data['income_firstmoney']);
-        $data['income_nointomoney']          = str_replace(',', '', $data['income_nointomoney']);
-        $data['income_commitmentmoney']      = str_replace(',', '', $data['income_commitmentmoney']);
-        $data['income_depositMoney']         = str_replace(',', '', $data['income_depositMoney']);
-        $data['income_businessTax']          = str_replace(',', '', $data['income_businessTax']);
-        $data['income_certifiedMoneyPower1'] = str_replace(',', '', $data['income_certifiedMoneyPower1']);
-        $data['income_certifiedMoneyPower2'] = str_replace(',', '', $data['income_certifiedMoneyPower2']);
-        $data['income_land']                 = str_replace(',', '', $data['income_land']);
-        $data['income_building']             = str_replace(',', '', $data['income_building']);
+        public function AddIncome($data)
+        {
+            $data['income_loanmoney']            = str_replace(',', '', $data['income_loanmoney']);
+            $data['income_signmoney']            = str_replace(',', '', $data['income_signmoney']);
+            $data['income_affixmoney']           = str_replace(',', '', $data['income_affixmoney']);
+            $data['income_dutymoney']            = str_replace(',', '', $data['income_dutymoney']);
+            $data['income_estimatedmoney']       = str_replace(',', '', $data['income_estimatedmoney']);
+            $data['income_totalmoney']           = str_replace(',', '', $data['income_totalmoney']);
+            $data['income_certifiedmoney']       = str_replace(',', '', $data['income_certifiedmoney']);
+            $data['income_addedtaxmoney']        = str_replace(',', '', $data['income_addedtaxmoney']);
+            $data['income_paycash']              = str_replace(',', '', $data['income_paycash']);
+            $data['income_ticket']               = str_replace(',', '', $data['income_ticket']);
+            $data['income_paycommercialpaper']   = str_replace(',', '', $data['income_paycommercialpaper']);
+            $data['income_firstmoney']           = str_replace(',', '', $data['income_firstmoney']);
+            $data['income_nointomoney']          = str_replace(',', '', $data['income_nointomoney']);
+            $data['income_commitmentmoney']      = str_replace(',', '', $data['income_commitmentmoney']);
+            $data['income_depositMoney']         = str_replace(',', '', $data['income_depositMoney']);
+            $data['income_businessTax']          = str_replace(',', '', $data['income_businessTax']);
+            $data['income_certifiedMoneyPower1'] = str_replace(',', '', $data['income_certifiedMoneyPower1']);
+            $data['income_certifiedMoneyPower2'] = str_replace(',', '', $data['income_certifiedMoneyPower2']);
+            $data['income_land']                 = str_replace(',', '', $data['income_land']);
+            $data['income_building']             = str_replace(',', '', $data['income_building']);
 
-        $sql = " INSERT INTO `tContractIncome`
+            $sql = " INSERT INTO `tContractIncome`
                     (`cId`,
                      `cCertifiedId`,
                      `cFirstMoney`,
@@ -1294,23 +1297,23 @@ class Contract extends Advance
                      '" . $data['income_certifiedMoneyPower2'] . "',
                      '" . $data['income_reason_cat'] . "');";
 
-        // echo $sql;
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            // echo $sql;
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddExpenditure($data)
-    {
-        $data['expenditure_scrivenermoney']        = str_replace(",", "", $data['expenditure_scrivenermoney']);
-        $data['expenditure_realestatemoney']       = str_replace(",", "", $data['expenditure_realestatemoney']);
-        $data['expenditure_advancemoney']          = str_replace(",", "", $data['expenditure_advancemoney']);
-        $data['expenditure_dealmoney']             = str_replace(",", "", $data['expenditure_dealmoney']);
-        $data['expenditure_scrivenermoney_buyer']  = str_replace(",", "", $data['expenditure_scrivenermoney_buyer']);
-        $data['expenditure_realestatemoney_buyer'] = str_replace(",", "", $data['expenditure_realestatemoney_buyer']);
-        $data['expenditure_advancemoney_buyer']    = str_replace(",", "", $data['expenditure_advancemoney_buyer']);
-        $data['expenditure_dealmoney_buyer']       = str_replace(",", "", $data['expenditure_dealmoney_buyer_buyer']);
+        public function AddExpenditure($data)
+        {
+            $data['expenditure_scrivenermoney']        = str_replace(",", "", $data['expenditure_scrivenermoney']);
+            $data['expenditure_realestatemoney']       = str_replace(",", "", $data['expenditure_realestatemoney']);
+            $data['expenditure_advancemoney']          = str_replace(",", "", $data['expenditure_advancemoney']);
+            $data['expenditure_dealmoney']             = str_replace(",", "", $data['expenditure_dealmoney']);
+            $data['expenditure_scrivenermoney_buyer']  = str_replace(",", "", $data['expenditure_scrivenermoney_buyer']);
+            $data['expenditure_realestatemoney_buyer'] = str_replace(",", "", $data['expenditure_realestatemoney_buyer']);
+            $data['expenditure_advancemoney_buyer']    = str_replace(",", "", $data['expenditure_advancemoney_buyer']);
+            $data['expenditure_dealmoney_buyer']       = str_replace(",", "", $data['expenditure_dealmoney_buyer_buyer']);
 
-        $sql = " INSERT INTO `tContractExpenditure`
+            $sql = " INSERT INTO `tContractExpenditure`
             (`cId`,
              `cCertifiedId`,
              `cScrivenerMoney`,
@@ -1336,21 +1339,21 @@ class Contract extends Advance
              '" . $data['expenditure_dealmoney_buyer'] . "',
              '" . $data['expenditure_reason'] . "',
              '" . $data['expenditure_reason_buyer'] . "'); ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddInvoice($data)
-    {
-        $data['income_loanmoney']      = str_replace(',', '', $data['income_loanmoney']);
-        $data['income_signmoney']      = str_replace(',', '', $data['income_signmoney']);
-        $data['income_affixmoney']     = str_replace(',', '', $data['income_affixmoney']);
-        $data['income_dutymoney']      = str_replace(',', '', $data['income_dutymoney']);
-        $data['income_estimatedmoney'] = str_replace(',', '', $data['income_estimatedmoney']);
-        $data['income_totalmoney']     = str_replace(',', '', $data['income_totalmoney']);
-        $data['income_certifiedmoney'] = str_replace(',', '', $data['income_certifiedmoney']);
-        $data['income_addedtaxmoney']  = str_replace(',', '', $data['income_addedtaxmoney']);
-        $sql                           = " INSERT INTO `tContractInvoice`
+        public function AddInvoice($data)
+        {
+            $data['income_loanmoney']      = str_replace(',', '', $data['income_loanmoney']);
+            $data['income_signmoney']      = str_replace(',', '', $data['income_signmoney']);
+            $data['income_affixmoney']     = str_replace(',', '', $data['income_affixmoney']);
+            $data['income_dutymoney']      = str_replace(',', '', $data['income_dutymoney']);
+            $data['income_estimatedmoney'] = str_replace(',', '', $data['income_estimatedmoney']);
+            $data['income_totalmoney']     = str_replace(',', '', $data['income_totalmoney']);
+            $data['income_certifiedmoney'] = str_replace(',', '', $data['income_certifiedmoney']);
+            $data['income_addedtaxmoney']  = str_replace(',', '', $data['income_addedtaxmoney']);
+            $sql                           = " INSERT INTO `tContractInvoice`
             (`cId`,
             `cCertifiedId`,
             `cSplitBuyer`,
@@ -1381,87 +1384,87 @@ class Contract extends Advance
             '" . $data['invoice_certifiedbankacc'] . "',
             '" . $data['cTaxReceiptTarget'] . "',
             '" . $data['invoice_remark'] . "');";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddBuyer($data)
-    {
-        $sql = " INSERT INTO `tContractBuyer`
+        public function AddBuyer($data)
+        {
+            $sql = " INSERT INTO `tContractBuyer`
                     (`cId`,
                     `cCertifiedId`
                     ) VALUES (
                     NULL,
                     '" . $this->CutToCertifyId($data['scrivener_bankaccount']) . "');";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddOwner($data)
-    {
-        $sql = " INSERT INTO `tContractOwner`
+        public function AddOwner($data)
+        {
+            $sql = " INSERT INTO `tContractOwner`
             (`cId`,
             `cCertifiedId`
             ) VALUES (
             NULL,
             '" . $this->CutToCertifyId($data['scrivener_bankaccount']) . "'); ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function SaveContract($data)
-    {
-        $sql_ext = " `cEndDate`='" . $data["case_cEndDate"] . "', ";
-
-        ##防止空值導致回饋金變0
-        if ($data['cCaseFeedBackMoney'] != '') {
-            $str .= "`cCaseFeedBackMoney` = '" . $data['cCaseFeedBackMoney'] . "',";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        if ($data['cCaseFeedBackMoney1'] != '') {
-            $str .= "`cCaseFeedBackMoney1` = '" . $data['cCaseFeedBackMoney1'] . "',";
-        }
+        public function SaveContract($data)
+        {
+            $sql_ext = " `cEndDate`='" . $data["case_cEndDate"] . "', ";
 
-        if ($data['cCaseFeedBackMoney2'] != '') {
-            $str .= "`cCaseFeedBackMoney2` = '" . $data['cCaseFeedBackMoney2'] . "',";
-        }
-
-        if ($data['cCaseFeedBackMoney3'] != '') {
-            if ($data['realestate_branchnum'] == '') {
-                $data['cCaseFeedBackMoney3'] = 0;
+            ##防止空值導致回饋金變0
+            if ($data['cCaseFeedBackMoney'] != '') {
+                $str .= "`cCaseFeedBackMoney` = '" . $data['cCaseFeedBackMoney'] . "',";
             }
-            $str .= "`cCaseFeedBackMoney3` = '" . $data['cCaseFeedBackMoney3'] . "',";
-        }
 
-        if ($data['cSpCaseFeedBackMoney'] != '' || $data['cSpCaseFeedBackMoneyMark'] == 'x') {
-            $str .= "`cSpCaseFeedBackMoney` = '" . $data['cSpCaseFeedBackMoney'] . "',";
-        }
+            if ($data['cCaseFeedBackMoney1'] != '') {
+                $str .= "`cCaseFeedBackMoney1` = '" . $data['cCaseFeedBackMoney1'] . "',";
+            }
 
-        if ($data['cFeedbackTarget'] != '') {
-            $str .= "`cFeedbackTarget` = '" . $data['cFeedbackTarget'] . "',";
-        }
+            if ($data['cCaseFeedBackMoney2'] != '') {
+                $str .= "`cCaseFeedBackMoney2` = '" . $data['cCaseFeedBackMoney2'] . "',";
+            }
 
-        if ($data['cFeedbackTarget1'] != '') {
-            $str .= "`cFeedbackTarget1` = '" . $data['cFeedbackTarget1'] . "',";
-        }
+            if ($data['cCaseFeedBackMoney3'] != '') {
+                if ($data['realestate_branchnum'] == '') {
+                    $data['cCaseFeedBackMoney3'] = 0;
+                }
+                $str .= "`cCaseFeedBackMoney3` = '" . $data['cCaseFeedBackMoney3'] . "',";
+            }
 
-        if ($data['cFeedbackTarget2'] != '') {
-            $str .= " `cFeedbackTarget2` = '" . $data['cFeedbackTarget2'] . "',";
-        }
+            if ($data['cSpCaseFeedBackMoney'] != '' || $data['cSpCaseFeedBackMoneyMark'] == 'x') {
+                $str .= "`cSpCaseFeedBackMoney` = '" . $data['cSpCaseFeedBackMoney'] . "',";
+            }
 
-        if ($data['cFeedbackTarget3'] != '') {
-            $str .= " `cFeedbackTarget3` = '" . $data['cFeedbackTarget3'] . "',";
-        }
+            if ($data['cFeedbackTarget'] != '') {
+                $str .= "`cFeedbackTarget` = '" . $data['cFeedbackTarget'] . "',";
+            }
 
-        if ($data['cCaseFeedBackModifyTime'] == 'time') {
-            $str .= " `cCaseFeedBackModifyTime` = '" . date('Y-m-d H:i:s') . "',";
-        }
+            if ($data['cFeedbackTarget1'] != '') {
+                $str .= "`cFeedbackTarget1` = '" . $data['cFeedbackTarget1'] . "',";
+            }
 
-        if(in_array($data['case_status'], [3, 10])) {
-            $data['cCaseProcessing'] = 6;
-        }
-        ##
-        $sql = "UPDATE  `tContractCase` SET
+            if ($data['cFeedbackTarget2'] != '') {
+                $str .= " `cFeedbackTarget2` = '" . $data['cFeedbackTarget2'] . "',";
+            }
+
+            if ($data['cFeedbackTarget3'] != '') {
+                $str .= " `cFeedbackTarget3` = '" . $data['cFeedbackTarget3'] . "',";
+            }
+
+            if ($data['cCaseFeedBackModifyTime'] == 'time') {
+                $str .= " `cCaseFeedBackModifyTime` = '" . date('Y-m-d H:i:s') . "',";
+            }
+
+            if (in_array($data['case_status'], [3, 10])) {
+                $data['cCaseProcessing'] = 6;
+            }
+            ##
+            $sql = "UPDATE  `tContractCase` SET
                     `cDealId` =  '" . $data['case_dealid'] . "',
                     `cSignDate` =  '" . $data['case_signdate'] . "',
                     `cFinishDate` = '" . $data['case_finishdate'] . "',
@@ -1493,179 +1496,179 @@ class Contract extends Advance
                     `cCancellingClauseNote` = '" . $data['case_cancellingClauseNote'] . "',
                     `cCaseReport` = '" . $data['case_reportupload'] . "'
                 WHERE `cCertifiedId` =  '" . $data['certifiedid'] . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-        //2023-08-21 設定更新未出履保、有墊付利息的紀錄 2023-08-23 佩琦通知暫時取消
-        // $this->setContractBankList($data['certifiedid'], $data['case_status']);
-    }
+            //2023-08-21 設定更新未出履保、有墊付利息的紀錄 2023-08-23 佩琦通知暫時取消
+            // $this->setContractBankList($data['certifiedid'], $data['case_status']);
+        }
 
-    public function setContractBankList($cId, $case_status)
-    {
-        $bank_loans_date = '';
+        public function setContractBankList($cId, $case_status)
+        {
+            $bank_loans_date = '';
 
-        //2023-08-21 案件狀態：已結案(3)、解約/終止履保(4)、作廢(8)、發函終止(9)、已結案有保留款(10) 時判斷是否有出過履保費
-        if (in_array($case_status, [3, 4, 8, 9, 10])) {
-            //2023-08-22 未付款履保費(1)，並且有墊付利息出款(2)時，押上日期
-            if (empty($this->verifyCertifyMoneyPaid($cId)) && $this->verifyInterestLoan($cId)) {
-                $bank_loans_date = $this->getBankLoansDate($cId);
+            //2023-08-21 案件狀態：已結案(3)、解約/終止履保(4)、作廢(8)、發函終止(9)、已結案有保留款(10) 時判斷是否有出過履保費
+            if (in_array($case_status, [3, 4, 8, 9, 10])) {
+                //2023-08-22 未付款履保費(1)，並且有墊付利息出款(2)時，押上日期
+                if (empty($this->verifyCertifyMoneyPaid($cId)) && $this->verifyInterestLoan($cId)) {
+                    $bank_loans_date = $this->getBankLoansDate($cId);
+                }
+            }
+
+            $this->setBankListValue($cId, $bank_loans_date);
+        }
+
+        //2023-08-22 取得銀行放款日
+        private function getBankLoansDate($cId)
+        {
+            $item = ['點交(結案)', '解除契約', '保留款撥付', '建經發函終止', '預售屋'];
+
+            $sql  = 'SELECT tBankLoansDate FROM tBankTrans WHERE tMemo = :cId AND tObjKind IN ("' . implode('","', $item) . '") AND tPayOk = 1 ORDER BY tBankLoansDate DESC LIMIT 1;';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
+            $stmt->execute();
+            $rs = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return empty($rs['tBankLoansDate']) ? '' : $rs['tBankLoansDate'];
+        }
+
+        //2023-08-22 押上 cBankList 日期
+        private function setBankListValue($cId, $value)
+        {
+            $sql  = 'UPDATE tContractCase SET cBankList = :value WHERE cCertifiedId = :cId;';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam('value', $value, PDO::PARAM_STR);
+            $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+
+        //2023-08-21 是否有出款過履保費
+        private function verifyCertifyMoneyPaid($cId)
+        {
+            $sql  = 'SELECT tId FROM tBankTrans WHERE tMemo = :cId AND tKind = "保證費" AND tPayOk = 1;';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
+            $stmt->execute();
+            $rs = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return empty($rs['tId']) ? false : true;
+        }
+
+        //2023-08-21 是否有墊付利息出款
+        private function verifyInterestLoan($cId)
+        {
+            $sql  = 'SELECT tId FROM tBankTrans WHERE tObjKind = "代墊利息" AND SUBSTRING(tAccount, 6) = :cId AND tPayOk = 1;';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
+            $stmt->execute();
+            $rs = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return empty($rs['tId']) ? false : true;
+        }
+
+        private function getRealtySmsTarget($cid, $index = '')
+        {
+            $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($rs[0]['cBranchNum'] > 0) {
+                return false; //¥ò¤¶¤w¦s¦b
+            } else {
+                return true; //¥ò¤¶¤£¦s¦b
             }
         }
 
-        $this->setBankListValue($cId, $bank_loans_date);
-    }
+        private function checkRealtyChange($bid, $cid, $index = '')
+        {
+            $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    //2023-08-22 取得銀行放款日
-    private function getBankLoansDate($cId)
-    {
-        $item = ['點交(結案)', '解除契約', '保留款撥付', '建經發函終止', '預售屋'];
-
-        $sql  = 'SELECT tBankLoansDate FROM tBankTrans WHERE tMemo = :cId AND tObjKind IN ("' . implode('","', $item) . '") AND tPayOk = 1 ORDER BY tBankLoansDate DESC LIMIT 1;';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
-        $stmt->execute();
-        $rs = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return empty($rs['tBankLoansDate']) ? '' : $rs['tBankLoansDate'];
-    }
-
-    //2023-08-22 押上 cBankList 日期
-    private function setBankListValue($cId, $value)
-    {
-        $sql  = 'UPDATE tContractCase SET cBankList = :value WHERE cCertifiedId = :cId;';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->bindParam('value', $value, PDO::PARAM_STR);
-        $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
-        $stmt->execute();
-    }
-
-    //2023-08-21 是否有出款過履保費
-    private function verifyCertifyMoneyPaid($cId)
-    {
-        $sql  = 'SELECT tId FROM tBankTrans WHERE tMemo = :cId AND tKind = "保證費" AND tPayOk = 1;';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
-        $stmt->execute();
-        $rs = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return empty($rs['tId']) ? false : true;
-    }
-
-    //2023-08-21 是否有墊付利息出款
-    private function verifyInterestLoan($cId)
-    {
-        $sql  = 'SELECT tId FROM tBankTrans WHERE tObjKind = "代墊利息" AND SUBSTRING(tAccount, 6) = :cId AND tPayOk = 1;';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->bindParam('cId', $cId, PDO::PARAM_STR);
-        $stmt->execute();
-        $rs = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return empty($rs['tId']) ? false : true;
-    }
-
-    private function getRealtySmsTarget($cid, $index = '')
-    {
-        $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($rs[0]['cBranchNum'] > 0) {
-            return false; //¥ò¤¶¤w¦s¦b
-        } else {
-            return true; //¥ò¤¶¤£¦s¦b
+            if ($bid == $rs[0]['cBranchNum']) {
+                return false;
+            }
+            //ÅÜ§ó«áªº©±®a»P¤§«e¬Û¦P
+            else {
+                return true;
+            }
+            //ÅÜ§ó«áªº©±®a»P¤§«e¬Û²§
         }
-    }
 
-    private function checkRealtyChange($bid, $cid, $index = '')
-    {
-        $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        private function checkRealtyChange2($bid, $cid, $index = '')
+        { //仲介店改變-動態新增刪除
 
-        if ($bid == $rs[0]['cBranchNum']) {
-            return false;
-        }
-        //ÅÜ§ó«áªº©±®a»P¤§«e¬Û¦P
-        else {
-            return true;
-        }
-        //ÅÜ§ó«áªº©±®a»P¤§«e¬Û²§
-    }
+            $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    private function checkRealtyChange2($bid, $cid, $index = '')
-    { //仲介店改變-動態新增刪除
+            $sql_del = "DELETE FROM tBranchSms WHERE bCheck_id ='" . $cid . "' AND bBranch ='" . $rs[0]['cBranchNum'] . "'";
 
-        $sql  = 'SELECT cBranchNum' . $index . ' as cBranchNum FROM tContractRealestate WHERE cCertifyId="' . $cid . '";';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $rs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $sql_del = "DELETE FROM tBranchSms WHERE bCheck_id ='" . $cid . "' AND bBranch ='" . $rs[0]['cBranchNum'] . "'";
-
-        $stmt = $this->dbh->prepare($sql_del);
-        $stmt->execute();
-
-    }
-
-    public function SaveRealstate($data)
-    {
-        //½T»{¬O§_¬°·s¼W¥ò¤¶
-        $newSms = '';
-
-        //$chg = $this->getRealtySmsTarget($data['certifiedid']) ;
-        //if ($chg && ($data['realestate_branchnum'] > 0)) {
-        if ($this->checkRealtyChange($data['realestate_branchnum'], $data['certifiedid'])) {
-
-            $sms = $this->addSmsDefault($data['realestate_branchnum']);
-
-            $newSms .= ' cSmsTarget = "' . $sms . '", ';
-
-            $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid']);
-
-            write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum'] . ':' . $sms, 'contract_branchsms');
-        }
-        //$chg = $this->getRealtySmsTarget($data['certifiedid'],'1') ;
-        //if ($chg && ($data['realestate_branchnum1'] > 0)) {
-        if ($this->checkRealtyChange($data['realestate_branchnum1'], $data['certifiedid'], '1')) {
-
-            $sms1 = $this->addSmsDefault($data['realestate_branchnum1']);
-
-            $newSms .= ' cSmsTarget1 = "' . $sms1 . '", ';
-
-            $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '1');
-
-            write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum1'] . ':' . $sms1, 'contract_branchsms');
+            $stmt = $this->dbh->prepare($sql_del);
+            $stmt->execute();
 
         }
-        //$chg = $this->getRealtySmsTarget($data['certifiedid'],'2') ;
-        //if ($chg && ($data['realestate_branchnum2'] > 0)) {
-        if ($this->checkRealtyChange($data['realestate_branchnum2'], $data['certifiedid'], '2')) {
 
-            $sms2 = $this->addSmsDefault($data['realestate_branchnum2']);
+        public function SaveRealstate($data)
+        {
+            //½T»{¬O§_¬°·s¼W¥ò¤¶
+            $newSms = '';
 
-            $newSms .= ' cSmsTarget2 = "' . $sms2 . '", ';
+            //$chg = $this->getRealtySmsTarget($data['certifiedid']) ;
+            //if ($chg && ($data['realestate_branchnum'] > 0)) {
+            if ($this->checkRealtyChange($data['realestate_branchnum'], $data['certifiedid'])) {
 
-            $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '2');
+                $sms = $this->addSmsDefault($data['realestate_branchnum']);
 
-            write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum2'] . ':' . $sms2, 'contract_branchsms');
-        }
-        //
-        if ($this->checkRealtyChange($data['realestate_branchnum3'], $data['certifiedid'], '2')) {
+                $newSms .= ' cSmsTarget = "' . $sms . '", ';
 
-            $sms2 = $this->addSmsDefault($data['realestate_branchnum3']);
+                $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid']);
 
-            $newSms .= ' cSmsTarget3 = "' . $sms2 . '", ';
+                write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum'] . ':' . $sms, 'contract_branchsms');
+            }
+            //$chg = $this->getRealtySmsTarget($data['certifiedid'],'1') ;
+            //if ($chg && ($data['realestate_branchnum1'] > 0)) {
+            if ($this->checkRealtyChange($data['realestate_branchnum1'], $data['certifiedid'], '1')) {
 
-            $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '3');
+                $sms1 = $this->addSmsDefault($data['realestate_branchnum1']);
 
-            write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum3'] . ':' . $sms3, 'contract_branchsms');
-        }
-        ##
+                $newSms .= ' cSmsTarget1 = "' . $sms1 . '", ';
 
-        if ($data['realestate_branchnum'] > 0) {
-            $sql = "
+                $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '1');
+
+                write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum1'] . ':' . $sms1, 'contract_branchsms');
+
+            }
+            //$chg = $this->getRealtySmsTarget($data['certifiedid'],'2') ;
+            //if ($chg && ($data['realestate_branchnum2'] > 0)) {
+            if ($this->checkRealtyChange($data['realestate_branchnum2'], $data['certifiedid'], '2')) {
+
+                $sms2 = $this->addSmsDefault($data['realestate_branchnum2']);
+
+                $newSms .= ' cSmsTarget2 = "' . $sms2 . '", ';
+
+                $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '2');
+
+                write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum2'] . ':' . $sms2, 'contract_branchsms');
+            }
+            //
+            if ($this->checkRealtyChange($data['realestate_branchnum3'], $data['certifiedid'], '2')) {
+
+                $sms2 = $this->addSmsDefault($data['realestate_branchnum3']);
+
+                $newSms .= ' cSmsTarget3 = "' . $sms2 . '", ';
+
+                $this->checkRealtyChange2($data['realestate_branchnum'], $data['certifiedid'], '3');
+
+                write_log($data['certifiedid'] . ',更改簡訊對象' . $data['realestate_branchnum3'] . ':' . $sms3, 'contract_branchsms');
+            }
+            ##
+
+            if ($data['realestate_branchnum'] > 0) {
+                $sql = "
                 UPDATE  `tContractRealestate` SET
                     `cBrand` =  '" . $data['realestate_brand'] . "',
                     `cName` =  '" . $data['realestate_name'] . "',
@@ -1719,19 +1722,19 @@ class Contract extends Advance
 
 
                 WHERE `cCertifyId` =  '" . $data['certifiedid'] . "' ";
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
+
         }
 
-    }
+        public function SaveScrivener($data)
+        {
 
-    public function SaveScrivener($data)
-    {
+            if ($data['scrivener_id']) {
+                $data['ku_download'] = empty($data['ku_download']) ? 'N' : strtoupper($data['ku_download']);
 
-        if ($data['scrivener_id']) {
-            $data['ku_download'] = empty($data['ku_download']) ? 'N' : strtoupper($data['ku_download']);
-
-            $sql = 'UPDATE
+                $sql = 'UPDATE
                         `tContractScrivener`
                     SET
                         `cAssistant` =  "' . $data['scrivener_assistant'] . '",
@@ -1739,18 +1742,21 @@ class Contract extends Advance
                     WHERE
                         `cCertifiedId` = "' . $data['certifiedid'] . '";';
 
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
         }
-    }
 
-    public function SavelandCategoryLand($data)
-    {
+        public function SavelandCategoryLand($data)
+        {
+            // 確保 landCategoryLand 和 landCategoryBuild 是陣列
+            $landCategoryLand  = isset($data['landCategoryLand']) && is_array($data['landCategoryLand']) ? $data['landCategoryLand'] : [];
+            $landCategoryBuild = isset($data['landCategoryBuild']) && is_array($data['landCategoryBuild']) ? $data['landCategoryBuild'] : [];
 
-        $land  = @implode(',', $data['landCategoryLand']);
-        $build = @implode(',', $data['landCategoryBuild']);
+            $land  = implode(',', $landCategoryLand);
+            $build = implode(',', $landCategoryBuild);
 
-        $sql = "UPDATE
+            $sql = "UPDATE
                     `tContractLandCategory`
                 SET
                     cLand = '" . $land . "',
@@ -1760,25 +1766,25 @@ class Contract extends Advance
                   `cCertifiedId` = '" . $data['certifiedid'] . "'
                 ";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-    }
-
-    public function SaveAscription($data)
-    {
-
-        $cOwner = '';
-        if ($data['ascription_owner']) {
-            $cOwner = implode(',', $data['ascription_owner']);
         }
 
-        $cBuyer = '';
-        if ($data['ascription_buy']) {
-            $cBuyer = implode(',', $data['ascription_buy']);
-        }
+        public function SaveAscription($data)
+        {
 
-        $sql = "
+            $cOwner = '';
+            if ($data['ascription_owner']) {
+                $cOwner = implode(',', $data['ascription_owner']);
+            }
+
+            $cBuyer = '';
+            if ($data['ascription_buy']) {
+                $cBuyer = implode(',', $data['ascription_buy']);
+            }
+
+            $sql = "
             UPDATE  `tContractAscription` SET
                 `cContribute` =  '" . $data['ascription_contribute'] . "',
                 `cBuyer` =  '" . $cBuyer . "',
@@ -1787,14 +1793,14 @@ class Contract extends Advance
                 `cOwnerOther` =  '" . $data['ascription_ownerother'] . "'
 
             WHERE  `cCertifiedId` = '" . $data['certifiedid'] . "' ; ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveFurniture($data)
-    {
+        public function SaveFurniture($data)
+        {
 
-        $sql = "
+            $sql = "
             UPDATE  `tContractFurniture` SET
                 `cLamp` =  '" . $data['furniture_lamp'] . "',
                 `cBed` =  '" . $data['furniture_bed'] . "',
@@ -1812,14 +1818,14 @@ class Contract extends Advance
                 `cSink`=  '" . $data['furniture_sink'] . "',
                 `cGas`=  '" . $data['furniture_gas'] . "'
             WHERE  `cCertifyId` = '" . $data['certifiedid'] . "' ; ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveContractRent($data)
-    {
+        public function SaveContractRent($data)
+        {
 
-        $sql = "
+            $sql = "
             UPDATE  `tContractRent` SET
                 `cRentDate` =  '" . $data['rent_rentdate'] . "',
                 `cRent` =  '" . $data['rent_rent'] . "',
@@ -1828,22 +1834,22 @@ class Contract extends Advance
 
             WHERE  `cCertifiedId` = '" . $data['certifiedid'] . "' ; ";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function SaveProperty($data, $item = 0)
-    {
-        $objuse = '';
-        if ($data['property_objuse']) {
-            $objuse = implode(',', $data['property_objuse']);
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        if ($data['property_cPropertyObject']) {
-            $object = implode(',', $data['property_cPropertyObject']);
-        }
+        public function SaveProperty($data, $item = 0)
+        {
+            $objuse = '';
+            if ($data['property_objuse']) {
+                $objuse = implode(',', $data['property_objuse']);
+            }
 
-        $sql = "
+            if ($data['property_cPropertyObject']) {
+                $object = implode(',', $data['property_cPropertyObject']);
+            }
+
+            $sql = "
             UPDATE `tContractProperty` SET
                     `cBuildDate` = '" . $data['property_builddate'] . "',
                     `cLevelNow` = '" . $data['property_levelnow'] . "',
@@ -1871,27 +1877,27 @@ class Contract extends Advance
                     `cObjectOther` = '" . $data['property_cObjectOther'] . "'
 
                     WHERE cCertifiedId = '" . $data['certifiedid'] . "' AND cItem = '" . $item . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    public function SaveProperty2($data, $item = 0)
-    {
-        $objuse = '';
-
-        if ($data['property_objuse' . $item]) {
-            $objuse = implode(',', $data['property_objuse' . $item]);
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        if ($data['property_cPropertyObject' . $item]) {
-            $object = implode(',', $data['property_cPropertyObject' . $item]);
-        }
+        public function SaveProperty2($data, $item = 0)
+        {
+            $objuse = '';
 
-        if ($data['property_power2' . $item] > 0) {
-            $data['property_actualArea' . $item] = $data['property_measuretotal' . $item] * ($data['property_power1' . $item] / $data['property_power2' . $item]);
-        }
+            if ($data['property_objuse' . $item]) {
+                $objuse = implode(',', $data['property_objuse' . $item]);
+            }
 
-        $sql = "
+            if ($data['property_cPropertyObject' . $item]) {
+                $object = implode(',', $data['property_cPropertyObject' . $item]);
+            }
+
+            if ($data['property_power2' . $item] > 0) {
+                $data['property_actualArea' . $item] = $data['property_measuretotal' . $item] * ($data['property_power1' . $item] / $data['property_power2' . $item]);
+            }
+
+            $sql = "
             UPDATE `tContractProperty` SET
                     `cBuildDate` = '" . $data['property_builddate' . $item] . "',
                     `cLevelNow` = '" . $data['property_levelnow' . $item] . "',
@@ -1924,45 +1930,45 @@ class Contract extends Advance
                     `cPublicMeasureMain` = '" . $data['property_publicmeasuremain' . $item] . "'
                     WHERE cCertifiedId = '" . $data['certifiedid'] . "' AND cItem = '" . $item . "' ";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
 
-        // $this->SaveProperty2BuildingLanNo($item, $data);
-    }
+            // $this->SaveProperty2BuildingLanNo($item, $data);
+        }
 
-    public function SaveProperty2BuildingLanNo($item, $data)
-    {
-        $this->dbh->beginTransaction();
+        public function SaveProperty2BuildingLanNo($item, $data)
+        {
+            $this->dbh->beginTransaction();
 
-        try {
-            $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
+            try {
+                $this->RemovePropertyBuildingLanNo($item, $data['certifiedid']);
 
-            //插入紀錄
-            if (!empty($data['buildingLandNo_' . $item])) {
-                $row = [];
-                foreach ($data['buildingLandSession_' . $item] as $k => $v) {
-                    if (!empty($data['buildingLandNo_' . $item][$k])) {
-                        $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['buildingLandSession_' . $item][$k] . '", "' . $data['buildingLandSessionExt_' . $item][$k] . '", "' . $data['buildingLandNo_' . $item][$k] . '")';
+                //插入紀錄
+                if (! empty($data['buildingLandNo_' . $item])) {
+                    $row = [];
+                    foreach ($data['buildingLandSession_' . $item] as $k => $v) {
+                        if (! empty($data['buildingLandNo_' . $item][$k])) {
+                            $row[] = '(UUID(), "' . $data['certifiedid'] . '", "' . $item . '", "' . $data['buildingLandSession_' . $item][$k] . '", "' . $data['buildingLandSessionExt_' . $item][$k] . '", "' . $data['buildingLandNo_' . $item][$k] . '")';
+                        }
                     }
+
+                    $this->InsertBuildingLandNo($row);
+                    $row = null;unset($row);
                 }
 
-                $this->InsertBuildingLandNo($row);
-                $row = null;unset($row);
+                $this->dbh->commit();
+            } catch (Exception $e) {
+                $this->dbh->rollBack();
+                // echo $e->getMessage();
             }
-
-            $this->dbh->commit();
-        } catch (Exception $e) {
-            $this->dbh->rollBack();
-            // echo $e->getMessage();
         }
-    }
 
-    public function SaveLand($data, $item)
-    {
-        $data['land_landprice'] = str_replace(',', '', $data['land_landprice']);
-        $data['land_money']     = str_replace(',', '', $data['land_money']);
-        $data['land_movedate']  = $data['land_movedate'] . "-00";
-        $sql                    = " UPDATE `tContractLand` SET
+        public function SaveLand($data, $item)
+        {
+            $data['land_landprice'] = str_replace(',', '', $data['land_landprice']);
+            $data['land_money']     = str_replace(',', '', $data['land_money']);
+            $data['land_movedate']  = $data['land_movedate'] . "-00";
+            $sql                    = " UPDATE `tContractLand` SET
                     `cZip` = '" . $data['land_zip'] . "',
                     `cAddr` = '" . $data['land_addr'] . "',
                     `cLand1` = '" . $data['land_land1'] . "',
@@ -1978,13 +1984,13 @@ class Contract extends Advance
                     `cFarmLand` = '" . $data['land_farmland'] . "',
                     `cLandPrice` = '" . $data['land_landprice'] . "'
                     WHERE `cCertifiedId` = '" . $data['certifiedid'] . "' AND `cItem` = '" . $item . "' ;";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveLand2($data)
-    {
-        $sql = " UPDATE `tContractLand` SET
+        public function SaveLand2($data)
+        {
+            $sql = " UPDATE `tContractLand` SET
                     `cZip` = '" . $data['land_zip'] . "',
                     `cAddr` = '" . $data['land_addr'] . "',
                     `cLand1` = '" . $data['land_land1'] . "',
@@ -1999,18 +2005,18 @@ class Contract extends Advance
                     `cMoveDate` = '" . $data['land_movedate'] . "',
                     `cLandPrice` = '" . $data['land_landprice'] . "'
                     WHERE `cCertifiedId` = '" . $data['certifiedid'] . "' AND `cItem` = '1' ;";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveLand3($data)
-    {
-        $cnt = (is_array($data['land_item'])) ? count($data['land_item']) : 0;
-        for ($i = 0; $i < $cnt; $i++) {
-            $data['land_money'][$i]           = str_replace(',', '', $data['land_money'][$i]);
-            $data['land_landprice'][$i]       = str_replace(',', '', $data['land_landprice'][$i]);
-            $data['land_movedate' . ($i + 1)] = $data['land_movedate' . ($i + 1)] . "-00";
-            $sql                              = " UPDATE `tContractLand` SET
+        public function SaveLand3($data)
+        {
+            $cnt = (is_array($data['land_item'])) ? count($data['land_item']) : 0;
+            for ($i = 0; $i < $cnt; $i++) {
+                $data['land_money'][$i]           = str_replace(',', '', $data['land_money'][$i]);
+                $data['land_landprice'][$i]       = str_replace(',', '', $data['land_landprice'][$i]);
+                $data['land_movedate' . ($i + 1)] = $data['land_movedate' . ($i + 1)] . "-00";
+                $sql                              = " UPDATE `tContractLand` SET
                     `cZip` = '" . $data['land_zip'][$i] . "',
                     `cAddr` = '" . $data['land_addr'][$i] . "',
                     `cLand1` = '" . $data['land_land1'][$i] . "',
@@ -2025,33 +2031,33 @@ class Contract extends Advance
                     `cMoveDate` = '" . $data['land_movedate' . ($i + 1)] . "',
                     `cLandPrice` = '" . $data['land_landprice'][$i] . "'
                     WHERE `cCertifiedId` = '" . $data['certifiedid'] . "' AND `cItem` = '" . $data['land_item'][$i] . "' ;";
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
         }
-    }
 
-    public function SaveIncome($data)
-    {
-        $data['income_loanmoney']          = str_replace(',', '', $data['income_loanmoney']);
-        $data['income_signmoney']          = str_replace(',', '', $data['income_signmoney']);
-        $data['income_affixmoney']         = str_replace(',', '', $data['income_affixmoney']);
-        $data['income_dutymoney']          = str_replace(',', '', $data['income_dutymoney']);
-        $data['income_estimatedmoney']     = str_replace(',', '', $data['income_estimatedmoney']);
-        $data['income_totalmoney']         = str_replace(',', '', $data['income_totalmoney']);
-        $data['income_certifiedmoney']     = str_replace(',', '', $data['income_certifiedmoney']);
-        $data['income_addedtaxmoney']      = str_replace(',', '', $data['income_addedtaxmoney']);
-        $data['income_firstmoney']         = str_replace(',', '', $data['income_firstmoney']);
-        $data['income_nointomoney']        = str_replace(',', '', $data['income_nointomoney']);
-        $data['income_paycash']            = str_replace(',', '', $data['income_paycash']);
-        $data['income_ticket']             = str_replace(',', '', $data['income_ticket']);
-        $data['income_paycommercialpaper'] = str_replace(',', '', $data['income_paycommercialpaper']);
-        $data['income_commitmentmoney']    = str_replace(',', '', $data['income_commitmentmoney']);
-        $data['income_depositMoney']       = str_replace(',', '', $data['income_depositMoney']);
-        $data['income_businessTax']        = str_replace(',', '', $data['income_businessTax']);
-        $data['income_land']               = str_replace(',', '', $data['income_land']);
-        $data['income_building']           = str_replace(',', '', $data['income_building']);
+        public function SaveIncome($data)
+        {
+            $data['income_loanmoney']          = str_replace(',', '', $data['income_loanmoney']);
+            $data['income_signmoney']          = str_replace(',', '', $data['income_signmoney']);
+            $data['income_affixmoney']         = str_replace(',', '', $data['income_affixmoney']);
+            $data['income_dutymoney']          = str_replace(',', '', $data['income_dutymoney']);
+            $data['income_estimatedmoney']     = str_replace(',', '', $data['income_estimatedmoney']);
+            $data['income_totalmoney']         = str_replace(',', '', $data['income_totalmoney']);
+            $data['income_certifiedmoney']     = str_replace(',', '', $data['income_certifiedmoney']);
+            $data['income_addedtaxmoney']      = str_replace(',', '', $data['income_addedtaxmoney']);
+            $data['income_firstmoney']         = str_replace(',', '', $data['income_firstmoney']);
+            $data['income_nointomoney']        = str_replace(',', '', $data['income_nointomoney']);
+            $data['income_paycash']            = str_replace(',', '', $data['income_paycash']);
+            $data['income_ticket']             = str_replace(',', '', $data['income_ticket']);
+            $data['income_paycommercialpaper'] = str_replace(',', '', $data['income_paycommercialpaper']);
+            $data['income_commitmentmoney']    = str_replace(',', '', $data['income_commitmentmoney']);
+            $data['income_depositMoney']       = str_replace(',', '', $data['income_depositMoney']);
+            $data['income_businessTax']        = str_replace(',', '', $data['income_businessTax']);
+            $data['income_land']               = str_replace(',', '', $data['income_land']);
+            $data['income_building']           = str_replace(',', '', $data['income_building']);
 
-        $sql = "UPDATE  `tContractIncome` SET
+            $sql = "UPDATE  `tContractIncome` SET
             `cBankLoan` =  '" . $data['income_bankloan'] . "',
             `cFirstMoney` =  '" . $data['income_firstmoney'] . "',
             `cLoanMoney` =  '" . $data['income_loanmoney'] . "',
@@ -2076,21 +2082,21 @@ class Contract extends Advance
             `cReasonCategory` = '" . $data['income_reason_cat'] . "'
             Where cCertifiedId = '" . $data['certifiedid'] . "'";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveExpenditure($data)
-    {
-        $data['expenditure_scrivenermoney']        = str_replace(",", "", $data['expenditure_scrivenermoney']);
-        $data['expenditure_realestatemoney']       = str_replace(",", "", $data['expenditure_realestatemoney']);
-        $data['expenditure_advancemoney']          = str_replace(",", "", $data['expenditure_advancemoney']);
-        $data['expenditure_dealmoney']             = str_replace(",", "", $data['expenditure_dealmoney']);
-        $data['expenditure_scrivenermoney_buyer']  = str_replace(",", "", $data['expenditure_scrivenermoney_buyer']);
-        $data['expenditure_realestatemoney_buyer'] = str_replace(",", "", $data['expenditure_realestatemoney_buyer']);
-        $data['expenditure_advancemoney_buyer']    = str_replace(",", "", $data['expenditure_advancemoney_buyer']);
-        $data['expenditure_dealmoney_buyer']       = str_replace(",", "", $data['expenditure_dealmoney_buyer']);
-        $sql                                       = "
+        public function SaveExpenditure($data)
+        {
+            $data['expenditure_scrivenermoney']        = str_replace(",", "", $data['expenditure_scrivenermoney']);
+            $data['expenditure_realestatemoney']       = str_replace(",", "", $data['expenditure_realestatemoney']);
+            $data['expenditure_advancemoney']          = str_replace(",", "", $data['expenditure_advancemoney']);
+            $data['expenditure_dealmoney']             = str_replace(",", "", $data['expenditure_dealmoney']);
+            $data['expenditure_scrivenermoney_buyer']  = str_replace(",", "", $data['expenditure_scrivenermoney_buyer']);
+            $data['expenditure_realestatemoney_buyer'] = str_replace(",", "", $data['expenditure_realestatemoney_buyer']);
+            $data['expenditure_advancemoney_buyer']    = str_replace(",", "", $data['expenditure_advancemoney_buyer']);
+            $data['expenditure_dealmoney_buyer']       = str_replace(",", "", $data['expenditure_dealmoney_buyer']);
+            $sql                                       = "
             UPDATE  `tContractExpenditure`
             SET
                     `cScrivenerMoney` =  '" . $data['expenditure_scrivenermoney'] . "',
@@ -2104,38 +2110,38 @@ class Contract extends Advance
                     `cReason` =  '" . $data['expenditure_reason'] . "',
                     `cReasonBuyer` =  '" . $data['expenditure_reason_buyer'] . "'
             Where cCertifiedId = '" . $data['certifiedid'] . "'";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveInvoice($data)
-    {
-        $data['invoice_invoicebuyer']      = str_replace(",", "", $data['invoice_invoicebuyer']);
-        $data['invoice_invoiceowner']      = str_replace(",", "", $data['invoice_invoiceowner']);
-        $data['invoice_invoicerealestate'] = str_replace(",", "", $data['invoice_invoicerealestate']);
-        $data['invoice_invoicescrivener']  = str_replace(",", "", $data['invoice_invoicescrivener']);
-        $data['invoice_invoiceother']      = str_replace(",", "", $data['invoice_invoiceother']);
+        public function SaveInvoice($data)
+        {
+            $data['invoice_invoicebuyer']      = str_replace(",", "", $data['invoice_invoicebuyer']);
+            $data['invoice_invoiceowner']      = str_replace(",", "", $data['invoice_invoiceowner']);
+            $data['invoice_invoicerealestate'] = str_replace(",", "", $data['invoice_invoicerealestate']);
+            $data['invoice_invoicescrivener']  = str_replace(",", "", $data['invoice_invoicescrivener']);
+            $data['invoice_invoiceother']      = str_replace(",", "", $data['invoice_invoiceother']);
 
-        $sql = "
+            $sql = "
             UPDATE  `tContractInvoice` SET
                     `cCertifiedBankAcc` =  '" . $data['invoice_certifiedbankacc'] . "',
                     `cTaxReceiptTarget` =  '" . $data['cTaxReceiptTarget'] . "',
                     `cRemark` =  '" . $data['invoice_remark'] . "'
            Where cCertifiedId = '" . $data['certifiedid'] . "' ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function SaveOwner($data)
-    {
-        $data['owner_money1'] = str_replace(",", "", $data['owner_money1']);
-        $data['owner_money2'] = str_replace(",", "", $data['owner_money2']);
-        $data['owner_money3'] = str_replace(",", "", $data['owner_money3']);
-        $data['owner_money4'] = str_replace(",", "", $data['owner_money4']);
-        $data['owner_money5'] = str_replace(",", "", $data['owner_money5']);
+        public function SaveOwner($data)
+        {
+            $data['owner_money1'] = str_replace(",", "", $data['owner_money1']);
+            $data['owner_money2'] = str_replace(",", "", $data['owner_money2']);
+            $data['owner_money3'] = str_replace(",", "", $data['owner_money3']);
+            $data['owner_money4'] = str_replace(",", "", $data['owner_money4']);
+            $data['owner_money5'] = str_replace(",", "", $data['owner_money5']);
 
-        if ($data['owner_name']) {
-            $sql = " UPDATE `tContractOwner` SET
+            if ($data['owner_name']) {
+                $sql = " UPDATE `tContractOwner` SET
                 `cIdentifyId` = '" . $data['owner_identifyid'] . "',
                 `cCategoryIdentify` = '" . $data['owner_categoryidentify'] . "',
                 `cName` = '" . $data['owner_name'] . "',
@@ -2180,16 +2186,16 @@ class Contract extends Advance
                 `cBankMoney` = '" . $data['owner_bankMoney'] . "',
                 `cEmail` = '" . $data['owner_mail'] . "'
                 WHERE  `cCertifiedId` = '" . $data['certifiedid'] . "'";
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
         }
-    }
 
-    public function SaveBuyer($data)
-    {
+        public function SaveBuyer($data)
+        {
 
-        if ($data['buy_name']) {
-            $sql = "UPDATE `tContractBuyer` SET
+            if ($data['buy_name']) {
+                $sql = "UPDATE `tContractBuyer` SET
                 `cIdentifyId` = '" . $data['buy_identifyid'] . "',
                 `cCategoryIdentify` = '" . $data['buy_categoryidentify'] . "',
                 `cName` = '" . $data['buy_name'] . "',
@@ -2230,132 +2236,132 @@ class Contract extends Advance
                 `cBankMoney` = '" . $data['buyer_bankMoney'] . "',
                 `cEmail` = '" . $data['buyer_mail'] . "'
                 WHERE `cCertifiedId` = '" . $data['certifiedid'] . "' ";
-            $stmt = $this->dbh->prepare($sql);
-            $stmt->execute();
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+            }
         }
-    }
 
-    public function saveOwnerSales($data)
-    {
-        if (is_array($data['owner_agentmobile'])) {
-            for ($i = 0; $i < count($data['owner_agentmobile']); $i++) {
+        public function saveOwnerSales($data)
+        {
+            if (is_array($data['owner_agentmobile'])) {
+                for ($i = 0; $i < count($data['owner_agentmobile']); $i++) {
 
-                if ($data['owner_agenId'][$i]) {
-                    $sql = "UPDATE
+                    if ($data['owner_agenId'][$i]) {
+                        $sql = "UPDATE
                                 tContractPhone
                             SET
                                 cMobileNum = '" . $data['owner_agentmobile'][$i] . "',
                                 cName = '" . $data['owner_agentname'][$i] . "'
                             WHERE
                                 cId = '" . $data['owner_agenId'][$i] . "'";
-                    $stmt = $this->dbh->prepare($sql);
-                    $stmt->execute();
-                } else {
-                    if ($data['owner_agentmobile'][$i] || $data['owner_agentname'][$i]) {
-                        $sql = "INSERT INTO
+                        $stmt = $this->dbh->prepare($sql);
+                        $stmt->execute();
+                    } else {
+                        if ($data['owner_agentmobile'][$i] || $data['owner_agentname'][$i]) {
+                            $sql = "INSERT INTO
                                     tContractPhone
                                 SET
                                     cCertifiedId = '" . $data['certifiedid'] . "',
                                     cIdentity = 4,
                                     cMobileNum = '" . $data['owner_agentmobile'][$i] . "',
                                     cName = '" . $data['owner_agentname'][$i] . "'";
-                        $stmt = $this->dbh->prepare($sql);
-                        $stmt->execute();
-                    }
+                            $stmt = $this->dbh->prepare($sql);
+                            $stmt->execute();
+                        }
 
+                    }
                 }
             }
+
         }
 
-    }
+        public function saveBuyerSales($data)
+        {
+            if (is_array($data['buyer_agentname'])) {
+                for ($i = 0; $i < count($data['buyer_agentname']); $i++) {
 
-    public function saveBuyerSales($data)
-    {
-        if (is_array($data['buyer_agentname'])) {
-            for ($i = 0; $i < count($data['buyer_agentname']); $i++) {
-
-                if ($data['buyer_agenId'][$i]) {
-                    $sql = "UPDATE
+                    if ($data['buyer_agenId'][$i]) {
+                        $sql = "UPDATE
                                 tContractPhone
                             SET
                                 cMobileNum = '" . $data['buyer_agentmobile'][$i] . "',
                                 cName = '" . $data['buyer_agentname'][$i] . "'
                             WHERE
                                 cId = '" . $data['buyer_agenId'][$i] . "'";
-                    $stmt = $this->dbh->prepare($sql);
-                    $stmt->execute();
-                } else {
-                    if ($data['buyer_agentmobile'][$i] || $data['buyer_agentname'][$i]) {
-                        $sql = "INSERT INTO
+                        $stmt = $this->dbh->prepare($sql);
+                        $stmt->execute();
+                    } else {
+                        if ($data['buyer_agentmobile'][$i] || $data['buyer_agentname'][$i]) {
+                            $sql = "INSERT INTO
                                     tContractPhone
                                 SET
                                     cCertifiedId = '" . $data['certifiedid'] . "',
                                     cIdentity = 3,
                                     cMobileNum = '" . $data['buyer_agentmobile'][$i] . "',
                                     cName = '" . $data['buyer_agentname'][$i] . "'";
-                        $stmt = $this->dbh->prepare($sql);
-                        $stmt->execute();
-                    }
+                            $stmt = $this->dbh->prepare($sql);
+                            $stmt->execute();
+                        }
 
+                    }
                 }
             }
+
         }
 
-    }
+        public function CheckLand($id, $item = 0)
+        {
+            $sql  = "SELECT count(*) cnt FROM  `tContractLand` Where cCertifiedId = '" . $id . "' AND cItem = '" . $item . "';   ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ($row['cnt'] > 0);
+        }
 
-    public function CheckLand($id, $item = 0)
-    {
-        $sql  = "SELECT count(*) cnt FROM  `tContractLand` Where cCertifiedId = '" . $id . "' AND cItem = '" . $item . "';   ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ($row['cnt'] > 0);
-    }
+        public function CheckProperty($id, $item = 0)
+        {
+            $sql  = "SELECT count(*) cnt FROM  `tContractProperty` Where cCertifiedId = '" . $id . "' AND cItem = '" . $item . "';   ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ($row['cnt'] > 0);
+        }
 
-    public function CheckProperty($id, $item = 0)
-    {
-        $sql  = "SELECT count(*) cnt FROM  `tContractProperty` Where cCertifiedId = '" . $id . "' AND cItem = '" . $item . "';   ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ($row['cnt'] > 0);
-    }
+        public function CheckContractProperty($id, $bitem)
+        {
+            $sql  = "SELECT count(*) cnt FROM  `tContractPropertyObject` Where cCertifiedId = '" . $id . "' AND cBuildItem = '" . $bitem . "';  ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ($row['cnt'] <= 1);
+        }
 
-    public function CheckContractProperty($id, $bitem)
-    {
-        $sql  = "SELECT count(*) cnt FROM  `tContractPropertyObject` Where cCertifiedId = '" . $id . "' AND cBuildItem = '" . $bitem . "';  ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ($row['cnt'] <= 1);
-    }
+        public function AddContractProperty($id, $item, $bitem)
+        {
+            $sql  = " Insert Into tContractPropertyObject (`cCertifiedId`, `cItem`, `cBuildItem`) value ('" . $id . "', '" . $item . "' ,'" . $bitem . "'); ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+        }
 
-    public function AddContractProperty($id, $item, $bitem)
-    {
-        $sql  = " Insert Into tContractPropertyObject (`cCertifiedId`, `cItem`, `cBuildItem`) value ('" . $id . "', '" . $item . "' ,'" . $bitem . "'); ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
+        public function GetContractProperty($id, $bitem)
+        {
+            $sql  = " Select * From tContractPropertyObject Where cCertifiedId = '" . $id . "' AND cBuildItem = '" . $bitem . "' Order by cItem ; ";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-    public function GetContractProperty($id, $bitem)
-    {
-        $sql  = " Select * From tContractPropertyObject Where cCertifiedId = '" . $id . "' AND cBuildItem = '" . $bitem . "' Order by cItem ; ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+        public function SavePropertyObject($data)
+        {
+            $len   = (is_array($data['cCategory'])) ? count($data['cCategory']) : 0;
+            $total = 0;
+            $sum   = 0;
+            for ($i = 0; $i < $len; $i++) {
+                if ($data['cPower1'][$i] != 0 && $data['cPower2'][$i] != 0) {
+                    $total = $data['cMeasureTotal'][$i] * ($data['cPower1'][$i] / $data['cPower2'][$i]);
+                }
 
-    public function SavePropertyObject($data)
-    {
-        $len   = (is_array($data['cCategory'])) ? count($data['cCategory']) : 0;
-        $total = 0;
-        $sum   = 0;
-        for ($i = 0; $i < $len; $i++) {
-            if ($data['cPower1'][$i] != 0 && $data['cPower2'][$i] != 0) {
-                $total = $data['cMeasureTotal'][$i] * ($data['cPower1'][$i] / $data['cPower2'][$i]);
-            }
-
-            $sql = " Update tContractPropertyObject Set
+                $sql = " Update tContractPropertyObject Set
                         `cCategory` = '" . $data['cCategory'][$i] . "',
                         `cLevelUse` = '" . $data['cLevelUse'][$i] . "',
                         `cMeasureTotal` = '" . $data['cMeasureTotal'][$i] . "',
@@ -2365,37 +2371,37 @@ class Contract extends Advance
                         `cMeasureMain` = '" . $total . "'
                       WHERE cId = '" . $data['cId'][$i] . "'
                     ";
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->execute();
+                $sum += $total;
+                $total = 0;
+            }
+            $sql  = "Select sum(cMeasureMain) mm From tContractPropertyObject Where cCertifiedId  = '" . $data['cCertifiedId'] . "' AND cBuildItem = '" . $data['bitem'] . "'; ";
             $stmt = $this->dbh->prepare($sql);
             $stmt->execute();
-            $sum += $total;
-            $total = 0;
-        }
-        $sql  = "Select sum(cMeasureMain) mm From tContractPropertyObject Where cCertifiedId  = '" . $data['cCertifiedId'] . "' AND cBuildItem = '" . $data['bitem'] . "'; ";
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = " Update `tContractProperty` SET  `cMeasureTotal` =  '" . number_format($row['mm'], 2, '.', '') . "' WHERE  cCertifiedId = '" . $data['cCertifiedId'] . "' AND cItem = '" . $data['bitem'] . "';";
+            $sql = " Update `tContractProperty` SET  `cMeasureTotal` =  '" . number_format($row['mm'], 2, '.', '') . "' WHERE  cCertifiedId = '" . $data['cCertifiedId'] . "' AND cItem = '" . $data['bitem'] . "';";
 
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-    }
-
-    private function addSmsDefault($bid)
-    {
-        $sql  = 'SELECT bMobile FROM tBranchSms WHERE bBranch="' . $bid . '" AND bDefault="1" AND bNID NOT IN ("14","15") AND bDel = 0 ORDER BY bNID,bId ASC;';
-        $stmt = $this->dbh->prepare($sql);
-        $stmt->execute();
-        $tmp = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $smsTarget = array();
-        foreach ($tmp as $k => $v) {
-            $smsTarget[] = $v['bMobile'];
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
         }
 
-        return implode(",", $smsTarget);
-    }
+        private function addSmsDefault($bid)
+        {
+            $sql  = 'SELECT bMobile FROM tBranchSms WHERE bBranch="' . $bid . '" AND bDefault="1" AND bNID NOT IN ("14","15") AND bDel = 0 ORDER BY bNID,bId ASC;';
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            $tmp = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-}
+            $smsTarget = [];
+            foreach ($tmp as $k => $v) {
+                $smsTarget[] = $v['bMobile'];
+            }
+
+            return implode(",", $smsTarget);
+        }
+
+    }
 
 ?>
