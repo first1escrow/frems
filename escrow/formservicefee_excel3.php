@@ -1,9 +1,62 @@
 <?php
-require_once dirname(__DIR__) . '/bank/Classes/PHPExcel.php';
-require_once dirname(__DIR__) . '/bank/Classes/PHPExcel/Writer/Excel2007.php';
+// 防止任何輸出干擾Excel檔案產生
+ob_start();
+error_reporting(E_ERROR);
+
+// 載入 PHPExcel 兼容性防護
+define('FORCE_PHPSPREADSHEET_ONLY', true);
+require_once __DIR__ . '/phpexcel_compatibility_guard.php';
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/openadodb.php';
 require_once dirname(__DIR__) . '/web_addr.php';
 require_once dirname(__DIR__) . '/session_check.php';
+
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+// 定義兼容舊版 PHPExcel 的常量，幫助代碼遷移
+if (! class_exists('PHPExcel_Style_Border')) {
+    class PHPExcel_Style_Border
+    {
+        const BORDER_NONE   = Border::BORDER_NONE;
+        const BORDER_THIN   = Border::BORDER_THIN;
+        const BORDER_DOUBLE = Border::BORDER_DOUBLE;
+    }
+}
+
+if (! class_exists('PHPExcel_Style_Alignment')) {
+    class PHPExcel_Style_Alignment
+    {
+        const HORIZONTAL_CENTER = Alignment::HORIZONTAL_CENTER;
+        const HORIZONTAL_RIGHT  = Alignment::HORIZONTAL_RIGHT;
+        const VERTICAL_CENTER   = Alignment::VERTICAL_CENTER;
+        const VERTICAL_TOP      = Alignment::VERTICAL_TOP;
+        const VERTICAL_BOTTOM   = Alignment::VERTICAL_BOTTOM;
+    }
+}
+
+if (! class_exists('PHPExcel_Style_Font')) {
+    class PHPExcel_Style_Font
+    {
+        const UNDERLINE_NONE             = Font::UNDERLINE_NONE;
+        const UNDERLINE_SINGLE           = Font::UNDERLINE_SINGLE;
+        const UNDERLINE_DOUBLE           = Font::UNDERLINE_DOUBLE;
+        const UNDERLINE_SINGLEACCOUNTING = Font::UNDERLINE_SINGLEACCOUNTING;
+        const UNDERLINE_DOUBLEACCOUNTING = Font::UNDERLINE_DOUBLEACCOUNTING;
+    }
+}
+
+if (! class_exists('PHPExcel_Cell_DataType')) {
+    class PHPExcel_Cell_DataType
+    {
+        const TYPE_STRING = DataType::TYPE_STRING;
+    }
+}
 
 $cid = $_POST['cid'];
 
@@ -131,7 +184,7 @@ $sql = "
 				 ORDER BY cItem ASC";
 $rs = $conn->Execute($sql);
 
-while (!$rs->EOF) {
+while (! $rs->EOF) {
 
     $tmp2[] = $rs->fields['city'] . $rs->fields['area'] . $rs->fields['cAddr'];
 
@@ -143,17 +196,17 @@ unset($tmp2);
 ##
 $sql                       = "SELECT cName,cMobileNum FROM  tContractPhone WHERE  cIdentity = 3 AND cCertifiedId = '" . $cid . "' ORDER BY cId ASC LIMIT 1";
 $rs                        = $conn->Execute($sql);
-$list[0]['buyersale']      = $rs->fields['cName'];
-$list[0]['buyersalephone'] = $rs->fields['cMobileNum'];
+$list[0]['buyersale']      = ($rs && isset($rs->fields['cName'])) ? $rs->fields['cName'] : '';
+$list[0]['buyersalephone'] = ($rs && isset($rs->fields['cMobileNum'])) ? $rs->fields['cMobileNum'] : '';
 
 $sql                       = "SELECT cName,cMobileNum FROM  tContractPhone WHERE  cIdentity = 4 AND cCertifiedId = '" . $cid . "' ORDER BY cId ASC LIMIT 1";
 $rs                        = $conn->Execute($sql);
-$list[0]['ownersale']      = $rs->fields['cName'];
-$list[0]['ownersalephone'] = $rs->fields['cMobileNum'];
+$list[0]['ownersale']      = ($rs && isset($rs->fields['cName'])) ? $rs->fields['cName'] : '';
+$list[0]['ownersalephone'] = ($rs && isset($rs->fields['cMobileNum'])) ? $rs->fields['cMobileNum'] : '';
 
 #################################
 
-$objPHPExcel = new PHPExcel();
+$objPHPExcel = new Spreadsheet();
 //Set properties 設置文件屬性
 $objPHPExcel->getProperties()->setCreator("第一建經");
 $objPHPExcel->getProperties()->setLastModifiedBy("第一建經");
@@ -163,6 +216,7 @@ $objPHPExcel->getProperties()->setDescription("成交資料暨仲介服務費出
 
 //指定目前工作頁
 $objPHPExcel->setActiveSheetIndex(0);
+$objPHPExcel->getActiveSheet()->setTitle('成交資料申請單');
 //設定邊界
 $objPHPExcel->getActiveSheet()->getPageMargins()->setTop(0);
 $objPHPExcel->getActiveSheet()->getPageMargins()->setRight(0);
@@ -174,8 +228,8 @@ $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(20);
 $objPHPExcel->getActiveSheet()->getStyle('A2')->getFont()->setSize(12);
 $objPHPExcel->getActiveSheet()->getStyle('A3:F44')->getFont()->setSize(12);
 ##對齊
-$objPHPExcel->getActiveSheet()->getStyle("A1:F1")->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-$objPHPExcel->getActiveSheet()->getStyle("A2:E2")->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+$objPHPExcel->getActiveSheet()->getStyle("A1:F1")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+$objPHPExcel->getActiveSheet()->getStyle("A2:E2")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 ##文字樣式
 $objPHPExcel->getActiveSheet()->getStyle('A1:F100')->getFont()->setName('新細明體');
 $objPHPExcel->getActiveSheet()->getStyle('A1:A35')->getFont()->setBold(true);
@@ -183,39 +237,39 @@ $objPHPExcel->getActiveSheet()->getStyle('D4:D35')->getFont()->setBold(true);
 ##
 ##框
 //全部
-$styleArray = array('borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000'))));
+$styleArray = ['borders' => ['allBorders' => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']]]];
 $objPHPExcel->getActiveSheet()->getStyle('A3:F14')->applyFromArray($styleArray);
 
 unset($styleArray);
 
 //表頭
-$styleArray = array('borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE)));
+$styleArray = ['borders' => ['bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE]]];
 $objPHPExcel->getActiveSheet()->getStyle('A1:F1')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array('top' => array('style' => PHPExcel_Style_Border::BORDER_NONE)));
+$styleArray = ['borders' => ['top' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE]]];
 $objPHPExcel->getActiveSheet()->getStyle('A2:F2')->applyFromArray($styleArray);
 unset($styleArray);
 
 //總價
-$styleArray = array('borders' => array(
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('A15')->applyFromArray($styleArray);
 // $objPHPExcel->getActiveSheet()->getStyle('A27')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('A15')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('A16')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('A17')->applyFromArray($styleArray);
@@ -238,13 +292,13 @@ $objPHPExcel->getActiveSheet()->getStyle('A34')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('D29')->applyFromArray($styleArray);
 // $objPHPExcel->getActiveSheet()->getStyle('D28')->applyFromArray($styleArray);
 //
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('F15')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F16')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F17')->applyFromArray($styleArray);
@@ -258,32 +312,32 @@ $objPHPExcel->getActiveSheet()->getStyle('F31')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F32')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F33')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F34')->applyFromArray($styleArray);
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_THIN),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('A28')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('A30')->applyFromArray($styleArray);
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_THIN),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_THIN),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('F28')->applyFromArray($styleArray);
 // $objPHPExcel->getActiveSheet()->getStyle('F30')->applyFromArray($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_THIN),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE, 'color' => ['rgb' => '000000']],
+],
+];
 
 // $objPHPExcel->getActiveSheet()->getStyle('A30')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F30')->applyFromArray($styleArray);
@@ -314,54 +368,54 @@ $objPHPExcel->getActiveSheet()->getStyle('F35')->applyFromArray($styleArray);
 unset($styleArray);
 //仲介
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('B19:C19')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('B19:E19')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('A19')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('F19')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('D19')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+],
+];
 
 $objPHPExcel->getActiveSheet()->getStyle('A20')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('A21')->applyFromArray($styleArray);
@@ -384,13 +438,13 @@ $objPHPExcel->getActiveSheet()->getStyle('D27')->applyFromArray($styleArray);
 
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+],
+];
 // $objPHPExcel->getActiveSheet()->getStyle('F19')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F20')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F21')->applyFromArray($styleArray);
@@ -402,34 +456,34 @@ $objPHPExcel->getActiveSheet()->getStyle('F26')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F27')->applyFromArray($styleArray);
 unset($styleArray);
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_THIN),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('argb' => '000000')),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('F28')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('F30')->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('C28')->applyFromArray($styleArray);
 
 // $styleArray = array('borders' => array(
-//                                         'top' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-//                                         'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-//                                         'left' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-//                                         'right' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => '000000'),),
+//                                         'top' => array('borderStyle' => PHPExcel_Style_Border::BORDER_NONE),
+//                                         'bottom' => array('borderStyle' => PHPExcel_Style_Border::BORDER_NONE),
+//                                         'left' => array('borderStyle' => PHPExcel_Style_Border::BORDER_NONE),
+//                                         'right' => array('borderStyle' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('rgb' => '000000'),),
 //                                         ),
 //                     );
 // $objPHPExcel->getActiveSheet()->getStyle('C28')->applyFromArray($styleArray);
 ##
 #############################
 ##寬度
-$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(17); //14
-$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(17); //16
+$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(17);   //14
+$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(17);   //16
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(17.5); //16
-$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(17); //14
-$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(17); //15
-$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(18); //15
+$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(17);   //14
+$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(17);   //15
+$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(18);   //15
 ##
 
 ##
@@ -601,7 +655,7 @@ $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
 
 $row++;
 
-$objPHPExcel->getActiveSheet()->setCellValue('A' . $row, "總價："); //$list[0]['cTotalMoney']
+$objPHPExcel->getActiveSheet()->setCellValue('A' . $row, "總價：");                                         //$list[0]['cTotalMoney']
 $objPHPExcel->getActiveSheet()->setCellValue('B' . $row, "簽約：" . number_format($list[0]['cSignMoney'])); //
 $objPHPExcel->getActiveSheet()->getStyle('B' . $row)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->mergeCells("B" . $row . ":C" . $row);
@@ -654,20 +708,20 @@ $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
 
 $row++;
 
-$styleArray = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-),
-);
-$styleArray2 = array('borders' => array(
-    'top'    => array('style' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => array('argb' => '000000')),
-    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'left'   => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-    'right'  => array('style' => PHPExcel_Style_Border::BORDER_NONE),
-),
-);
+$styleArray = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+],
+];
+$styleArray2 = ['borders' => [
+    'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_DOUBLE, 'color' => ['rgb' => '000000']],
+    'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
+],
+];
 $objPHPExcel->getActiveSheet()->getStyle('A' . $row)->applyFromArray($styleArray);
 $objPHPExcel->getActiveSheet()->getStyle('A' . $row)->getFont()->setSize(16);
 $objPHPExcel->getActiveSheet()->getStyle('A' . $row)->getFont()->setUnderline(PHPExcel_Style_Font::UNDERLINE_SINGLE);
@@ -870,15 +924,29 @@ $row++;
 
 $_file = 'service_' . $cid . '.xlsx';
 
-header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-header('Content-type:application/force-download');
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename=' . $_file);
+// 清理輸出緩衝區
+while (ob_get_level()) {
+    ob_end_clean();
+}
 
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$objWriter->save("php://output");
+// 設定適當的 headers
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="' . $_file . '"');
+header('Cache-Control: max-age=0');
+header('Cache-Control: max-age=1');
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+header('Cache-Control: cache, must-revalidate');
+header('Pragma: public');
+
+try {
+    $objWriter = new Xlsx($objPHPExcel);
+    $objWriter->save('php://output');
+} catch (Exception $e) {
+    error_log('Excel generation error: ' . $e->getMessage());
+    header('HTTP/1.1 500 Internal Server Error');
+    echo 'Error generating Excel file: ' . $e->getMessage();
+}
+exit;
 
 exit;
