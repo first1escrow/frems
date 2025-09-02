@@ -3,7 +3,7 @@
 //取得其他對象利息資訊
 function getOthersWithInterest(&$conn, &$data, &$certifiedIds, $table, $debug = false)
 {
-    $target_table = preg_replace("/B$/iu", "", $table); //濾除其他買方 table 後綴的 B 字
+    $target_table = preg_replace("/B$/iu", "", $table);        //濾除其他買方 table 後綴的 B 字
     $target_table = preg_replace("/O$/iu", "", $target_table); //濾除其他賣方 table 後綴的 O 字
 
     $target_field                      = ($target_table == 'tContractScrivener') ? 'cSmsTargetName' : 'cName';
@@ -30,7 +30,7 @@ function getOthersWithInterest(&$conn, &$data, &$certifiedIds, $table, $debug = 
         exit($conn->debug());
     }
 
-    if (!empty($rs)) {
+    if (! empty($rs)) {
         foreach ($rs as $v) {
             if ($v['cInterestMoney'] > 0) { //當利息金額大於 0 的時候紀錄
                 $v['table']                                                      = $table;
@@ -43,7 +43,7 @@ function getOthersWithInterest(&$conn, &$data, &$certifiedIds, $table, $debug = 
 //取得其他對象發票資訊
 function getOthersWithInvoice(&$conn, &$data, &$certifiedIds, $table, $debug = false)
 {
-    $target_table = preg_replace("/B$/iu", "", $table); //濾除其他買方 table 後綴的 B 字
+    $target_table = preg_replace("/B$/iu", "", $table);        //濾除其他買方 table 後綴的 B 字
     $target_table = preg_replace("/O$/iu", "", $target_table); //濾除其他賣方 table 後綴的 O 字
 
     $target_field                      = ($target_table == 'tContractScrivener') ? 'cSmsTargetName' : 'cName';
@@ -70,7 +70,7 @@ function getOthersWithInvoice(&$conn, &$data, &$certifiedIds, $table, $debug = f
         exit($conn->debug());
     }
 
-    if (!empty($rs)) {
+    if (! empty($rs)) {
         foreach ($rs as $v) {
             if ($v['cInvoiceMoney'] > 0) { //當發票金額大於 0 的時候紀錄
                 $v['table']                                                     = $table;
@@ -83,7 +83,7 @@ function getOthersWithInvoice(&$conn, &$data, &$certifiedIds, $table, $debug = f
 //取得仲介利息與發票資訊
 function getRealtyInterestInvoice(&$conn, &$branches, &$data, $record, $field = '')
 {
-    if (!empty($record['cBranchNum' . $field]) && (!empty($record['cInterestMoney' . $field]) || !empty($record['cInvoiceMoney' . $field]))) {
+    if (! empty($record['cBranchNum' . $field]) && (! empty($record['cInterestMoney' . $field]) || ! empty($record['cInvoiceMoney' . $field]))) {
         $realty = [
             'cId'            => $record['cId'],
             'cCertifiedId'   => $record['cCertifiedId'],
@@ -107,7 +107,7 @@ function getRealtyOthersWithInterest(&$conn, &$branches, &$data, &$certifiedIds,
     $other = [];
     getOthersWithInterest($conn, $data, $certifiedIds, $table);
 
-    if (!empty($other)) {
+    if (! empty($other)) {
         foreach ($other as $k => $v) {
             foreach ($v as $ka => $va) {
                 foreach ($va['interestExt'] as $kb => $vb) {
@@ -130,7 +130,7 @@ function getRealtyOthersWithInvoice(&$conn, &$branches, &$data, &$certifiedIds, 
     $other = [];
     getOthersWithInvoice($conn, $other, $certifiedIds, $table);
 
-    if (!empty($other)) {
+    if (! empty($other)) {
         foreach ($other as $k => $v) {
             foreach ($v as $ka => $va) {
                 foreach ($va['invoiceExt'] as $kb => $vb) {
@@ -176,9 +176,9 @@ $buyer_main = [];
 $sql = 'SELECT cId, cCertifiedId, cName, cInterestMoney, cInvoiceMoney, cInvoiceDonate, cInvoicePrint FROM tContractBuyer WHERE cCertifiedId IN ("' . implode('","', $certifiedIds) . '");';
 $rs  = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) {
-        if (!empty($v['cInterestMoney']) || !empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
+        if (! empty($v['cInterestMoney']) || ! empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
             $buyer_main[$v['cCertifiedId']][$v['cId']] = $v;
         }
     }
@@ -199,9 +199,9 @@ $buyer_others = [];
 $sql = 'SELECT cId, cCertifiedId, cName, cInterestMoney, cInvoiceMoney, cInvoiceDonate, cInvoicePrint FROM tContractOthers WHERE cCertifiedId IN ("' . implode('","', $certifiedIds) . '") AND cIdentity = 1;';
 $rs  = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) {
-        if (!empty($v['cInterestMoney']) || !empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
+        if (! empty($v['cInterestMoney']) || ! empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
             $buyer_others[$v['cCertifiedId']][$v['cId']] = $v;
         }
     }
@@ -223,9 +223,9 @@ $owner_main = [];
 $sql = 'SELECT cId, cCertifiedId, cName, cInterestMoney, cInvoiceMoney, cInvoiceDonate, cInvoicePrint FROM tContractOwner WHERE cCertifiedId IN ("' . implode('","', $certifiedIds) . '");';
 $rs  = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) {
-        if (!empty($v['cInterestMoney']) || !empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
+        if (! empty($v['cInterestMoney']) || ! empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
             $owner_main[$v['cCertifiedId']][$v['cId']] = $v;
         }
     }
@@ -246,9 +246,9 @@ $owner_others = [];
 $sql = 'SELECT cId, cCertifiedId, cName, cInterestMoney, cInvoiceMoney, cInvoiceDonate, cInvoicePrint FROM tContractOthers WHERE cCertifiedId IN ("' . implode('","', $certifiedIds) . '") AND cIdentity = 2;';
 $rs  = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) {
-        if (!empty($v['cInterestMoney']) || !empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
+        if (! empty($v['cInterestMoney']) || ! empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
             $owner_others[$v['cCertifiedId']][$v['cId']] = $v;
         }
     }
@@ -296,7 +296,7 @@ $sql = 'SELECT
             cCertifyId IN ("' . implode('","', $certifiedIds) . '");';
 $rs = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) { //判斷各仲介是否存在且發票或利息金額是否大於 0，若是、則記錄
         getRealtyInterestInvoice($conn, $branches, $realty_main, $v, '');
         getRealtyInterestInvoice($conn, $branches, $realty_main, $v, '1');
@@ -329,9 +329,9 @@ $scrivener_main = [];
 $sql = 'SELECT cId, cCertifiedId, cInterestMoney, cInvoiceMoney, cInvoiceDonate, cInvoicePrint FROM tContractScrivener WHERE cCertifiedId IN ("' . implode('","', $certifiedIds) . '");';
 $rs  = $conn->all($sql);
 
-if (!empty($rs)) {
+if (! empty($rs)) {
     foreach ($rs as $v) {
-        if (!empty($v['cInterestMoney']) || !empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
+        if (! empty($v['cInterestMoney']) || ! empty($v['cInvoiceMoney'])) { //當利息或發票金額大於 0 的時候紀錄
             $scrivener_main[$v['cCertifiedId']][$v['cId']] = $v;
         }
     }
@@ -349,7 +349,7 @@ getOthersWithInvoice($conn, $scrivener_main, $certifiedIds, 'tContractScrivener'
 //將上列查詢到的清單($owner_main、$owner_others、$buyer_main、$buyer_others、$realty_main、$scrivener_main)整合寫入 list 中
 $list = [];
 foreach ($detail as $k => $v) {
-    if (!empty($owner_main[$k])) {
+    if (! empty($owner_main[$k])) {
         foreach ($owner_main[$k] as $va) {
             $row           = array_merge($detail[$k], $va);
             $row['target'] = $va['cName'];
@@ -360,7 +360,7 @@ foreach ($detail as $k => $v) {
         }
     }
 
-    if (!empty($owner_others[$k])) {
+    if (! empty($owner_others[$k])) {
         foreach ($owner_others[$k] as $va) {
             $row           = array_merge($detail[$k], $va);
             $row['target'] = $va['cName'];
@@ -371,10 +371,10 @@ foreach ($detail as $k => $v) {
         }
     }
 
-    if (!empty($buyer_main[$k])) {
+    if (! empty($buyer_main[$k])) {
         foreach ($buyer_main[$k] as $va) {
             $row           = array_merge($detail[$k], $va);
-            $row['target'] = $va['cName'];
+            $row['target'] = $va['cName'] ?? '';
 
             $list[] = $row;
 
@@ -382,7 +382,7 @@ foreach ($detail as $k => $v) {
         }
     }
 
-    if (!empty($buyer_others[$k])) {
+    if (! empty($buyer_others[$k])) {
         foreach ($buyer_others[$k] as $va) {
             $row           = array_merge($detail[$k], $va);
             $row['target'] = $va['cName'];
@@ -393,7 +393,7 @@ foreach ($detail as $k => $v) {
         }
     }
 
-    if (!empty($realty_main[$k])) {
+    if (! empty($realty_main[$k])) {
         foreach ($realty_main[$k] as $va) {
             $row           = array_merge($detail[$k], $va);
             $row['target'] = $va['cName'];
@@ -404,7 +404,7 @@ foreach ($detail as $k => $v) {
         }
     }
 
-    if (!empty($scrivener_main[$k])) {
+    if (! empty($scrivener_main[$k])) {
         foreach ($scrivener_main[$k] as $va) {
             $row = array_merge($detail[$k], $va);
             // $row['target'] = $va['cName'];

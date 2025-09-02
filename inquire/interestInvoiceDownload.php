@@ -4,7 +4,7 @@ require_once dirname(__DIR__) . '/class/SmartyMain.class.php';
 require_once dirname(__DIR__) . '/session_check.php';
 require_once dirname(__DIR__) . '/first1DB.php';
 
-if (!empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date'])) {
+if (! empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date'])) {
     $date = $_POST['date'];
 
     $conn = new first1DB;
@@ -18,7 +18,7 @@ if (!empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date
     }
 
     //特殊專案例外
-    if(!in_array($member_id, [1, 3, 12, 13, 36, 84, 90, 6])) {
+    if (! in_array($member_id, [1, 3, 12, 13, 36, 84, 90, 6])) {
         $sql .= ' AND a.cCertifiedId != "130119712" ';
     }
 
@@ -58,7 +58,7 @@ if (!empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date
     $certifiedIds = array_unique(array_column($rs, 'cCertifiedId'));
 
     $detail = [];
-    if (!empty($rs)) {
+    if (! empty($rs)) {
         foreach ($rs as $v) {
             $detail[$v['cCertifiedId']] = $v;
         }
@@ -77,7 +77,7 @@ if (!empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date
     // }
 
     //取得仲介店資訊
-    if (!empty($certifiedIds)) {
+    if (! empty($certifiedIds)) {
         $sql = 'SELECT
                     a.bId,
                     a.bStore,
@@ -95,22 +95,22 @@ if (!empty($_POST['date']) && preg_match("/^\d{4}\-\d{2}\-\d{2}$/", $_POST['date
         $sql = 'SELECT cCertifyId, cBranchNum, cBranchNum1, cBranchNum2, cBranchNum3 FROM tContractRealestate WHERE cCertifyId IN ("' . implode('","', $certifiedIds) . '");';
         $rs  = $conn->all($sql);
 
-        if (!empty($rs)) {
+        if (! empty($rs)) {
             foreach ($rs as $v) {
                 $realty[]      = $branches[$v['cBranchNum']]['code'];
                 $realty_name[] = $branches[$v['cBranchNum']]['bStore'];
 
-                if (!empty($v['cBranchNum1'])) {
+                if (! empty($v['cBranchNum1'])) {
                     $realty[]      = $branches[$v['cBranchNum1']]['code'];
                     $realty_name[] = $branches[$v['cBranchNum1']]['bStore'];
                 }
 
-                if (!empty($v['cBranchNum2'])) {
+                if (! empty($v['cBranchNum2'])) {
                     $realty[]      = $branches[$v['cBranchNum2']]['code'];
                     $realty_name[] = $branches[$v['cBranchNum2']]['bStore'];
                 }
 
-                if (!empty($v['cBranchNum3'])) {
+                if (! empty($v['cBranchNum3'])) {
                     $realty[]      = $branches[$v['cBranchNum3']]['code'];
                     $realty_name[] = $branches[$v['cBranchNum3']]['bStore'];
                 }
