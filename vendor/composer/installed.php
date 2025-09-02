@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'fa993dd8bb1f6161e04f39bcfc941efe7a015bb0',
+        'reference' => 'd76e9b8fb3b1ab6535b4e56a57475e2568f279b7',
         'name' => 'first198/first.twhg.com.tw',
         'dev' => true,
     ),
@@ -25,7 +25,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'fa993dd8bb1f6161e04f39bcfc941efe7a015bb0',
+            'reference' => 'd76e9b8fb3b1ab6535b4e56a57475e2568f279b7',
             'dev_requirement' => false,
         ),
         'maennchen/zipstream-php' => array(

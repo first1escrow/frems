@@ -147,8 +147,31 @@
                 });
 
                 $('#ctrlform').on('click', function () {
-                    var id = $('[name=certifiedid]').val();
-                    window.open ('/bank/report/control_report.php?id='+id, 'newwindow', 'height=200, width=400, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=n o, status=no');
+                    let id = $('[name=certifiedid]').val();
+                    
+                    // 動態建立form元素
+                    let form = $('<form>', {
+                        method: 'POST',
+                        action: '/bank/report/control_report.php',
+                        target: '_blank'
+                    });
+                    
+                    // 動態建立input元素
+                    let input = $('<input>', {
+                        type: 'hidden',
+                        name: 'id',
+                        value: id
+                    });
+                    
+                    // 將input加到form中
+                    form.append(input);
+                    
+                    // 將form加到body並提交
+                    $('body').append(form);
+                    form.submit();
+                    
+                    // 提交後移除form
+                    form.remove();
                 });
 
                 $('#save').on('click', function () {
