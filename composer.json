@@ -12,6 +12,6 @@
         }
     ],
     "require": {
-		"phpoffice/phpspreadsheet": "*"
+		"phpoffice/phpspreadsheet": "^5.0"
 	}
 }
