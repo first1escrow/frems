@@ -1,23 +1,22 @@
 <?php
-include_once '../../configs/config.class.php';
-include_once 'class/contract.class.php';
-include_once '../../openadodb.php';
-include_once '../../bank/report/calTax.php';
-// include_once '../../js/IDCheck.js' ;
-include_once '../../session_check.php';
+require_once dirname(dirname(__DIR__)) . '/configs/config.class.php';
+require_once dirname(dirname(__DIR__)) . '/class/contract.class.php';
+require_once dirname(dirname(__DIR__)) . '/openadodb.php';
+require_once dirname(dirname(__DIR__)) . '/bank/report/calTax.php';
+require_once dirname(dirname(__DIR__)) . '/session_check.php';
 
-$_POST   = escapeStr($_POST);
-$type    = $_POST['type'];
-$cid     = $_POST['cid'];
-$close   = $_POST['close'];
-$branch  = $_POST['branch'];
-$branch1 = $_POST['branch1'];
-$branch2 = $_POST['branch2'];
-$jZip    = $_POST['zip'];
-$jAddr   = $_POST['addr'];
-$num     = $_POST['num'];
-$sId     = $_POST['sId'];
-$feedBackScrivenerClose = $_POST['feedBackScrivenerClose'];
+$_POST                  = escapeStr($_POST);
+$type                   = $_POST['type'];
+$cid                    = $_POST['cid'];
+$close                  = isset($_POST['close']) ? $_POST['close'] : '';
+$branch                 = isset($_POST['branch']) ? $_POST['branch'] : '';
+$branch1                = isset($_POST['branch1']) ? $_POST['branch1'] : '';
+$branch2                = isset($_POST['branch2']) ? $_POST['branch2'] : '';
+$jZip                   = isset($_POST['zip']) ? $_POST['zip'] : '';
+$jAddr                  = isset($_POST['addr']) ? $_POST['addr'] : '';
+$num                    = isset($_POST['num']) ? $_POST['num'] : '';
+$sId                    = isset($_POST['sId']) ? $_POST['sId'] : '';
+$feedBackScrivenerClose = isset($_POST['feedBackScrivenerClose']) ? $_POST['feedBackScrivenerClose'] : '';
 
 switch ($type) {
     case 'others': //檢查其他買賣方資料
@@ -56,6 +55,8 @@ die();
 function checkAddr($zip, $addr, $cid, $num)
 {
     global $conn;
+
+    $str = ""; // 初始化變數
 
     if ($cid != '') {
         $str .= " AND cc.cCertifiedId != '" . $cid . "'";
@@ -105,7 +106,7 @@ function scrivenerClose($cid, $feedBackScrivenerClose)
     global $conn;
 
     $sql = "SELECT cFeedBackScrivenerClose FROM tContractCase WHERE cCertifiedId = '" . $cid . "'";
-    $rs = $conn->Execute($sql);
+    $rs  = $conn->Execute($sql);
 
     if (($rs->fields['cFeedBackScrivenerClose'] != $feedBackScrivenerClose) && $feedBackScrivenerClose == 0) { //使用者畫面未關閉發票編輯權限，但會計已關閉發票編輯權限
         return 'error';
@@ -119,12 +120,12 @@ function tContractOther($conn, $cid)
 
     $contract        = new Contract();
     $data_otherbuyer = $contract->GetOthers($cid, 1); //買
-    $ck              = 0; //0:正確 1:買方錯誤 2:賣方錯誤
+    $ck              = 0;                             //0:正確 1:買方錯誤 2:賣方錯誤
 
     for ($i = 0; $i < count($data_otherbuyer); $i++) {
         // $data_otherbuyer[$i]['cIdentifyId'] = 'AA20060243';
 
-        if (!checkUID($data_otherbuyer[$i]['cIdentifyId'])) {
+        if (! checkUID($data_otherbuyer[$i]['cIdentifyId'])) {
             $ck = 1;
         } elseif ($data_otherbuyer[$i]['cRegistZip'] == '') {
             $ck = 1;
@@ -143,7 +144,7 @@ function tContractOther($conn, $cid)
     for ($i = 0; $i < count($data_otherowner); $i++) {
         // $data_otherbuyer[$i]['cIdentifyId'] = 'AA20060243';
 
-        if (!checkUID($data_otherowner[$i]['cIdentifyId'])) {
+        if (! checkUID($data_otherowner[$i]['cIdentifyId'])) {
             $ck = 2;
         } elseif ($data_otherowner[$i]['cRegistZip'] == '') {
             $ck = 2;
@@ -178,7 +179,7 @@ function checkServiceMoney($cid, $branch, $target)
     $rs  = $conn->Execute($sql);
 
     $total = $rs->RecordCount();
-    // echo $total;
+                      // echo $total;
     if ($total > 0) { // 有出過服務費不用提醒
         return false;
     }
@@ -316,7 +317,7 @@ function checkUID($sn)
         if (preg_match($reg, $sn)) { //檢查居留證字號
 
             $result = RID($sn);
-            // $result = true;
+                                                 // $result = true;
         } else if (preg_match($reg1, $sn)) { //未住滿183天的非大陸民眾(第一~八碼採護照西元年出生日;第九~十碼彩護照內英文姓名第一個字之前2個字母)
 
             $result = true;
@@ -337,7 +338,7 @@ function checkUID($sn)
 /* 統一編號檢核 */
 function UNID($sn)
 {
-    $cx  = array(1, 2, 1, 2, 1, 2, 4, 1); //驗算基數
+    $cx  = [1, 2, 1, 2, 1, 2, 4, 1]; //驗算基數
     $sum = 0;
     if (mb_strlen($sn) != 8) {
         // echo "統編錯誤，要有 8 個數字";
@@ -391,17 +392,17 @@ function PID($sn)
 {
     // echo $sn;
     /* 定義字母對應的數字 */
-    $a        = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
-    $b        = array('10', '11', '12', '13', '14', '15', '16', '17', '34', '18', '19', '20', '21', '22', '35', '23', '24', '25', '26', '27', '28', '29', '32', '30', '31', '33');
+    $a        = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    $b        = ['10', '11', '12', '13', '14', '15', '16', '17', '34', '18', '19', '20', '21', '22', '35', '23', '24', '25', '26', '27', '28', '29', '32', '30', '31', '33'];
     $max      = count($a);
-    $alphabet = array();
+    $alphabet = [];
     for ($i = 0; $i < $max; $i++) {
-        $alphabet[$i] = array($a[$i], $b[$i]);
+        $alphabet[$i] = [$a[$i], $b[$i]];
     }
     ////
 
     $sn    = strtoupper($sn); //將英文字母設定為大寫;
-    $snLen = mb_strlen($sn); //計算字數長度
+    $snLen = mb_strlen($sn);  //計算字數長度
 
     /* 若號碼長度不等於10，代表輸入長度不合格式 */
     if ($snLen != 10) {
@@ -429,7 +430,7 @@ function PID($sn)
     $ch2 = substr($chVal, 1, 1); //個位數
 
     $_val = ($ch2 * 9) + $ch1; //個位數 x 9 再加上十位數
-    $_val = $_val % 10; //除以10取餘數
+    $_val = $_val % 10;        //除以10取餘數
 
     /* 計算檢核碼 */
     $t1 = $_val * 1;
@@ -465,17 +466,17 @@ function PID($sn)
 function RID($sn)
 {
     /* 定義字母對應的數字 */
-    $a        = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
-    $b        = array('10', '11', '12', '13', '14', '15', '16', '17', '34', '18', '19', '20', '21', '22', '35', '23', '24', '25', '26', '27', '28', '29', '32', '30', '31', '33');
+    $a        = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    $b        = ['10', '11', '12', '13', '14', '15', '16', '17', '34', '18', '19', '20', '21', '22', '35', '23', '24', '25', '26', '27', '28', '29', '32', '30', '31', '33'];
     $max      = count($a);
-    $alphabet = array();
+    $alphabet = [];
     for ($i = 0; $i < $max; $i++) {
-        $alphabet[$i] = array($a[$i], $b[$i]);
+        $alphabet[$i] = [$a[$i], $b[$i]];
     }
     ////
 
     $sn    = strtoupper($sn); //將英文字母設定為大寫
-    $snLen = mb_strlen($sn); //計算字數長度
+    $snLen = mb_strlen($sn);  //計算字數長度
 
     /* 若號碼長度不等於10，代表輸入長度不合格式 */
     if ($snLen != 10) {
@@ -518,7 +519,7 @@ function RID($sn)
 
     /* 第二碼英文字的轉換 */
     $_val = substr($chVal2, -1, 1) * 1; //個位數
-    ////
+                                        ////
 
     /* 計算檢核碼 */
     $t1 = $_val * 8;

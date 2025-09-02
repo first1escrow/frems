@@ -140,7 +140,7 @@ function addBankData($conn, $data, $id, $type)
 { //
 
     if ($type == 1) {
-        if (is_array($data['newbuyer_bankid2'])) {
+        if (isset($data['newbuyer_bankid2']) && is_array($data['newbuyer_bankid2'])) {
             for ($i = 0; $i < count($data['newbuyer_bankid2']); $i++) {
 
                 if (($data['newbuyer_bankkey2'][$i] != '0' && $data['newbuyer_bankbranch2'][$i] != null && $data['newbuyer_bankaccnumber2'][$i] != '' && $data['newbuyer_bankaccname2'][$i] != '')) {
@@ -176,7 +176,7 @@ function addBankData($conn, $data, $id, $type)
         }
 
     } elseif ($type == 2) {
-        if (is_array($data['newowner_bankid2'])) {
+        if (isset($data['newowner_bankid2']) && is_array($data['newowner_bankid2'])) {
             for ($i = 0; $i < count($data['newowner_bankid2']); $i++) {
 
                 if (($data['newowner_bankkey2'][$i] != '0' && $data['newowner_bankbranch2'][$i] != null && $data['newowner_bankaccnumber2'][$i] != '' && $data['newowner_bankaccname2'][$i] != '')) {

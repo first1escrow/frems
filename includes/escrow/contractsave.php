@@ -31,9 +31,13 @@ $tlog->updateWrite($_SESSION['member_id'], json_encode($_POST), '案件修改儲
 $contract = new Contract();
 
 /* 日期轉換 */
-$_POST["case_signdate"]      = date_convert($_POST["case_signdate"]);
-$_POST["case_finishdate"]    = date_convert($_POST["case_finishdate"]);
-$_POST["case_finishdate2"]   = date_convert($_POST["case_finishdate2"]);
+$_POST["case_signdate"] = date_convert($_POST["case_signdate"]);
+if (isset($_POST["case_finishdate"])) {
+    $_POST["case_finishdate"] = date_convert($_POST["case_finishdate"]);
+}
+if (isset($_POST["case_finishdate2"])) {
+    $_POST["case_finishdate2"] = date_convert($_POST["case_finishdate2"]);
+}
 $_POST["owner_birthdayday"]  = date_convert($_POST["owner_birthdayday"]);
 $_POST["buy_birthdayday"]    = date_convert($_POST["buy_birthdayday"]);
 $_POST["case_cEndDate"]      = date_convert($_POST["case_cEndDate"]);
@@ -55,7 +59,7 @@ $data_case = $contract->GetContract($id);
 $sql = "SELECT cNote FROM tContractNote WHERE cCertifiedId = '" . $id . "' AND cCategory = 5 ORDER BY cCreatTime DESC";
 $rs  = $conn->Execute($sql);
 
-if ($_POST['income_reason'] != $rs->fields['cNote']) {
+if ($rs && isset($_POST['income_reason']) && $rs->fields && $_POST['income_reason'] != $rs->fields['cNote']) {
     //主管未審核過才能更改2018-12-25
     $sql = "SELECT cId FROM tContractIncome WHERE cInspetor2 = ''  AND cCertifiedId = '" . $id . "'";
     $rs  = $conn->Execute($sql);
@@ -161,7 +165,7 @@ if ($data_realestate['cBranchNum'] != $_POST['realestate_branchnum'] || $data_re
 
 ##
 //契約書用印仲介店
-if ($_POST['cAffixBranch']) {
+if (isset($_POST['cAffixBranch']) && $_POST['cAffixBranch']) {
     $checkAffix = $_POST['cAffixBranch'];
     if (is_array($checkAffix)) {
         $_POST['cAffixBranch']  = in_array('b', $checkAffix) ? '1' : '0';
@@ -265,7 +269,9 @@ $update_count = count($_POST['property_Item']);
 for ($i = 0; $i < $update_count; $i++) {
     $_POST["property_closingday" . $_POST['property_Item'][$i]] = date_convert($_POST["property_closingday" . $_POST['property_Item'][$i]]);
     $_POST["property_builddate" . $_POST['property_Item'][$i]]  = date_convert($_POST["property_builddate" . $_POST['property_Item'][$i]]);
-    $_POST["property_rentdate" . $_POST['property_Item'][$i]]   = date_convert($_POST["property_rentdate" . $_POST['property_Item'][$i]]);
+    if (isset($_POST["property_rentdate" . $_POST['property_Item'][$i]])) {
+        $_POST["property_rentdate" . $_POST['property_Item'][$i]] = date_convert($_POST["property_rentdate" . $_POST['property_Item'][$i]]);
+    }
 
     if ($contract->CheckProperty($_POST['certifiedid'], $_POST['property_Item'][$i])) {
         $contract->SaveProperty2($_POST, $_POST['property_Item'][$i]);

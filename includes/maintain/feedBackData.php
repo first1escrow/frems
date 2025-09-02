@@ -21,7 +21,7 @@ function FeedBackData($id, $type)
     $sql = "SELECT * FROM tFeedBackData WHERE fType ='" . $type . "' AND fStoreId ='" . $id . "' AND fStatus = 0";
     $rs  = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $data[$i]                = $rs->fields;
         $data[$i]['no']          = $i;
         $data[$i]['stop']        = ($rs->fields['fStop'] == 1) ? 'checked=checked' : '';
@@ -45,13 +45,13 @@ function getFeedBackMoney($cid)
 {
     global $conn;
 
-    $data = array();
+    $data = [];
 
     $sql = "SELECT * FROM tFeedBackMoney WHERE fCertifiedId ='" . $cid . "' AND fDelete = 0 AND (fType = 1 OR fType = 2)";
     $rs  = $conn->Execute($sql);
 
     $i = 0;
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $data[$i]          = $rs->fields;
         $data[$i]['store'] = getStore($data[$i]['fType']);
         $i++;
@@ -66,13 +66,13 @@ function getIndividualFeedBack($cid)
 {
     global $conn;
 
-    $data = array();
+    $data = [];
     $sql  = "SELECT *,(SELECT bStore FROM `tBranch` WHERE bId = f.fIndividualId) AS name
             FROM tFeedBackMoney AS f WHERE fCertifiedId ='" . $cid . "' AND fDelete = 0 AND fType = 3";
     $rs = $conn->Execute($sql);
 
     $i = 0;
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $data[$rs->fields['fStoreId']][] = $rs->fields;
         $i++;
 
@@ -94,7 +94,7 @@ function getStore($type) //合約書其他回饋對象店家option
 
     $rs        = $conn->Execute($sql);
     $option[0] = '請選擇';
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $option[$rs->fields['ID']] = $rs->fields['Code'] . $rs->fields['Name'] . '(' . $rs->fields['Name2'] . ')';
         $rs->MoveNext();
     }
@@ -106,7 +106,7 @@ function updateFeedBackMoney($arr)
 {
     global $conn;
 
-    if (is_array($arr['otherFeedId'])) {
+    if (isset($arr['otherFeedId']) && is_array($arr['otherFeedId'])) {
         for ($i = 0; $i < count($arr['otherFeedId']); $i++) {
             if ($arr['otherFeedCheck'][$i] == 1) { //有更改才更新
                 $sales = getFeedBackOtherSales($arr['otherFeedType' . $arr['otherFeedId'][$i]], $arr['otherFeedstoreId' . $arr['otherFeedId'][$i]]);
@@ -129,7 +129,7 @@ function updateFeedBackMoney($arr)
         }
     }
 
-    if($arr['cCaseFeedBackModifier'] == '') { //如果有觸發到回饋金重算機制 其他回饋對象的地政士一律刪除 讓業務重新申請
+    if ($arr['cCaseFeedBackModifier'] == '') { //如果有觸發到回饋金重算機制 其他回饋對象的地政士一律刪除 讓業務重新申請
         $fw  = fopen(dirname(dirname(__DIR__)) . '/log2/otherFeed/' . $arr['certifiedid'] . '.log', 'a+');
         $sql = "UPDATE tFeedBackMoney SET fDelete = 1 WHERE fType = 1 AND fCertifiedId = '" . $arr['id'] . "'";
         $conn->Execute($sql);
@@ -186,8 +186,8 @@ function getFeedBackOtherSales($type, $id)
     }
     $rs = $conn->Execute($sql);
 
-    $sales = array();
-    while (!$rs->EOF) {
+    $sales = [];
+    while (! $rs->EOF) {
         $sales[] = $rs->fields['sSales'];
         $rs->MoveNext();
     }
@@ -222,7 +222,7 @@ function getOtherFeed_case($cid, $arr, $bId = '', $sId = '', $brand = '')
 
     $data = [];
     $i    = 0;
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if ($rs->fields['fType'] == 1) { //地政士先以第一間店為主..
             $data[$i]['buyer']              = $arr['buyer'];
             $data[$i]['owner']              = $arr['owner'];
@@ -436,7 +436,7 @@ function getOtherFeed2($data) //把部分欄位取代
     if ($total == 0) {
         return false;
     } else {
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             $arr[$i] = $data;
             $tmp     = getOtherFeed($rs->fields['fType'], $rs->fields['fStoreId']);
             $sales   = getOtherFeedSales($rs->fields['fSales']);
@@ -668,7 +668,7 @@ function getOtherFeed3($cid)
 
     $i    = 0;
     $list = [];
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $list[$i] = $rs->fields;
         $tmp      = getStoreData($list[$i]['fType'], $list[$i]['fStoreId']);
 
@@ -742,7 +742,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
 {
     global $conn;
 
-    $cCertifiedId = array();
+    $cCertifiedId = [];
 
     $nowMonth = date('m');
     if ($FeedDateCat == 1) { //FeedDateCat 0:季1:月
@@ -844,7 +844,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
         ORDER BY cc.cEndDate ASC";
     $rs = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $list[] = $rs->fields;
         $rs->MoveNext();
     }
@@ -852,7 +852,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
     if (is_array($list)) {
         for ($i = 0; $i < count($list); $i++) {
             $cerifiedMoney = ($list[$i]['cTotalMoney'] - $list[$i]['cFirstMoney']) * 0.0006; //應收保證費
-            $uSql          = array(
+            $uSql          = [
                 'cBranchRecall'        => '',
                 'cBranchScrRecall'     => '',
                 'cScrivenerRecall'     => '',
@@ -876,16 +876,16 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                 'cBrandRecall1'        => '',
                 'cBrandRecall2'        => '',
                 'cBrandRecall3'        => '',
-                'cSpCaseFeedBackMoney' => 0);
-            $brecall   = array();
-            $scrrecall = array();
-            $scrpartsp = array();
+                'cSpCaseFeedBackMoney' => 0];
+            $brecall   = [];
+            $scrrecall = [];
+            $scrpartsp = [];
             $bcount    = 0;
             $scrpart   = '';
 
             //確認店家數及地政回饋比率casecheck
             if ($list[$i]['branch'] > 0) {
-                if ($list[$i]['cFeedbackTarget'] == 2) { //scrivener
+                if ($list[$i]['cFeedbackTarget'] == 2) {  //scrivener
                     $brecall[0] = $list[$i]['sRecall'] / 100; //計算用
                 } else {
                     $brecall[0] = $list[$i]['bRecall'] / 100; //計算用
@@ -1019,14 +1019,14 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                 } else {
                     $branchbookCount = $list[$i]['branchbook'] + $list[$i]['branchbook1'] + $list[$i]['branchbook2'] + $list[$i]['branchbook3'];
                     if ($list[$i]['bFeedbackMoney'] == 1) { //未收足回饋
-                        //有合契
+                                                                //有合契
                         if (($list[$i]['branchbook'] == '1') || ($list[$i]['brand'] == 1 || $list[$i]['brand'] == 69)) {
                             $uSql['cCaseFeedback']      = 0;
                             $uSql['cCaseFeedBackMoney'] = round(($brecall[0] * $list[$i]['cerifiedmoney']) / $bcount);
                         } else {
                             $uSql['cCaseFeedback']      = 1;
                             $uSql['cCaseFeedBackMoney'] = 0;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback']   = 0; //要回饋
                             }
@@ -1037,7 +1037,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                             $uSql['cCaseFeedback'] = 0;
                         } else {
                             $uSql['cCaseFeedback'] = 1;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback']   = 0; //要回饋
                             }
@@ -1052,7 +1052,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                         } else {
                             $uSql['cCaseFeedback1']      = 1;
                             $uSql['cCaseFeedBackMoney1'] = 0;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget1'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback1']   = 0; //要回饋
                             }
@@ -1063,7 +1063,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                             $uSql['cCaseFeedback1'] = 0;
                         } else {
                             $uSql['cCaseFeedback1'] = 1;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget1'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback1']   = 0; //要回饋
                             }
@@ -1078,7 +1078,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                         } else {
                             $uSql['cCaseFeedback2']      = 1;
                             $uSql['cCaseFeedBackMoney2'] = 0;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget2'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback2']   = 0; //要回饋
                             }
@@ -1090,7 +1090,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                             $uSql['cCaseFeedback2'] = 0;
                         } else {
                             $uSql['cCaseFeedback2'] = 1;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget2'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback2']   = 0; //要回饋
                             }
@@ -1105,7 +1105,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                         } else {
                             $uSql['cCaseFeedback3']      = 0;
                             $uSql['cCaseFeedBackMoney3'] = 0;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget3'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback3']   = 0; //要回饋
                             }
@@ -1116,7 +1116,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                             $uSql['cCaseFeedback3'] = 0;
                         } else {
                             $uSql['cCaseFeedback3'] = 1;
-                            if($branchbookCount == 0) {
+                            if ($branchbookCount == 0) {
                                 $uSql['cFeedbackTarget3'] = 2; //回饋對象: 地政士
                                 $uSql['cCaseFeedback3']   = 0; //要回饋
                             }
@@ -1124,7 +1124,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                     }
                 }
 
-                $str = array();
+                $str = [];
                 foreach ($uSql as $key => $value) {
                     $str[] = $key . "='" . $value . "'";
                 }
@@ -1422,7 +1422,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                     }
                 } else if ($ownerbrand != 69) {
                     if ($ownercheck > 0) { //他牌是契約用印店且有合作契約書 各店:保證費*回饋趴/回饋數
-                        if ($feed == 1) { //  只有一間有勾選未收足，只算給那一間店
+                        if ($feed == 1) {      //  只有一間有勾選未收足，只算給那一間店
                             $bcount = 0;
                             if ($list[$i]['cFeedbackTarget'] == 1 && $list[$i]['bFeedbackMoney'] == 1 && ($list[$i]['cAffixBranch'] == 1 || $list[$i]['brand'] == 69)) {
                                 $bcount++;
@@ -1785,7 +1785,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                     }
                 } else if ($ownerbrand != 69) {
                     if ($ownercheck > 0) { //他牌是契約用印店且有合作契約書 各店:保證費*回饋趴/回饋數
-                        if ($feed == 1) { //  只有一間有勾選未收足，只算給那一間店
+                        if ($feed == 1) {      //  只有一間有勾選未收足，只算給那一間店
                             $bcount = 0;
                             if ($list[$i]['cFeedbackTarget'] == 1 && $list[$i]['bFeedbackMoney'] == 1 && ($list[$i]['cAffixBranch'] == 1 || $list[$i]['brand'] == 69)) {
                                 $bcount++;
@@ -1973,7 +1973,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
                 $uSql['cSpCaseFeedBackMoney'] = 0;
             }
 
-            $str = array();
+            $str = [];
             foreach ($uSql as $key => $value) {
                 $str[] = $key . "='" . $value . "'";
             }
@@ -1981,7 +1981,7 @@ function getFeedMoney($type, $id, $id2 = '', $FeedDateCat = '')
             $sql = "UPDATE tContractCase SET " . @implode(',', $str) . " WHERE cCertifiedId ='" . $list[$i]['cCertifiedId'] . "'";
             $conn->Execute($sql);
 
-            //如果有回饋給地政士 特殊回饋不回饋
+                                                                                                                                                                                              //如果有回饋給地政士 特殊回饋不回饋
             if (($scrpart == 0 || $scrpart == '') && ($uSql['cFeedbackTarget'] != 2 && $uSql['cFeedbackTarget1'] != 2 && $uSql['cFeedbackTarget2'] != 2 && $uSql['cFeedbackTarget3'] != 2)) { //如果仲介品牌有回饋給地政士 特殊回饋不回饋
                 if ($feed == 1) {
                     if ($list[$i]['sFeedbackMoney'] == 1) {
@@ -2027,7 +2027,7 @@ function checkBrandFeed($cId, $branch)
 {
     global $conn;
 
-    if (!$branch) {
+    if (! $branch) {
         return false;
     }
 
@@ -2102,9 +2102,9 @@ function getcCertifiedMoney($cMoney, $arr)
     if (is_array($arr)) {
         $count = count($arr);
 
-        $m = $cMoney % $count; //餘數
+        $m = $cMoney % $count;        //餘數
         $n = floor($cMoney / $count); //商數
-        $m = $m + $n; //首位被選取的金額
+        $m = $m + $n;                 //首位被選取的金額
         $i = 0;
 
         foreach ($arr as $key => $value) {
