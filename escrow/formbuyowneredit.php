@@ -1502,8 +1502,8 @@ unset($income, $cheque);
 for ($j = 0; $j < count($income_arr); $j++) {
     $arr[$j]['date'] = (substr($income_arr[$j]['eTradeDate'], 0, 3) + 1911) . '-' . substr($income_arr[$j]['eTradeDate'], 3, 2) . '-' . substr($income_arr[$j]['eTradeDate'], 5);
 
-    $arr[$j]['income']   = substr($income_arr[$j]['eLender'], 0, -2) + 1 - 1;
-    $arr[$j]['outgoing'] = substr($income_arr[$j]['eDebit'], 0, -2) + 1 - 1;
+    $arr[$j]['income']   = (int) substr($income_arr[$j]['eLender'], 0, -2) + 1 - 1;
+    $arr[$j]['outgoing'] = (int) substr($income_arr[$j]['eDebit'], 0, -2) + 1 - 1;
 
     if (isset($income_arr[$j]['cheque']) && $income_arr[$j]['cheque'] == 1) {
         $arr[$j]['detail'] = '支票' . $income_arr[$j]['ePayTitle'];
