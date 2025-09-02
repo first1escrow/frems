@@ -491,8 +491,14 @@ if ($max > 0) {
 					tContractProperty WHERE cCertifiedId = '" . $arr[$i]['cCertifiedId'] . "'";
         $rs = $conn->Execute($sql);
 
-        $arr[$i]['city'] = $rs->fields['city'];
-        $arr[$i]['area'] = $rs->fields['area'];
+        // 檢查查詢是否成功且有返回結果
+        if ($rs && ! $rs->EOF) {
+            $arr[$i]['city'] = $rs->fields['city'];
+            $arr[$i]['area'] = $rs->fields['area'];
+        } else {
+            $arr[$i]['city'] = '';
+            $arr[$i]['area'] = '';
+        }
 
         $sql = "SELECT * FROM tContractOthers WHERE cCertifiedId='" . $arr[$i]['cCertifiedId'] . "'";
         $rs  = $conn->Execute($sql);
