@@ -866,6 +866,8 @@ unset($styleArray);
 $styleArray = ['borders' => [
     'top'    => ['borderStyle' => PHPExcel_Style_Border::BORDER_NONE],
     'bottom' => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+    'left'   => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
+    'right'  => ['borderStyle' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '000000']],
 ],
 ];
 $objPHPExcel->getActiveSheet()->getStyle('A' . $row . ':F' . $row)->applyFromArray($styleArray);
