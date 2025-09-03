@@ -1,16 +1,22 @@
 <?php
-include_once '../configs/config.class.php';
-include_once 'class/SmartyMain.class.php';
-include_once 'class/advance.class.php';
-include_once 'class/contract.class.php';
-include_once 'class/scrivener.class.php';
-include_once 'class/income.class.php';
-include_once '../session_check.php';
-include_once '../tracelog.php';
-include_once '../openadodb.php';
+error_reporting(E_ERROR | E_PARSE); // 僅顯示錯誤訊息，隱藏警告和通知
+
+require_once dirname(__DIR__) . '/configs/config.class.php';
+require_once dirname(__DIR__) . '/class/SmartyMain.class.php'; // 修正路徑
+require_once dirname(__DIR__) . '/class/advance.class.php';    // 修正路徑
+require_once dirname(__DIR__) . '/class/contract.class.php';   // 修正路徑
+require_once dirname(__DIR__) . '/class/scrivener.class.php';  // 修正路徑
+require_once dirname(__DIR__) . '/class/income.class.php';     // 修正路徑
+require_once dirname(__DIR__) . '/session_check.php';
+require_once dirname(__DIR__) . '/tracelog.php';
+require_once dirname(__DIR__) . '/openadodb.php';
 
 $tlog = new TraceLog();
 $tlog->selectWrite($_SESSION['member_id'], json_encode($_POST), '查看案件單筆入款明細');
+
+if (! class_exists('Advance')) {
+    die('Error: Advance class not found. Please check the file path and class definition.');
+}
 
 $advance   = new Advance();
 $contract  = new Contract();

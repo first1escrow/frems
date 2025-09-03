@@ -2,8 +2,10 @@
 require_once __DIR__ . '/includes/lib.php';
 require_once __DIR__ . '/.env.php';
 
-ini_set('session.cookie_lifetime', 0);
-ini_set('session.gc_maxlifetime', 86400);
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_lifetime', 0);
+    ini_set('session.gc_maxlifetime', 86400);
+}
 
 $link = mysqli_connect($env['db']['197']['host'], $env['db']['197']['username'], $env['db']['197']['password'], $env['db']['197']['database'], $env['db']['197']['port']);
 

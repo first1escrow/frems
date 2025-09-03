@@ -1,16 +1,18 @@
 <?php
-include_once '../sms/sms_function.php';
-include_once '../configs/config.class.php';
-include_once 'class/SmartyMain.class.php';
-include_once 'class/contract.class.php';
-include_once 'class/income.class.php';
-include_once '../openadodb.php';
-include_once 'income_function.php';
+error_reporting(E_ERROR | E_PARSE); // 僅顯示錯誤訊息，隱藏警告和通知
+
+require_once dirname(__DIR__) . '/sms/sms_function.php';
+require_once dirname(__DIR__) . '/configs/config.class.php';
+require_once dirname(__DIR__) . '/class/SmartyMain.class.php';
+require_once dirname(__DIR__) . '/class/contract.class.php';
+require_once dirname(__DIR__) . '/class/income.class.php';
+require_once dirname(__DIR__) . '/openadodb.php';
+require_once __DIR__ . '/income_function.php';
 
 $sms      = new SMS_Gateway();
 $contract = new Contract();
 
-$send = trim($_POST['mail']);
+$send = isset($_POST['mail']) ? trim($_POST['mail']) : ''; // 檢查 $_POST['mail'] 是否存在，並提供預設值
 
 $id = empty($_POST["id"])
 ? $_GET["id"]

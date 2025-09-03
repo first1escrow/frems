@@ -66,10 +66,14 @@ function getBC($bc)
     return $rs->fields;
 }
 
+if (! isset($_POST["id"])) {
+    die('Error: Missing required parameter "id".'); // 提供明確的錯誤訊息
+}
+
 $result1 = GetScrivenerInfo($_POST["id"]);
 // 確保 $result1 是陣列
 if ($result1 === false) {
-    $result1 = []; // 初始化為空陣列
+    $result1 = []; // 初始化為空陣列，避免後續錯誤
 }
 
 $result2 = GetBankCode($_POST["id"], isset($_POST["bc"]) ? $_POST["bc"] : '');

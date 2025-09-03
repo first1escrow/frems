@@ -15,25 +15,36 @@ $tid 出帳id / 入帳id
 
 class SMS_Gateway extends PDO
 {
+    // 在類別中定義靜態屬性，避免動態屬性創建的棄用問題
+    private string $sql2 = '';
+    private string $sql3 = '';
+    private string $sql4 = '';
+
     private static $dDSN;
     private static $dUser;
     private static $dPassword;
     public $DB_link;
     public $execSQL;
+    public $log_path;
+    public $fet_SysId;
+    public $fet_SrcAddress;
+    public $acc_china;
+    public $pwd_china;
+    public $uid;
+    public $upass;
 
     public function __construct()
     {
         global $env;
 
-        $this->DB_link      = '';
-        $this->execSQL      = '';
-        $this->dbtype_sql   = $env['db']['197']['driver'];
-        $this->host_sql     = $env['db']['197']['host'];
-        $this->dbname_sql   = $env['db']['197']['database'];
-        $this->username_sql = $env['db']['197']['username'];
-        $this->password_sql = $env['db']['197']['password'];
-        $this->log_path     = dirname(__DIR__) . '/log/sms/';
+        $dbtype_sql   = $env['db']['197']['driver'];
+        $host_sql     = $env['db']['197']['host'];
+        $port_sql     = $env['db']['197']['port'];
+        $dbname_sql   = $env['db']['197']['database'];
+        $username_sql = $env['db']['197']['username'];
+        $password_sql = $env['db']['197']['password'];
 
+        $this->log_path       = dirname(__DIR__) . '/log/sms/';
         $this->fet_SysId      = $env['sms']['fet']['fet_SysId'];
         $this->fet_SrcAddress = $env['sms']['fet']['fet_SrcAddress'];
         $this->acc_china      = $env['sms']['cht']['acc_china'];
@@ -41,22 +52,15 @@ class SMS_Gateway extends PDO
         $this->uid            = $env['sms']['apol']['uid'];
         $this->upass          = $env['sms']['apol']['upass'];
 
-        if (!is_dir($this->log_path)) {
+        if (! is_dir($this->log_path)) {
             mkdir($this->log_path, 0777, true);
         }
 
         try {
-            // utf-8
-            //$this->DB_link = new PDO($this->dDSN,$this->dUser,$this->dPassword,array(PDO::ATTR_PERSISTENT => true,PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'utf8\''));
-            //$this->DB_link->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
-
-            $this->DB_link = new PDO($this->dbtype_sql . ':host=' . $this->host_sql . ';dbname=' . $this->dbname_sql, $this->username_sql, $this->password_sql);
+            $this->DB_link = new PDO($dbtype_sql . ':host=' . $host_sql . ';port=' . $port_sql . ';dbname=' . $dbname_sql, $username_sql, $password_sql);
             // 資料庫使用 UTF8 編碼
             $this->DB_link->query('SET NAMES UTF8');
-            // $this->DB_link->query('SET GLOBAL interactive_timeout = 120');
-            // $this->DB_link->query('SET GLOBAL wait_timeout = 120');
         } catch (PDOException $e) {
-            //echo "<p>DBconnectFalse : ".$this->dDSN."</p><p>DB Error: ".$e->getMessage()."</p>";
             echo "DBconnectFalse: " . $e->getMessage();
             return "DBconnectFalse: " . $e->getMessage();
         }
@@ -94,7 +98,7 @@ class SMS_Gateway extends PDO
     public function send($pid, $sid, $bid, $target, $tid, $ok = "n", $realty = 0, $arr = null, $stxt = '')
     {
         // $ok = 'n' 表示不發送,只回傳簡訊內容
-        $_all = array();
+        $_all = [];
 
         $sys            = $this->getSmsSystem();
         $_contract_data = $this->getContractData($pid);
@@ -128,20 +132,20 @@ class SMS_Gateway extends PDO
                 }
 
                 //
-                $_data       = array();
-                $_data1      = array();
-                $_data4      = array();
-                $_special    = array();
-                $ownerBranch = array();
-                $_data5      = array();
+                $_data       = [];
+                $_data1      = [];
+                $_data4      = [];
+                $_special    = [];
+                $ownerBranch = [];
+                $_data5      = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 // print_r($_data);
                 //第一建仲介 服務對象：1.買賣方、2.賣方、3.買方
                 $checkService = $this->checkBranch($pid, 1);
-                $_data1       = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4       = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1       = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4       = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5       = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
 
                 if ($checkService == 2) {
@@ -160,12 +164,12 @@ class SMS_Gateway extends PDO
                 $bid2 = $this->getSecBranchMobile($pid);
 
                 if ($bid2 > 0) {
-                    $_data1       = array();
-                    $_data4       = array();
-                    $_data5       = array();
+                    $_data1       = [];
+                    $_data4       = [];
+                    $_data5       = [];
                     $checkService = $this->checkBranch($pid, 2);
-                    $_data1       = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -184,12 +188,12 @@ class SMS_Gateway extends PDO
                 $bid3 = $this->getThrBranchMobile($pid);
 
                 if ($bid3 > 0) {
-                    $_data1 = $_data4 = array();
-                    $_data5 = array();
+                    $_data1 = $_data4 = [];
+                    $_data5 = [];
 
                     $checkService = $this->checkBranch($pid, 3);
-                    $_data1       = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -206,13 +210,13 @@ class SMS_Gateway extends PDO
                 $bid4 = $this->getFourBranchMobile($pid);
 
                 if ($bid4 > 0) {
-                    $_data1 = array();
-                    $_data4 = array();
-                    $_data5 = array();
+                    $_data1 = [];
+                    $_data4 = [];
+                    $_data5 = [];
 
                     $checkService = $this->checkBranch($pid, 4);
-                    $_data1       = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -224,19 +228,19 @@ class SMS_Gateway extends PDO
                     unset($_data1);unset($_data4);unset($_data5);unset($checkService);
                 }
 
-                $_all = array();
+                $_all = [];
                 $_all = array_merge($_all, $_data);
                 unset($_data);
 
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $_all[$_start + $_t]["iden"]    = 'buy';
                 $_all[$_start + $_t]["tTitle"]  = '買方';
@@ -263,7 +267,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $_all[$_start + $_t]["iden"]    = 'buy';
                     $_all[$_start + $_t]["tTitle"]  = '買方';
@@ -277,7 +281,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //買方代理人手機
                     $_all[$_start + $_t]["iden"]    = 'buy';
                     $_all[$_start + $_t]["tTitle"]  = '買方代理人';
@@ -307,10 +311,10 @@ class SMS_Gateway extends PDO
                 //入帳金額中若有仲介服務費且匯入金額大於仲介服務費時,(所有?)賣方單獨發送
 
                 if (((($money - $fetchValue[0]["eBuyerMoney"]) > 0) && ($fetchValue[0]["eBuyerMoney"] > 0)) || $fetchValue[0]['eExtraMoney'] > 0) {
-                    $_owner_no = 0; //索引
-                    $oCount    = 0; //計算賣方人數用
-                    //主賣方
-                    $_special[$_owner_no]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                    $_owner_no = 0;                                                    //索引
+                    $oCount    = 0;                                                    //計算賣方人數用
+                                                                                       //主賣方
+                    $_special[$_owner_no]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                     $_special[$_owner_no]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                     $_special[$_owner_no]["iden"]    = 'owner';
                     $_special[$_owner_no]["tTitle"]  = '賣方';
@@ -336,7 +340,7 @@ class SMS_Gateway extends PDO
                     $_others_owners = $this->get_others($pid, '2');
                     //print_r($_others_owners) ;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                         $_special[$_owner_no]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                         $_special[$_owner_no]["iden"]    = 'owner';
                         $_special[$_owner_no]["tTitle"]  = '賣方';
@@ -351,7 +355,7 @@ class SMS_Gateway extends PDO
 
                     for ($i = 0; $i < count($_others_owners); $i++) {
 
-                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName']; //賣方代理人姓名
+                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName'];      //賣方代理人姓名
                         $_special[$_owner_no]["mMobile"] = $_others_owners[$i]['cMobileNum']; //賣方代理人手機
                         $_special[$_owner_no]["iden"]    = 'owner';
                         $_special[$_owner_no]["tTitle"]  = '賣方代理人';
@@ -388,9 +392,9 @@ class SMS_Gateway extends PDO
                 } else if ((($money - $fetchValue[0]["eBuyerMoney"]) == 0) && ($fetchValue[0]["eBuyerMoney"] > 0)) {
                     //入帳金額中若有仲介服務費且匯入金額等於仲介服務費時,則賣方不發送
                 } else {
-                    $oCount = 0; //計算賣方人數用
-                    //主賣方
-                    $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                    $oCount = 0;                                                      //計算賣方人數用
+                                                                                      //主賣方
+                    $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                     $_all[$_start + $_t]["iden"]    = 'owner';
                     $_all[$_start + $_t]["tTitle"]  = '賣方';
@@ -416,7 +420,7 @@ class SMS_Gateway extends PDO
                     $_others_owners = $this->get_others($pid, '2');
                     //print_r($_others_owners) ;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                         $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                         $_all[$_start + $_t]["iden"]    = 'owner';
                         $_all[$_start + $_t]["tTitle"]  = '賣方';
@@ -431,7 +435,7 @@ class SMS_Gateway extends PDO
                     // print_r($_others_owners) ;
                     // die;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //賣方代理人姓名
+                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //賣方代理人姓名
                         $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //賣方代理人手機
                         $_all[$_start + $_t]["iden"]    = 'owner';
                         $_all[$_start + $_t]["tTitle"]  = '賣方代理人';
@@ -454,7 +458,7 @@ class SMS_Gateway extends PDO
 
                     //賣方仲介
                     foreach ($ownerBranch as $k => $v) {
-                        $_all[$_start + $_t]["mName"]   = $v['mName']; //賣方代理人姓名
+                        $_all[$_start + $_t]["mName"]   = $v['mName'];   //賣方代理人姓名
                         $_all[$_start + $_t]["mMobile"] = $v['mMobile']; //賣方代理人手機
                         $_all[$_start + $_t]["iden"]    = 'oBranch';
                         $_all[$_start + $_t]['boss']    = $v['boss'];
@@ -507,8 +511,8 @@ class SMS_Gateway extends PDO
                 // $stxt = $sms_txt;
                 //要寄送的對象(勾選)
                 if ($arr) {
-                    // unset($boss);
-                    // $_all = $arr;
+                                                       // unset($boss);
+                                                       // $_all = $arr;
                     for ($i = 0; $i < $_total; $i++) { //全部
 
                         for ($j = 0; $j < count($arr); $j++) { //有勾選到的陣列
@@ -544,7 +548,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < $_total; $i++) {
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_");
+                            $check_word = ["-", "%", "_"];
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]);
                             //if (substr($mobile_tel,0,2)=='09'){
                             if (preg_match('/^09[0-9]{8}$/', $mobile_tel)) {
@@ -552,10 +556,10 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $_all[$i]["mName"], $sms_txt, $target, $pid, $tid, $sys);
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
+                                                          //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('s');
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
+                                                                 //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('p');
                                 } else { //發送失敗(f)
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('f');
@@ -632,7 +636,7 @@ class SMS_Gateway extends PDO
                                     $addr = $this->getProperty(substr($pid, 5, 9), 'all');
 
                                     $sms_txt_b = $sms_txt . ";" . $addr;
-                                    if (!empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
+                                    if (! empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
                                         $sms_txt_b .= "(" . $_special[$i]["smsText"] . ")";
                                     }
 
@@ -738,19 +742,19 @@ class SMS_Gateway extends PDO
                     $changeMoney = 0;
                 }
                 //
-                $_data       = array();
-                $_data1      = array();
-                $_data4      = array();
-                $_data5      = array();
-                $ownerBranch = array();
-                $_all        = array();
+                $_data       = [];
+                $_data1      = [];
+                $_data4      = [];
+                $_data5      = [];
+                $ownerBranch = [];
+                $_all        = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 //第一間仲介
                 $checkService = $this->checkBranch($pid, 1);
-                $_data1       = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4       = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1       = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4       = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5       = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
 
                 if ($checkService == 2) {
@@ -765,12 +769,12 @@ class SMS_Gateway extends PDO
                 $bid2 = $this->getSecBranchMobile($pid);
 
                 if ($bid2 > 0) {
-                    $_data1       = array();
-                    $_data4       = array();
-                    $_data5       = array();
+                    $_data1       = [];
+                    $_data4       = [];
+                    $_data5       = [];
                     $checkService = $this->checkBranch($pid, 2);
-                    $_data1       = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -789,11 +793,11 @@ class SMS_Gateway extends PDO
                 $bid3 = $this->getThrBranchMobile($pid);
 
                 if ($bid3 > 0) {
-                    $_data1       = array();
-                    $_data4       = array();
+                    $_data1       = [];
+                    $_data4       = [];
                     $checkService = $this->checkBranch($pid, 3);
-                    $_data1       = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -809,11 +813,11 @@ class SMS_Gateway extends PDO
                 $bid4 = $this->getFourBranchMobile($pid);
 
                 if ($bid4 > 0) {
-                    $_data1       = array();
-                    $_data4       = array();
+                    $_data1       = [];
+                    $_data4       = [];
                     $checkService = $this->checkBranch($pid, 3);
-                    $_data1       = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-                    $_data4       = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+                    $_data1       = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+                    $_data4       = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
                     $_data5       = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
 
                     if ($checkService == 2) {
@@ -829,13 +833,13 @@ class SMS_Gateway extends PDO
                 unset($_data);
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $_all[$_start + $_t]["iden"]    = 'buyer';
                 $_all[$_start + $_t]["tTitle"]  = '買方';
@@ -861,7 +865,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $_all[$_start + $_t]["iden"]    = 'buyer';
                     $_all[$_start + $_t]["tTitle"]  = '買方';
@@ -875,7 +879,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //買方代理人手機
                     $_all[$_start + $_t]["iden"]    = 'buyer';
                     $_all[$_start + $_t]["tTitle"]  = '買方代理人';
@@ -902,11 +906,11 @@ class SMS_Gateway extends PDO
                 //賣方
 
                 $memo = $this->getMemo($tid, $fetchValue[0]["eBuyerMoney"], $fetchValue[0]['eExtraMoney'], $money, $changeMoney);
-                if ($memo['owner'] != '') { //另外發送
-                    $_owner_no = 0; //索引
-                    $oCount    = 0; //計算賣方人數用
-                    //主賣方
-                    $_special[$_owner_no]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                if ($memo['owner'] != '') {                                        //另外發送
+                    $_owner_no = 0;                                                    //索引
+                    $oCount    = 0;                                                    //計算賣方人數用
+                                                                                       //主賣方
+                    $_special[$_owner_no]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                     $_special[$_owner_no]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                     $_special[$_owner_no]["iden"]    = 'owner';
                     $_special[$_owner_no]["tTitle"]  = '賣方';
@@ -932,7 +936,7 @@ class SMS_Gateway extends PDO
                     $_others_owners = $this->get_others($pid, '2');
                     //print_r($_others_owners) ;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                         $_special[$_owner_no]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                         $_special[$_owner_no]["iden"]    = 'owner';
                         $_special[$_owner_no]["tTitle"]  = '賣方';
@@ -947,7 +951,7 @@ class SMS_Gateway extends PDO
 
                     for ($i = 0; $i < count($_others_owners); $i++) {
 
-                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName']; //賣方代理人姓名
+                        $_special[$_owner_no]["mName"]   = $_others_owners[$i]['cName'];      //賣方代理人姓名
                         $_special[$_owner_no]["mMobile"] = $_others_owners[$i]['cMobileNum']; //賣方代理人手機
                         $_special[$_owner_no]["iden"]    = 'owner';
                         $_special[$_owner_no]["tTitle"]  = '賣方代理人';
@@ -958,7 +962,7 @@ class SMS_Gateway extends PDO
                     //
                     //賣方仲介
                     foreach ($ownerBranch as $k => $v) {
-                        $_special[$_owner_no]["mName"]   = $v['mName']; //賣方代理人姓名
+                        $_special[$_owner_no]["mName"]   = $v['mName'];   //賣方代理人姓名
                         $_special[$_owner_no]["mMobile"] = $v['mMobile']; //賣方代理人手機
                         $_special[$_owner_no]["iden"]    = 'oBranch';
                         $_special[$_owner_no]['boss']    = $v['boss'];
@@ -982,18 +986,18 @@ class SMS_Gateway extends PDO
                     ##
 
                 } elseif ($memo['status'] == 1) {
-                    //不發送
+                                 //不發送
                     $oCount = 1; //計算賣方人數用
-                    //其他賣方
+                                 //其他賣方
                     $_others_owners = $this->get_others($pid, '2');
                     $oCount += count($_others_owners);
 
                     unset($_others_owners);
 
                 } else {
-                    $oCount = 0; //計算賣方人數用
-                    //主賣方
-                    $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                    $oCount = 0;                                                      //計算賣方人數用
+                                                                                      //主賣方
+                    $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                     $_all[$_start + $_t]["iden"]    = 'owner';
                     $_all[$_start + $_t]["tTitle"]  = '賣方';
@@ -1019,7 +1023,7 @@ class SMS_Gateway extends PDO
                     $_others_owners = $this->get_others($pid, '2');
                     //print_r($_others_owners) ;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                         $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                         $_all[$_start + $_t]["iden"]    = 'owner';
                         $_all[$_start + $_t]["tTitle"]  = '賣方';
@@ -1034,7 +1038,7 @@ class SMS_Gateway extends PDO
                     // print_r($_others_owners) ;
                     // die;
                     for ($i = 0; $i < count($_others_owners); $i++) {
-                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //賣方代理人姓名
+                        $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //賣方代理人姓名
                         $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //賣方代理人手機
                         $_all[$_start + $_t]["iden"]    = 'owner';
                         $_all[$_start + $_t]["tTitle"]  = '賣方代理人';
@@ -1057,7 +1061,7 @@ class SMS_Gateway extends PDO
                     unset($other_phone);
                     //賣方仲介
                     foreach ($ownerBranch as $k => $v) {
-                        $_all[$_start + $_t]["mName"]   = $v['mName']; //賣方代理人姓名
+                        $_all[$_start + $_t]["mName"]   = $v['mName'];   //賣方代理人姓名
                         $_all[$_start + $_t]["mMobile"] = $v['mMobile']; //賣方代理人手機
                         $_all[$_start + $_t]["iden"]    = 'oBranch';
                         $_all[$_start + $_t]['boss']    = $v['boss'];
@@ -1106,8 +1110,8 @@ class SMS_Gateway extends PDO
                 // $stxt = $sms_txt;
                 //要寄送的對象(勾選)
                 if ($arr) {
-                    // unset($boss);
-                    // $_all = $arr;
+                                                       // unset($boss);
+                                                       // $_all = $arr;
                     for ($i = 0; $i < $_total; $i++) { //全部
 
                         for ($j = 0; $j < count($arr); $j++) { //有勾選到的陣列
@@ -1147,7 +1151,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < $_total; $i++) {
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_");
+                            $check_word = ["-", "%", "_"];
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]);
                             //if (substr($mobile_tel,0,2)=='09'){
                             if (preg_match('/^09[0-9]{8}$/', $mobile_tel)) {
@@ -1168,10 +1172,10 @@ class SMS_Gateway extends PDO
                                 }
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
+                                                          //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('s');
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
+                                                                 //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('p');
                                 } else { //發送失敗(f)
                                     $_all[$i]['mMobile'] .= '、' . $this->return_code('f');
@@ -1222,7 +1226,7 @@ class SMS_Gateway extends PDO
                                             // $memo = $fetchValue[0]["_title"].$fetchValue[0]["eRemarkContent"];
 
                                             $sms_txtBoss = $sms_txt . ";" . $addr . "";
-                                            if (!empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
+                                            if (! empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
                                                 $sms_txtBoss .= "(" . $_special[$i]["smsText"] . ")";
                                             }
                                             $sms_id = $this->sms_send($mobile_tel, $mobile_name, $sms_txtBoss, $target, $pid, $tid, $sys);
@@ -1238,7 +1242,7 @@ class SMS_Gateway extends PDO
                                         $addr = $this->getProperty(substr($pid, 5, 9), 'all');
 
                                         $sms_txtBoss = $sms_txt . ";" . $addr . "";
-                                        if (!empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
+                                        if (! empty($_special[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
                                             $sms_txtBoss .= "(" . $_special[$i]["smsText"] . ")";
                                         }
                                         $sms_id = $this->sms_send($mobile_tel, $mobile_name, $sms_txtBoss, $target, $pid, $tid, $sys);
@@ -1348,16 +1352,16 @@ class SMS_Gateway extends PDO
                 ##
 
                 //增加地政士與第一組仲介簡訊發送
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
-                $_data1 = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4 = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1 = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4 = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5 = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
 
                 // $_data = array_merge($_data,$_data1,$_data4) ;
@@ -1368,11 +1372,11 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = $_data4 = array();
+                $_data1 = $_data4 = [];
 
                 if ($bid2 > 0) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4, $_data5);
 
@@ -1384,11 +1388,11 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = $_data4 = array();
+                $_data1 = $_data4 = [];
 
                 if ($bid3 > 0) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4, $_data5);
                 }
@@ -1396,11 +1400,11 @@ class SMS_Gateway extends PDO
 
                 //增加第四組仲介簡訊發送
                 $bid4   = $this->getFourBranchMobile($pid);
-                $_data1 = $_data4 = array();
+                $_data1 = $_data4 = [];
 
                 if ($bid4 > 0) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data5);
 
@@ -1414,14 +1418,14 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                //主買方
+                             //主買方
                 $bCount = 0; //計算買方人數用
 
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -1441,7 +1445,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -1453,7 +1457,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //買方代理人手機
 
                     $_t++;
@@ -1474,10 +1478,10 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                //主賣方
+                             //主賣方
                 $oCount = 0; //計算賣方人數用
 
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -1499,7 +1503,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -1511,7 +1515,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -1568,11 +1572,11 @@ class SMS_Gateway extends PDO
                     for ($i = 0; $i < $_total; $i++) { //全部
 
                         for ($j = 0; $j < count($arr); $j++) { //有勾選到的陣列
-                            // echo $arr[$j]."_".$_all[$i]['mMobile']."<br>";
-                            // echo $_all[$i]['mMobile']."<br>";
+                                                                   // echo $arr[$j]."_".$_all[$i]['mMobile']."<br>";
+                                                                   // echo $_all[$i]['mMobile']."<br>";
 
                             if ($arr[$j] == $_all[$i]['mMobile']) { //勾選到的
-                                //PUSH
+                                                                        //PUSH
 
                                 if ($_all[$i]['boss'] == 1) {
                                     $manager[] = $_all[$i]; //店長店東
@@ -1605,7 +1609,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < $_total; $i++) {
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_");
+                            $check_word = ["-", "%", "_"];
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]);
                             if (preg_match('/^09[0-9]{8}$/', $mobile_tel)) {
 
@@ -1633,7 +1637,7 @@ class SMS_Gateway extends PDO
                     $addr      = $this->getProperty(substr($pid, 5, 9), 'all');
                     $sms_txt_b = '第一建經信託履約保證專戶已於' . $M . '月' . $D . '日收到保證編號' . substr($pid, 5, 9) . '（買方' . $buyer . $bCount . '賣方' . $seller . $oCount . ';' . $addr . '）存入票據金額' . $money . '元,待票據兌現後再另行簡訊通知';
                     // 20250819 支票通知發送 manager 簡訊內容調成一致
-                    if($arr && $stxt != ''){
+                    if ($arr && $stxt != '') {
                         $sms_txt_b = $stxt;
                     }
 
@@ -1701,18 +1705,18 @@ class SMS_Gateway extends PDO
                 ##
 
                 //增加地政士與第一組仲介簡訊發送
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 // print_r($push);
 
-                $_data1 = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4 = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1 = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4 = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5 = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
 
                 // $_data = array_merge($_data,$_data1,$_data4) ;
@@ -1723,13 +1727,13 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2 > 0) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4, $_data5);
 
@@ -1741,13 +1745,13 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3 > 0) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4, $_data5);
                 }
@@ -1755,9 +1759,9 @@ class SMS_Gateway extends PDO
 
                 //增加第四組仲介簡訊發送
                 $bid4   = $this->getFourBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid4 > 0) {
                     $_data1  = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
@@ -1775,14 +1779,14 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                //主買方
+                             //主買方
                 $bCount = 0; //計算買方人數用
 
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -1802,7 +1806,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -1814,7 +1818,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //買方代理人手機
 
                     $_t++;
@@ -1835,10 +1839,10 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                //主賣方
+                             //主賣方
                 $oCount = 0; //計算賣方人數用
 
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -1860,7 +1864,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -1872,7 +1876,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
 
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -1934,8 +1938,8 @@ class SMS_Gateway extends PDO
                     for ($i = 0; $i < $_total; $i++) { //全部
 
                         for ($j = 0; $j < count($arr); $j++) { //有勾選到的陣列
-                            // echo $arr[$j]."_".$_all[$i]['mMobile']."<br>";
-                            // echo $_all[$i]['mMobile']."<br>";
+                                                                   // echo $arr[$j]."_".$_all[$i]['mMobile']."<br>";
+                                                                   // echo $_all[$i]['mMobile']."<br>";
 
                             if ($arr[$j] == $_all[$i]['mMobile']) { //勾選到的
 
@@ -1970,7 +1974,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < $_total; $i++) {
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_");
+                            $check_word = ["-", "%", "_"];
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]);
                             if (preg_match('/^09[0-9]{8}$/', $mobile_tel)) {
 
@@ -2062,7 +2066,7 @@ class SMS_Gateway extends PDO
                 $_m = substr($fetchValue[0]["tBankLoansDate"], 5, 2);
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
-                $_all = array();
+                $_all = [];
                 //取得地政士發送簡訊對象
                 $_all = $this->getsScrivenerMobile($pid, $sid);
 
@@ -2070,9 +2074,9 @@ class SMS_Gateway extends PDO
                 // print_r($push);
                 ##
                 //仲介一
-                $manager = array();
-                $_data1  = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4  = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $manager = [];
+                $_data1  = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4  = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                 $manager = array_merge($manager, $_data1, $_data4);
                 $_all    = array_merge($_all, $_data5);
@@ -2082,13 +2086,13 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2100,13 +2104,13 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2183,7 +2187,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -2202,17 +2206,17 @@ class SMS_Gateway extends PDO
                                 }
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -2223,7 +2227,7 @@ class SMS_Gateway extends PDO
                     //店長店東
                     // $tmp = substr($pid,5,9);
                     // $addr = $this->getProperty($tmp,'all');
-                    $addr      = $this->getProperty(substr($pid, 5, 9), 'all');
+                    $addr = $this->getProperty(substr($pid, 5, 9), 'all');
                     // $sms_txt_b = "第一建經信託履約保證專戶通知（保證號碼：" . substr($pid, 5, 9) . "）：買方" . $buyer . $bCount . ",賣方" . $seller . $oCount . ";" . $addr . "之稅款新台幣" . $money . "元已於" . $M . '/' . $D . "存入地政士指定帳戶";
                     $sms_txt_b = "第一建經信託履約保證專戶通知（保證號碼：" . substr($pid, 5, 9) . "）：買方" . $buyer . $bCount . ",賣方" . $seller . $oCount . "之稅款已於" . $M . '/' . $D . "存入地政士指定帳戶";
                     $_boss     = $this->sendBossSms($manager, $sms_txt_b, $target, $pid, $tid, $sys, $ok); //******
@@ -2262,20 +2266,20 @@ class SMS_Gateway extends PDO
                 $_m = substr($fetchValue[0]["tBankLoansDate"], 5, 2);
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
-                //加入地政士簡訊對象
+                                                                //加入地政士簡訊對象
                 $_all = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 // print_r($push);
                 // 仲介
                 //有服務費
 
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
-                $_data1  = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4  = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
+                $_data1  = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4  = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                 $manager = array_merge($manager, $_data1, $_data4);
                 $_all    = array_merge($_all, $_data5);
@@ -2283,13 +2287,13 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2299,13 +2303,13 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2316,13 +2320,13 @@ class SMS_Gateway extends PDO
 
                 //增加第四組仲介簡訊發送
                 $bid4   = $this->getFourBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid4) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2331,13 +2335,13 @@ class SMS_Gateway extends PDO
 
                 unset($_data1, $_data4);unset($_data5);
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -2359,7 +2363,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -2371,7 +2375,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //6買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //6買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //6買方代理人手機
 
                     $_t++;
@@ -2393,9 +2397,9 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                $oCount = 0; //計算賣方人數用
-                //主賣方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $oCount = 0;                                                      //計算賣方人數用
+                                                                                  //主賣方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -2417,7 +2421,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -2429,7 +2433,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -2516,7 +2520,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -2599,18 +2603,18 @@ class SMS_Gateway extends PDO
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
                 //
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 // print_r($push);
 
-                $_data1  = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4  = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1  = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4  = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                 $manager = array_merge($manager, $_data1, $_data4);
                 $_all    = array_merge($_all, $_data5);
@@ -2620,13 +2624,13 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');   // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');   // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -2638,9 +2642,9 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3) {
                     $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
@@ -2653,7 +2657,7 @@ class SMS_Gateway extends PDO
                 ##
                 //增加第4組仲介簡訊發送
                 $bid4   = $this->getFourBranchMobile($pid);
-                $_data1 = $_data4 = array();
+                $_data1 = $_data4 = [];
 
                 if ($bid4) {
                     $_data1  = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
@@ -2669,13 +2673,13 @@ class SMS_Gateway extends PDO
                 unset($_data);unset($_data1);unset($_data4);unset($_data5);
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -2696,7 +2700,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -2708,7 +2712,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //6買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //6買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //6買方代理人手機
 
                     $_t++;
@@ -2730,9 +2734,9 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                $oCount = 0; //計算賣方人數用
-                //主賣方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $oCount = 0;                                                      //計算賣方人數用
+                                                                                  //主賣方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -2754,7 +2758,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -2766,7 +2770,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -2835,7 +2839,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -2854,17 +2858,17 @@ class SMS_Gateway extends PDO
                                 }
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -2901,7 +2905,7 @@ class SMS_Gateway extends PDO
                 break;
 
             case "仲介服務費":
-                // echo 'II';
+                         // echo 'II';
                 $_s = 0; //簡訊成功次數
                 $_p = 0; //簡訊部分成功次數
                 $_f = 0; //簡訊失敗次數
@@ -2921,7 +2925,7 @@ class SMS_Gateway extends PDO
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
                 //qq
-                $_data = $_data1 = $_data2 = $_data3 = $_data4 = array();
+                $_data = $_data1 = $_data2 = $_data3 = $_data4 = [];
 
                 $_data = $this->getsScrivenerMobile2($pid, $sid); //地政士的部分只撈取寄送服務費的人
 
@@ -2970,7 +2974,7 @@ class SMS_Gateway extends PDO
                 $buyer         = $_contract_data[0]["b_name"];
                 $seller        = $_contract_data[0]["o_name"];
                 $money         = $fetchValue[0]["tMoney"];
-                $_buyer_money  = $fetchValue[0]["tBuyer"]; // 買方服務費
+                $_buyer_money  = $fetchValue[0]["tBuyer"];  // 買方服務費
                 $_seller_money = $fetchValue[0]["tSeller"]; //賣方服務費
 
                 //echo $_buyer_money;exit;
@@ -3018,7 +3022,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             if ($_all[$i]['smsText'] != '') {
@@ -3039,17 +3043,17 @@ class SMS_Gateway extends PDO
                                 unset($sms_txt_b);
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -3142,9 +3146,9 @@ class SMS_Gateway extends PDO
 
                 ####
                 //仲介一
-                $manager = array();
-                $_data1  = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4  = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $manager = [];
+                $_data1  = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4  = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                 $manager = array_merge($manager, $_data1, $_data4);
                 $_all    = array_merge($_all, $_data5);
@@ -3154,8 +3158,8 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
+                $_data1 = [];
+                $_data4 = [];
 
                 if ($bid2) {
                     $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
@@ -3171,8 +3175,8 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
+                $_data1 = [];
+                $_data4 = [];
 
                 if ($bid3) {
                     $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
@@ -3259,7 +3263,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -3279,17 +3283,17 @@ class SMS_Gateway extends PDO
                                 }
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -3317,10 +3321,10 @@ class SMS_Gateway extends PDO
                 break;
 
             case "賣方先動撥": //20150917買賣方不收簡訊
-                $_s = 0; //簡訊成功次數
-                $_p = 0; //簡訊部分成功次數
-                $_f = 0; //簡訊失敗次數
-                $_n = 0; //簡訊號碼格式錯誤次數
+                $_s = 0;                //簡訊成功次數
+                $_p = 0;                //簡訊部分成功次數
+                $_f = 0;                //簡訊失敗次數
+                $_n = 0;                //簡訊號碼格式錯誤次數
 
                 $StartTime  = date('Y-m-d H:i:s');
                 $StartTime2 = microtime(true);
@@ -3345,11 +3349,11 @@ class SMS_Gateway extends PDO
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
                 //
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
@@ -3366,9 +3370,9 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
                     $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
@@ -3384,7 +3388,7 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = $_data4 = array();
+                $_data1 = $_data4 = [];
 
                 if ($bid3) {
                     $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
@@ -3400,14 +3404,14 @@ class SMS_Gateway extends PDO
 
                 //$_all = array_merge($_data,$_data2); // 合併陣列
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
                 $bCount = 0; //計算買方人數用
-                //主買方
-                // $_all[$_start+$_t]["mName"] = $_contract_data[0]["b_name"]    ;                     //主買方姓名
-                // $_all[$_start+$_t]["mMobile"] = $_contract_data[0]["b_mobile"]    ;                //主買方手機
+                             //主買方
+                             // $_all[$_start+$_t]["mName"] = $_contract_data[0]["b_name"]    ;                     //主買方姓名
+                             // $_all[$_start+$_t]["mMobile"] = $_contract_data[0]["b_mobile"]    ;                //主買方手機
                 $bCount++;
                 // $_t ++ ;
                 ##
@@ -3450,9 +3454,9 @@ class SMS_Gateway extends PDO
                 ##
 
                 $oCount = 0; //計算賣方人數用
-                //主賣方
-                // $_all[$_start+$_t]["mName"] = $_contract_data[0]["o_name"] ;                     //賣方姓名
-                // $_all[$_start+$_t]["mMobile"] = $_contract_data[0]["o_mobile"] ;                //賣方手機
+                             //主賣方
+                             // $_all[$_start+$_t]["mName"] = $_contract_data[0]["o_name"] ;                     //賣方姓名
+                             // $_all[$_start+$_t]["mMobile"] = $_contract_data[0]["o_mobile"] ;                //賣方手機
                 $oCount++;
                 // $_t ++ ;
                 ##
@@ -3539,7 +3543,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."<br>";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -3558,17 +3562,17 @@ class SMS_Gateway extends PDO
                                 }
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -3659,7 +3663,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."<br>";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -3667,17 +3671,17 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $_all[$i]["mName"], $sms_txt, $target, $_all[$i]["bBranch"], $tid, $sys); //回饋金特殊
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -3721,8 +3725,8 @@ class SMS_Gateway extends PDO
                         if ($tmp2[$j]['mMobile'] != '') {
                             $_all[$a] = $tmp2[$j];
 
-                            $jsonArr['code']   = $tmp[$i];
-                            $url               = $this->getShortUrl('https://escrow.first1.com.tw/login/page-price1.php?v=' . $this->enCrypt(json_encode($jsonArr)), $this->enCrypt(json_encode($jsonArr)), $jsonArr['code']);
+                            $jsonArr['code'] = $tmp[$i];
+                            $url             = $this->getShortUrl('https://escrow.first1.com.tw/login/page-price1.php?v=' . $this->enCrypt(json_encode($jsonArr)), $this->enCrypt(json_encode($jsonArr)), $jsonArr['code']);
                             // $url               = $this->getShortUrl('https://escrow.first1.com.tw/login/page-price1.php?v=' . $this->enCrypt(json_encode($jsonArr)), $this->enCrypt(json_encode($jsonArr)), $ok);
 
                             // $_all[$a]['smsTxt'] = '親愛的客戶您好:109年第2季之回饋金報表已結算完成,請點下列網址至第一建經官方網站確認報表,並依請款辦法作業,謝謝。新E化回饋金結算流程之操作手冊,請至第一建經官網下載。'.$url."";
@@ -3730,9 +3734,9 @@ class SMS_Gateway extends PDO
 
                             $a++;
                         }
-                        $json_Arr = null; unset($json_Arr);
+                        $json_Arr = null;unset($json_Arr);
                     }
-                    $tmp2 = null; unset($tmp2);
+                    $tmp2 = null;unset($tmp2);
                 }
 
                 //濾除重複簡訊對象並重新排序
@@ -3743,7 +3747,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < $_total; $i++) {
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -3751,17 +3755,17 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $_all[$i]["mName"], $_all[$i]['smsTxt'] . "\r\n", $target, $_all[$i]["bBranch"], $tid, $sys); //回饋金特殊
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -3792,11 +3796,11 @@ class SMS_Gateway extends PDO
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
                 //
-                $_data   = array();
-                $_data1  = array();
-                $_data4  = array();
-                $manager = array();
-                $_data5  = array();
+                $_data   = [];
+                $_data1  = [];
+                $_data4  = [];
+                $manager = [];
+                $_data5  = [];
 
                 $_data = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
@@ -3813,9 +3817,9 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
                     $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
@@ -3831,9 +3835,9 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3) {
                     $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
@@ -3848,13 +3852,13 @@ class SMS_Gateway extends PDO
                 unset($_data);unset($_data1);unset($_data4);unset($_data5);
                 ##
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -3875,7 +3879,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -3887,7 +3891,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //6買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //6買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //6買方代理人手機
 
                     $_t++;
@@ -3908,9 +3912,9 @@ class SMS_Gateway extends PDO
                 unset($other_phone);
                 ##
 
-                $oCount = 0; //計算賣方人數用
-                //主賣方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $oCount = 0;                                                      //計算賣方人數用
+                                                                                  //主賣方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -3932,7 +3936,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -3944,7 +3948,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -4004,7 +4008,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -4080,19 +4084,19 @@ class SMS_Gateway extends PDO
                 $_m = substr($fetchValue[0]["tBankLoansDate"], 5, 2);
                 $_d = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
 
-                //加入地政士簡訊對象
+                                                                //加入地政士簡訊對象
                 $_all = $this->getsScrivenerMobile($pid, $sid); // 取得地政士發送簡訊對象
 
                 // print_r($push);
                 // 仲介
                 //有服務費
 
-                $_data1  = array();
-                $_data4  = array();
-                $_data5  = array();
-                $manager = array();
-                $_data1  = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-                $_data4  = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+                $_data1  = [];
+                $_data4  = [];
+                $_data5  = [];
+                $manager = [];
+                $_data1  = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+                $_data4  = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
                 $_data5  = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
                 $manager = array_merge($manager, $_data1, $_data4);
                 $_all    = array_merge($_all, $_data5);
@@ -4100,13 +4104,13 @@ class SMS_Gateway extends PDO
 
                 //增加第二組仲介簡訊發送
                 $bid2   = $this->getSecBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid2) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -4116,13 +4120,13 @@ class SMS_Gateway extends PDO
 
                 //增加第三組仲介簡訊發送
                 $bid3   = $this->getThrBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid3) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -4133,13 +4137,13 @@ class SMS_Gateway extends PDO
 
                 //增加第四組仲介簡訊發送
                 $bid4   = $this->getFourBranchMobile($pid);
-                $_data1 = array();
-                $_data4 = array();
-                $_data5 = array();
+                $_data1 = [];
+                $_data4 = [];
+                $_data5 = [];
 
                 if ($bid4) {
-                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+                    $_data1  = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+                    $_data4  = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
                     $_data5  = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
                     $manager = array_merge($manager, $_data1, $_data4);
                     $_all    = array_merge($_all, $_data5);
@@ -4148,13 +4152,13 @@ class SMS_Gateway extends PDO
 
                 unset($_data1, $_data4, $_data5);
 
-                // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
                 $_start = count($_all); //計算目前已存入之簡訊發送對象筆數
                 $_t     = 0;
 
-                $bCount = 0; //計算買方人數用
-                //主買方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+                $bCount = 0;                                                      //計算買方人數用
+                                                                                  //主買方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
                 $bCount++;
                 $_t++;
@@ -4176,7 +4180,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '1');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他買方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他買方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他買方手機
                     $bCount++;
                     $_t++;
@@ -4188,7 +4192,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '6');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //6買方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //6買方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //6買方代理人手機
 
                     $_t++;
@@ -4210,9 +4214,9 @@ class SMS_Gateway extends PDO
 
                 ##
 
-                $oCount = 0; //計算賣方人數用
-                //主賣方
-                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                $oCount = 0;                                                      //計算賣方人數用
+                                                                                  //主賣方
+                $_all[$_start + $_t]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
                 $_all[$_start + $_t]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
                 $oCount++;
                 $_t++;
@@ -4234,7 +4238,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '2');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //其他賣方姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //其他賣方姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //其他賣方手機
                     $oCount++;
                     $_t++;
@@ -4246,7 +4250,7 @@ class SMS_Gateway extends PDO
                 $_others_owners = $this->get_others($pid, '7');
                 //print_r($_others_owners) ;
                 for ($i = 0; $i < count($_others_owners); $i++) {
-                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName']; //7賣方代理人姓名
+                    $_all[$_start + $_t]["mName"]   = $_others_owners[$i]['cName'];      //7賣方代理人姓名
                     $_all[$_start + $_t]["mMobile"] = $_others_owners[$i]['cMobileNum']; //7賣方代理人手機
 
                     $_t++;
@@ -4338,7 +4342,7 @@ class SMS_Gateway extends PDO
                         //echo $_all[$i]["mMobile"]."\n";
 
                         if (trim($_all[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                    //分隔字元
                             $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -4346,17 +4350,17 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $_all[$i]["mName"], $sms_txt, $target, $pid, $tid, $sys);
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                             ##
@@ -4412,12 +4416,12 @@ class SMS_Gateway extends PDO
     public function send2($pid, $target, $tid, $nu, $ok = "n", $realty = 0, $storeId = 0)
     {
 
-        $_s   = 0; //簡訊成功次數
-        $_p   = 0; //簡訊部分成功次數
-        $_f   = 0; //簡訊失敗次數
-        $_n   = 0; //簡訊號碼格式錯誤次數
+        $_s   = 0;                     //簡訊成功次數
+        $_p   = 0;                     //簡訊部分成功次數
+        $_f   = 0;                     //簡訊失敗次數
+        $_n   = 0;                     //簡訊號碼格式錯誤次數
         $sys  = $this->getSmsSystem(); //發送簡訊的系統
-        $_all = $manager = array();
+        $_all = $manager = [];
         $str  = '';
         // if ($storeId != 0 && $target =='仲介服務費') {
         //     $str = "AND bStoreId = '".$storeId."'";
@@ -4455,7 +4459,7 @@ class SMS_Gateway extends PDO
 
                 if ($target == '仲介服務費') {
                     if ($BankTranSms[$i]['bStoreId'] == $storeId) {
-                        // array_push($manager, $BankTranSms[$i]);
+                                                             // array_push($manager, $BankTranSms[$i]);
                         array_push($_all, $BankTranSms[$i]); //20220712
                     }
                 } else {
@@ -4484,7 +4488,7 @@ class SMS_Gateway extends PDO
         $buyer         = $_contract_data[0]["b_name"];
         $seller        = $_contract_data[0]["o_name"];
         $money         = $fetchValue[0]["tMoney"];
-        $_buyer_money  = $fetchValue[0]["tBuyer"]; // 買方服務費
+        $_buyer_money  = $fetchValue[0]["tBuyer"];  // 買方服務費
         $_seller_money = $fetchValue[0]["tSeller"]; //賣方服務費
 
         $M = substr($fetchValue[0]["tBankLoansDate"], 5, 2);
@@ -4492,8 +4496,8 @@ class SMS_Gateway extends PDO
         $D = substr($fetchValue[0]["tBankLoansDate"], 8, 2);
         $D = preg_replace("/^0/", "", $D);
 
-        $bCountTxt = $this->getOhterBuyerOwner($bCount); //是否多人買方等?人
-        $oCountTxt = $this->getOhterBuyerOwner($oCount); //是否多人賣方等?人
+        $bCountTxt = $this->getOhterBuyerOwner($bCount);          //是否多人買方等?人
+        $oCountTxt = $this->getOhterBuyerOwner($oCount);          //是否多人賣方等?人
         $addr      = $this->getProperty(substr($pid, -9), 'all'); //地址
 
         // echo $addr;
@@ -4593,7 +4597,7 @@ class SMS_Gateway extends PDO
             for ($i = 0; $i < $_total; $i++) {
 
                 if (trim($_all[$i]["mMobile"]) != "") {
-                    $check_word = array("-", "%", "_"); //分隔字元
+                    $check_word = ["-", "%", "_"];                                    //分隔字元
                     $mobile_tel = str_replace($check_word, "", $_all[$i]["mMobile"]); //濾除分隔字元
 
                     //開始發送簡訊
@@ -4639,7 +4643,7 @@ class SMS_Gateway extends PDO
             return $this->out_sms_code($_s, $_p, $_f, $_n);
             ##
         } else {
-            $BankTranSms = array();
+            $BankTranSms = [];
             $BankTranSms = array_merge($BankTranSms, $manager, $_all);
 
             // echo "<pre>";
@@ -4680,19 +4684,19 @@ class SMS_Gateway extends PDO
         }
         ##
 
-        $_data     = array(); //非賣方
-        $ownerList = array(); //賣方
-        $_data1    = array();
-        $_data4    = array();
-        $_data5    = array();
+        $_data     = []; //非賣方
+        $ownerList = []; //賣方
+        $_data1    = [];
+        $_data4    = [];
+        $_data5    = [];
 
         // 取得地政士發送簡訊對象
         $_data = $this->getsScrivenerMobile($pid, $sid);
 
         //第一間仲介 服務對象：1.買賣方、2.賣方、3.買方
         $checkService = $this->checkBranch($pid, 1);
-        $_data1       = $this->getsBranchMobile($pid, $bid, '店長'); // 取得店發送簡訊對象
-        $_data4       = $this->getsBranchMobile($pid, $bid, '店東'); // 取得店發送簡訊對象
+        $_data1       = $this->getsBranchMobile($pid, $bid, '店長');    // 取得店發送簡訊對象
+        $_data4       = $this->getsBranchMobile($pid, $bid, '店東');    // 取得店發送簡訊對象
         $_data5       = $this->getsBranchMobile($pid, $bid, '經紀人'); // 取得店發送簡訊對象
 
         if ($checkService == 2) {
@@ -4711,12 +4715,12 @@ class SMS_Gateway extends PDO
         $bid2 = $this->getSecBranchMobile($pid);
 
         if ($bid2 > 0) {
-            $_data1       = array();
-            $_data4       = array();
-            $_data5       = array();
+            $_data1       = [];
+            $_data4       = [];
+            $_data5       = [];
             $checkService = $this->checkBranch($pid, 2);
-            $_data1       = $this->getsBranchMobile($pid, $bid2, '店長'); // 取得店發送簡訊對象
-            $_data4       = $this->getsBranchMobile($pid, $bid2, '店東'); // 取得店發送簡訊對象
+            $_data1       = $this->getsBranchMobile($pid, $bid2, '店長');    // 取得店發送簡訊對象
+            $_data4       = $this->getsBranchMobile($pid, $bid2, '店東');    // 取得店發送簡訊對象
             $_data5       = $this->getsBranchMobile($pid, $bid2, '經紀人'); // 取得店發送簡訊對象
 
             if ($checkService == 2) {
@@ -4733,12 +4737,12 @@ class SMS_Gateway extends PDO
         $bid3 = $this->getThrBranchMobile($pid);
 
         if ($bid3 > 0) {
-            $_data1 = $_data4 = array();
-            $_data5 = array();
+            $_data1 = $_data4 = [];
+            $_data5 = [];
 
             $checkService = $this->checkBranch($pid, 3);
-            $_data1       = $this->getsBranchMobile($pid, $bid3, '店長'); // 取得店發送簡訊對象
-            $_data4       = $this->getsBranchMobile($pid, $bid3, '店東'); // 取得店發送簡訊對象
+            $_data1       = $this->getsBranchMobile($pid, $bid3, '店長');    // 取得店發送簡訊對象
+            $_data4       = $this->getsBranchMobile($pid, $bid3, '店東');    // 取得店發送簡訊對象
             $_data5       = $this->getsBranchMobile($pid, $bid3, '經紀人'); // 取得店發送簡訊對象
 
             if ($checkService == 2) {
@@ -4755,13 +4759,13 @@ class SMS_Gateway extends PDO
         $bid4 = $this->getFourBranchMobile($pid);
 
         if ($bid4 > 0) {
-            $_data1 = array();
-            $_data4 = array();
-            $_data5 = array();
+            $_data1 = [];
+            $_data4 = [];
+            $_data5 = [];
 
             $checkService = $this->checkBranch($pid, 4);
-            $_data1       = $this->getsBranchMobile($pid, $bid4, '店長'); // 取得店發送簡訊對象
-            $_data4       = $this->getsBranchMobile($pid, $bid4, '店東'); // 取得店發送簡訊對象
+            $_data1       = $this->getsBranchMobile($pid, $bid4, '店長');    // 取得店發送簡訊對象
+            $_data4       = $this->getsBranchMobile($pid, $bid4, '店東');    // 取得店發送簡訊對象
             $_data5       = $this->getsBranchMobile($pid, $bid4, '經紀人'); // 取得店發送簡訊對象
 
             if ($checkService == 2) {
@@ -4773,12 +4777,12 @@ class SMS_Gateway extends PDO
             unset($_data1);unset($_data4);unset($_data5);unset($checkService);
         }
 
-        // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
+                                 // 加入其他通訊資料 (買、賣方與買、賣方經紀人)
         $_start = count($_data); //計算目前已存入之簡訊發送對象筆數
         $_t     = 0;
-        $bCount = 0; //計算買方人數用
-        //主買方
-        $_data[$_start]["mName"]   = $_contract_data[0]["b_name"]; //主買方姓名
+        $bCount = 0;                                                 //計算買方人數用
+                                                                     //主買方
+        $_data[$_start]["mName"]   = $_contract_data[0]["b_name"];   //主買方姓名
         $_data[$_start]["mMobile"] = $_contract_data[0]["b_mobile"]; //主買方手機
         $_data[$_start]["iden"]    = 'buy';
         $_data[$_start]["tTitle"]  = '買方';
@@ -4804,7 +4808,7 @@ class SMS_Gateway extends PDO
         //其他買方
         $_others = $this->get_others($pid, '1');
         for ($i = 0; $i < count($_others); $i++) {
-            $_data[$_start]["mName"]   = $_others[$i]['cName']; //其他買方姓名
+            $_data[$_start]["mName"]   = $_others[$i]['cName'];      //其他買方姓名
             $_data[$_start]["mMobile"] = $_others[$i]['cMobileNum']; //其他買方手機
             $_data[$_start]["iden"]    = 'buy';
             $_data[$_start]["tTitle"]  = '買方';
@@ -4817,7 +4821,7 @@ class SMS_Gateway extends PDO
         $_others = $this->get_others($pid, '6');
         //print_r($_others) ;
         for ($i = 0; $i < count($_others); $i++) {
-            $_data[$_start]["mName"]   = $_others[$i]['cName']; //買方代理人姓名
+            $_data[$_start]["mName"]   = $_others[$i]['cName'];      //買方代理人姓名
             $_data[$_start]["mMobile"] = $_others[$i]['cMobileNum']; //買方代理人手機
             $_data[$_start]["iden"]    = 'buy';
             $_data[$_start]["tTitle"]  = '買方代理人';
@@ -4837,13 +4841,13 @@ class SMS_Gateway extends PDO
         }
 
         unset($other_phone);
-        ##
-        //賣方
-        $oCount    = 0; //賣方人數
+                                        ##
+                                        //賣方
+        $oCount    = 0;                 //賣方人數
         $_owner_no = count($ownerList); //index
 
-        //主賣方
-        $ownerList[$_owner_no]["mName"]   = $_contract_data[0]["o_name"]; //賣方姓名
+                                                                            //主賣方
+        $ownerList[$_owner_no]["mName"]   = $_contract_data[0]["o_name"];   //賣方姓名
         $ownerList[$_owner_no]["mMobile"] = $_contract_data[0]["o_mobile"]; //賣方手機
         $ownerList[$_owner_no]["iden"]    = 'owner';
         $ownerList[$_owner_no]["tTitle"]  = '賣方';
@@ -4867,7 +4871,7 @@ class SMS_Gateway extends PDO
         $_other_owners = $this->get_others($pid, '2');
 
         for ($i = 0; $i < count($_other_owners); $i++) {
-            $ownerList[$_owner_no]["mName"]   = $_other_owners[$i]['cName']; //其他賣方姓名
+            $ownerList[$_owner_no]["mName"]   = $_other_owners[$i]['cName'];      //其他賣方姓名
             $ownerList[$_owner_no]["mMobile"] = $_other_owners[$i]['cMobileNum']; //其他賣方手機
             $ownerList[$_owner_no]["iden"]    = 'owner';
             $ownerList[$_owner_no]["tTitle"]  = '賣方';
@@ -4881,7 +4885,7 @@ class SMS_Gateway extends PDO
 
         for ($i = 0; $i < count($_other_owners); $i++) {
 
-            $ownerList[$_owner_no]["mName"]   = $_other_owners[$i]['cName']; //賣方代理人姓名
+            $ownerList[$_owner_no]["mName"]   = $_other_owners[$i]['cName'];      //賣方代理人姓名
             $ownerList[$_owner_no]["mMobile"] = $_other_owners[$i]['cMobileNum']; //賣方代理人手機
             $ownerList[$_owner_no]["iden"]    = 'owner';
             $ownerList[$_owner_no]["tTitle"]  = '賣方代理人';
@@ -4899,16 +4903,16 @@ class SMS_Gateway extends PDO
         }
 
         unset($_other_owners);
-        ##
-        $_data = $this->filter_array($_data); //過濾重複
-        if ($pid != '96988110109059') { //20220914(余珊)
+                                                              ##
+        $_data = $this->filter_array($_data);                 //過濾重複
+        if ($pid != '96988110109059') {                       //20220914(余珊)
             $ownerList = $this->filter_array($ownerList, $_data); //過濾重複
         }
-        // echo "<prE>";
-        // print_r($_data);
-        // die;
-        ##
-        //簡訊內容
+                             // echo "<prE>";
+                             // print_r($_data);
+                             // die;
+                             ##
+                             //簡訊內容
         $sms_txt       = ''; //一般簡訊
         $sms_txt_owner = ''; //賣方簡訊
 
@@ -4945,7 +4949,7 @@ class SMS_Gateway extends PDO
                     $money = $money - $fetchValue[0]["eBuyerMoney"] - $fetchValue[0]['eExtraMoney'];
                     ##//判斷是否有溢入款的文字
                     $tmp  = explode('+', $memo);
-                    $tmp2 = array();
+                    $tmp2 = [];
                     for ($i = 0; $i < count($tmp); $i++) {
                         $check = true;
                         if (preg_match("/^.*溢入款/", $tmp[$i]) || preg_match("/^買方仲介服務費/", $tmp[$i]) || preg_match("/^買方服務費/", $tmp[$i]) || preg_match("/^買方履保費/", $tmp[$i]) || preg_match("/^契稅/", $tmp[$i]) || preg_match("/^印花稅/", $tmp[$i])) {
@@ -4991,7 +4995,7 @@ class SMS_Gateway extends PDO
                                 if ($_data[$i]['boss'] == 1) { //簡訊要有地址
                                     $addr    = $this->getProperty(substr($pid, 5, 9), 'all');
                                     $sms_txt = $sendList['normal_sms_txt'] . ";" . $addr;
-                                    $_boss   = $this->sendBossSms(array(0 => $_data[$i]), $sms_txt, $target, $pid, $tid, $sys, 'y');
+                                    $_boss   = $this->sendBossSms([0 => $_data[$i]], $sms_txt, $target, $pid, $tid, $sys, 'y');
 
                                 } else {
                                     $sms_txt = $sendList['normal_sms_txt'];
@@ -5001,10 +5005,10 @@ class SMS_Gateway extends PDO
                                         $sms_id = $this->sms_send($_data[$i]['mMobile'], $_data[$i]["mName"], $sms_txt, $target, $pid, $tid, $sys);
 
                                         if ($sms_id == 's') { //發送成功(s)
-                                            //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
+                                                                  //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('s');
                                         } else if ($sms_id == 'p') { //部份成功(p)
-                                            //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
+                                                                         //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('p');
                                         } else { //發送失敗(f)
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('f');
@@ -5024,7 +5028,7 @@ class SMS_Gateway extends PDO
                                 if ($ownerList[$i]['boss'] == 1) {
                                     $addr    = $this->getProperty(substr($pid, 5, 9), 'all');
                                     $sms_txt = $sendList['owner_sms_txt'] . ";" . $addr;
-                                    $_boss   = $this->sendBossSms(array(0 => $ownerList[$i]), $sms_txt, $target, $pid, $tid, $sys, 'y');
+                                    $_boss   = $this->sendBossSms([0 => $ownerList[$i]], $sms_txt, $target, $pid, $tid, $sys, 'y');
 
                                 } else {
                                     $sms_txt = $sendList['owner_sms_txt'];
@@ -5034,10 +5038,10 @@ class SMS_Gateway extends PDO
                                         $sms_id = $this->sms_send($ownerList[$i]['mMobile'], $ownerList[$i]["mName"], $sms_txt, $target, $pid, $tid, $sys);
 
                                         if ($sms_id == 's') { //發送成功(s)
-                                            //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
+                                                                  //$_all[$i]['mMobile'] .= '、簡訊已發出' ;
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('s');
                                         } else if ($sms_id == 'p') { //部份成功(p)
-                                            //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
+                                                                         //$_all[$i]['mMobile'] .= '、單筆多封簡訊部分發出!!明細請至簡訊明細查詢' ;
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('p');
                                         } else { //發送失敗(f)
                                             $_all[$i]['mMobile'] .= '、' . $this->return_code('f');
@@ -5048,7 +5052,7 @@ class SMS_Gateway extends PDO
                         }
                     }
                 } else {
-                    $_all                   = array();
+                    $_all                   = [];
                     $_all['normal_sms_txt'] = $sms_txt;
                     $_all['normal']         = $_data;
                     $_all['owner_sms_txt']  = $sms_txt_owner;
@@ -5056,7 +5060,7 @@ class SMS_Gateway extends PDO
                     if ($sms_txt_owner != '') {
                         $_all['owner'] = $ownerList;
                     } else {
-                        $_all['owner'] = array();
+                        $_all['owner'] = [];
                     }
 
                     return $_all;
@@ -5099,7 +5103,7 @@ class SMS_Gateway extends PDO
                                 if ($_data[$i]['boss'] == 1) { //簡訊要有地址
                                     $addr    = $this->getProperty(substr($pid, 5, 9), 'all');
                                     $sms_txt = $sendList['normal_sms_txt'] . ";" . $addr;
-                                    $_boss   = $this->sendBossSms(array(0 => $_data[$i]), $sms_txt, $target, $pid, $tid, $sys, 'y');
+                                    $_boss   = $this->sendBossSms([0 => $_data[$i]], $sms_txt, $target, $pid, $tid, $sys, 'y');
 
                                 } else {
                                     $sms_txt = $sendList['normal_sms_txt'];
@@ -5131,7 +5135,7 @@ class SMS_Gateway extends PDO
                                 if ($ownerList[$i]['boss'] == 1) {
                                     $addr    = $this->getProperty(substr($pid, 5, 9), 'all');
                                     $sms_txt = $sendList['owner_sms_txt'] . ";" . $addr;
-                                    $_boss   = $this->sendBossSms(array(0 => $ownerList[$i]), $sms_txt, $target, $pid, $tid, $sys, 'y');
+                                    $_boss   = $this->sendBossSms([0 => $ownerList[$i]], $sms_txt, $target, $pid, $tid, $sys, 'y');
 
                                 } else {
                                     $sms_txt = $sendList['owner_sms_txt'];
@@ -5154,7 +5158,7 @@ class SMS_Gateway extends PDO
                         }
                     }
                 } else {
-                    $_all                   = array();
+                    $_all                   = [];
                     $_all['normal_sms_txt'] = $sms_txt;
                     $_all['normal']         = $_data;
                     $_all['owner_sms_txt']  = $sms_txt_owner;
@@ -5162,7 +5166,7 @@ class SMS_Gateway extends PDO
                     if ($sms_txt_owner != '') {
                         $_all['owner'] = $ownerList;
                     } else {
-                        $_all['owner'] = array();
+                        $_all['owner'] = [];
                     }
 
                     return $_all;
@@ -5208,7 +5212,7 @@ class SMS_Gateway extends PDO
 
         // print_r($BankTranSms);
 
-        $_data = $store = array();
+        $_data = $store = [];
         //簡訊對象
         for ($i = 0; $i < count($manager); $i++) {
             if ($manager[$i]['bStoreId'] > 0) {
@@ -5237,11 +5241,11 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < count($tmp); $i++) {
                         if (trim($tmp[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                   //分隔字元
                             $mobile_tel = str_replace($check_word, "", $tmp[$i]["mMobile"]); //濾除分隔字元
 
                             $branchTxt = '';
-                            if (!empty($tmp[$i]['smsText'])) {
+                            if (! empty($tmp[$i]['smsText'])) {
                                 $branchTxt = '(' . $tmp[$i]['smsText'] . ')';
                             }
 
@@ -5271,17 +5275,17 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $tmp[$i]["mName"], $realty_sms_txt, $target, $pid, $tid, $sys);
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                         }
@@ -5290,11 +5294,11 @@ class SMS_Gateway extends PDO
 
                     // print_r($tmp);
                     for ($i = 0; $i < count($tmp); $i++) {
-                        $check_word = array("-", "%", "_"); //分隔字元
+                        $check_word = ["-", "%", "_"];                                   //分隔字元
                         $mobile_tel = str_replace($check_word, "", $tmp[$i]["mMobile"]); //濾除分隔字元
 
                         $branchTxt = '';
-                        if (!empty($tmp[$i]['smsText'])) {
+                        if (! empty($tmp[$i]['smsText'])) {
                             $branchTxt = '(' . $tmp[$i]['smsText'] . ')';
                         }
 
@@ -5354,12 +5358,12 @@ class SMS_Gateway extends PDO
         $getMD->execute();
         $tmp2 = $getMD->fetchALL(PDO::FETCH_ASSOC);
 
-        $store = array();
+        $store = [];
 
         $addr = $this->getProperty(substr($pid, 5, 9), 'all');
 
         for ($i = 0; $i < count($tmp2); $i++) {
-            $_data = $_data1 = $_data1 = $_data2 = $_data3 = $_data4 = array();
+            $_data = $_data1 = $_data1 = $_data2 = $_data3 = $_data4 = [];
             $arr[$tmp2[$i]['tStoreId']]['money'] += $tmp2[$i]['tMoney'];
             $arr[$tmp2[$i]['tStoreId']]['signdate'] = $tmp2[$i]['cSignDate'];
 
@@ -5391,7 +5395,7 @@ class SMS_Gateway extends PDO
                 if ($ok == 'y') {
                     for ($i = 0; $i < count($tmp); $i++) {
                         if ($target == '點交(結案)') {
-                            $realty_sms_txt = (!empty($tmp[$i]['smsText'])) ? '(' . $tmp[$i]['smsText'] . ')' : '';
+                            $realty_sms_txt = (! empty($tmp[$i]['smsText'])) ? '(' . $tmp[$i]['smsText'] . ')' : '';
 
                             if ($tmp[$i]["smsTextStyle"] == 1) {
                                 //簽約日+買方姓名+賣方姓名+門牌+(京)+服務費內容。(不要有履保編號)
@@ -5401,7 +5405,7 @@ class SMS_Gateway extends PDO
                             }
 
                         } elseif ($target == '預售屋') {
-                            $realty_sms_txt = (!empty($tmp[$i]['smsText'])) ? '(' . $tmp[$i]['smsText'] . ')' : '';
+                            $realty_sms_txt = (! empty($tmp[$i]['smsText'])) ? '(' . $tmp[$i]['smsText'] . ')' : '';
                             if ($tmp[$i]["smsTextStyle"] == 1) {
                                 //簽約日+買方姓名+賣方姓名+門牌+(京)+服務費內容。(不要有履保編號)
                                 $realty_sms_txt = '第一建經信託履約保證專戶通知：簽約日' . substr($value['signdate'], 5, 2) . "月" . substr($value['signdate'], 8, 2) . '日,買方' . $buyer . ',賣方' . $seller . ';' . $addr . $realty_sms_txt . ',已完成預售屋作業服務費' . $value['money'] . '元已於' . $date . '匯入仲介指定帳戶';
@@ -5412,7 +5416,7 @@ class SMS_Gateway extends PDO
                         }
 
                         if (trim($tmp[$i]["mMobile"]) != "") {
-                            $check_word = array("-", "%", "_"); //分隔字元
+                            $check_word = ["-", "%", "_"];                                   //分隔字元
                             $mobile_tel = str_replace($check_word, "", $tmp[$i]["mMobile"]); //濾除分隔字元
 
                             //開始發送簡訊
@@ -5420,17 +5424,17 @@ class SMS_Gateway extends PDO
                                 $sms_id = $this->sms_send($mobile_tel, $tmp[$i]["mName"], $realty_sms_txt, $target, $pid, $tid, $sys);
 
                                 if ($sms_id == 's') { //發送成功(s)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
+                                                          //$_all[$i]['mMobile'] .= '、'.$this->return_code('s') ;
                                     $_s++;
                                 } else if ($sms_id == 'p') { //部份成功(p)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
+                                                                 //$_all[$i]['mMobile'] .= '、'.$this->return_code('p') ;
                                     $_p++;
                                 } else { //發送失敗(f)
-                                    //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
+                                             //$_all[$i]['mMobile'] .= '、'.$this->return_code('f') ;
                                     $_f++;
                                 }
                             } else { //門號錯誤(n)
-                                //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
+                                         //$_all[$i]['mMobile'] .= '、'.$this->return_code('n') ;
                                 $_n++;
                             }
                         }
@@ -5480,7 +5484,7 @@ class SMS_Gateway extends PDO
 
     private function getChangeMoney($id, $pid)
     {
-        //取得對應調帳之出款檔金額
+                                                                            //取得對應調帳之出款檔金額
         $sql = 'SELECT tMoney FROM tBankTrans WHERE tChangeExpense=' . $id; //AND tVR_Code="'.$pid.'"
 
         $getMD = $this->DB_link->prepare($sql);
@@ -5586,7 +5590,7 @@ class SMS_Gateway extends PDO
         // $url = dirname(dirname(__FILE__)).'/sms/log2/'.date('Y-m-d').".log";
 
         $url = dirname(__DIR__) . '/log/sms/log2/';
-        if (!is_dir($url)) {
+        if (! is_dir($url)) {
             mkdir($url, 0777, true);
         }
         $url .= date('Y-m-d') . ".log";
@@ -5663,7 +5667,7 @@ class SMS_Gateway extends PDO
     }
     private function getNoSend($type, $cid, $arr, $iden)
     {
-        $list = array();
+        $list = [];
 
         if ($type == 'tContractOwner') { //比對銀行外再多比對人名※他們有時會在出款才增加帳戶
             $sql = 'SELECT cName AS mName,cMobileNum AS mMobile FROM tContractOwner WHERE cCertifiedId ="' . $cid . '" AND ((cBankKey2="' . $arr['BankMain'] . '" AND cBankBranch2 ="' . $arr['BankBranch'] . '" AND cBankAccNumber ="' . $arr['tAccount'] . '" AND cBankAccName ="' . $arr['tAccountName'] . '") OR (cName ="' . $arr['tAccountName'] . '")) ';
@@ -5897,7 +5901,7 @@ class SMS_Gateway extends PDO
     //取出回饋金簡訊對象
     private function getfeedbackmobile($bid, $cat = '')
     {
-        $tmp = array();
+        $tmp = [];
         if ($cat == 1) {
             $this->sql2 = "SELECT
 		 					fs.fName AS mName,
@@ -5979,7 +5983,7 @@ class SMS_Gateway extends PDO
     //取出回饋金簡訊對象(scrivener)
     private function getfeedbackmobile2($bid, $cat = '')
     {
-        $tmp = array();
+        $tmp = [];
         // echo $cat;
         if ($cat == 1) {
 
@@ -6050,9 +6054,9 @@ class SMS_Gateway extends PDO
     //取出地政士簡訊接收對象
     public function getsScrivenerMobile($pid, $sid)
     {
-        $aryTemp1 = array();
-        $aryTemp2 = array();
-        $_T       = array();
+        $aryTemp1 = [];
+        $aryTemp2 = [];
+        $_T       = [];
 
         $pid        = substr($pid, 5, 9);
         $this->sql2 = "SELECT  `cId`,  `cCertifiedId`,  `cScrivener`,  `cSmsTarget`, cSmsTargetName,  `cAssistant`,  `cBankAccount`,  `cZip`,  `cAddress` FROM tContractScrivener WHERE cScrivener=$sid and cCertifiedId='$pid'";
@@ -6099,8 +6103,8 @@ class SMS_Gateway extends PDO
         if (is_array($name)) {
             for ($i = 0; $i < count($tmp); $i++) {
                 for ($j = 0; $j < count($name); $j++) {
-                    // echo $tmp[$i]['mName']."=".$name[$j]."<bR>";
-                    // if ($tmp[$i]['mName'] == $name[$j]) {    //20220817
+                                                          // echo $tmp[$i]['mName']."=".$name[$j]."<bR>";
+                                                          // if ($tmp[$i]['mName'] == $name[$j]) {    //20220817
                     if ($tmp[$i]['mMobile'] == $_T[$j]) { //20220817
                         $aryTemp1[] = $tmp[$i];
                         // echo 'QQ';
@@ -6119,9 +6123,9 @@ class SMS_Gateway extends PDO
     //取出地政士服務費簡訊接收對象
     public function getsScrivenerMobile2($pid, $sid)
     {
-        $aryTemp1 = array();
-        $aryTemp2 = array();
-        $_T       = array();
+        $aryTemp1 = [];
+        $aryTemp2 = [];
+        $_T       = [];
 
         $pid        = substr($pid, 5, 9);
         $this->sql2 = "SELECT  `cId`,  `cCertifiedId`,  `cScrivener`,  `cSmsTarget`,  `cAssistant`,  `cBankAccount`,  `cZip`,  `cAddress` ,`cSend2` FROM tContractScrivener WHERE cScrivener=$sid and cCertifiedId='$pid'";
@@ -6164,12 +6168,12 @@ class SMS_Gateway extends PDO
     //取出店簡訊接收對象
     public function getsBranchMobile($pid, $bid, $title)
     {
-        $aryTemp2 = array();
+        $aryTemp2 = [];
         $pid      = substr($pid, 5, 9);
 
         if ($title != '') {
             //取得合約書仲介順序
-            $smsTarget     = array();
+            $smsTarget     = [];
             $this->execSQL = 'SELECT * FROM tContractRealestate WHERE cCertifyId="' . $pid . '";';
             $getMD         = $this->DB_link->prepare($this->execSQL);
             $getMD->execute();
@@ -6186,7 +6190,7 @@ class SMS_Gateway extends PDO
                         $index = $i;
                     }
 
-                    if ($v['cBranchNum' . $index] == $bid) { //若符合仲介店家編號
+                    if ($v['cBranchNum' . $index] == $bid) {              //若符合仲介店家編號
                         $smsTarget = explode(',', $v['cSmsTarget' . $index]); //取出合約書的仲介簡訊號碼
                         break;
                     }
@@ -6268,7 +6272,7 @@ class SMS_Gateway extends PDO
                 $arr3 = $getMD3->fetchALL(PDO::FETCH_ASSOC);
 
                 $x    = 0;
-                $Temp = array();
+                $Temp = [];
                 for ($i = 0; $i < count($arr3); $i++) {
                     foreach ($smsTarget as $k => $v) {
                         if ($arr3[$i]['mMobile'] == $v) {
@@ -6401,7 +6405,7 @@ class SMS_Gateway extends PDO
 
         )
          */
-        $aryTemp2 = array();
+        $aryTemp2 = [];
         $pid      = substr($pid, 5, 9);
         //$this->sql2 = "SELECT a.cName AS b_name, a.cMobileNum AS b_mobile, b.cName AS o_name,b.cMobileNum AS o_mobile,a.sAgentName1 AS b_agent_name,a.sAgentMobile1 AS b_agent_mobile,b.sAgentName1 AS o_agent_name,a.sAgentName2 AS b_agent_name2,a.sAgentMobile2 AS b_agent_mobile2,a.sAgentName3 AS b_agent_name3,a.sAgentMobile3 AS b_agent_mobile3,a.sAgentName4 AS b_agent_name4,a.sAgentMobile4 AS b_agent_mobile4,b.sAgentMobile1 AS o_agent_mobile,b.sAgentName2 AS o_agent_name2,b.sAgentMobile2 AS o_agent_mobile2,b.sAgentName3 AS o_agent_name3,b.sAgentMobile3 AS o_agent_mobile3,b.sAgentName4 AS o_agent_name4,b.sAgentMobile4 AS o_agent_mobile4 FROM tContractBuyer AS a INNER JOIN tContractOwner AS b ON a.cCertifiedId = b.cCertifiedId WHERE a.cCertifiedId = '$pid'";
         $this->sql2 = '
@@ -6457,13 +6461,13 @@ class SMS_Gateway extends PDO
     private function genCheckCode($last_id, $mobile)
     {
         $sms_check_code = str_pad(($last_id + $mobile), 13, '0', STR_PAD_LEFT); //編碼原則：長度 最長 13 碼數字
-        $n13            = substr($sms_check_code, 0, 1); //欄位順序：由右至左
-        $n12            = substr($sms_check_code, 1, 1); //運算規則：
-        $n11            = substr($sms_check_code, 2, 1); //=================================================
-        $n10            = substr($sms_check_code, 3, 1); //奇數碼相加之總和(n1 + n3 + n5 + n7 + n9 + n11 + n13) = A
-        $n9             = substr($sms_check_code, 4, 1); //偶數碼相加之總和(n2 + n4 + n6 + n8 + n10 + n12) = B
-        $n8             = substr($sms_check_code, 5, 1); // A + (B x 6) = C
-        $n7             = substr($sms_check_code, 6, 1); //取末三碼即為檢查碼(未滿三碼時左補零)
+        $n13            = substr($sms_check_code, 0, 1);                        //欄位順序：由右至左
+        $n12            = substr($sms_check_code, 1, 1);                        //運算規則：
+        $n11            = substr($sms_check_code, 2, 1);                        //=================================================
+        $n10            = substr($sms_check_code, 3, 1);                        //奇數碼相加之總和(n1 + n3 + n5 + n7 + n9 + n11 + n13) = A
+        $n9             = substr($sms_check_code, 4, 1);                        //偶數碼相加之總和(n2 + n4 + n6 + n8 + n10 + n12) = B
+        $n8             = substr($sms_check_code, 5, 1);                        // A + (B x 6) = C
+        $n7             = substr($sms_check_code, 6, 1);                        //取末三碼即為檢查碼(未滿三碼時左補零)
         $n6             = substr($sms_check_code, 7, 1);
         $n5             = substr($sms_check_code, 8, 1);
         $n4             = substr($sms_check_code, 9, 1);
@@ -6489,10 +6493,10 @@ class SMS_Gateway extends PDO
         $timeTxt    = $pid . "_" . $tg . "_" . $mobile_name . '寄送開始' . $StartTime;
         $this->testLog($pid, $tg, $timeTxt);
 
-        $from_addr      = '0936019428'; //顯示的發話方號碼
+        $from_addr      = '0936019428';                                 //顯示的發話方號碼
         $url            = 'http://61.20.32.60:6600/mpushapi/smssubmit'; //遠傳API網址
-        $fet_SysId      = $this->fet_SysId; //API帳號代號
-        $fet_SrcAddress = $this->fet_SrcAddress; //發送訊息的來源位址(20個數字)
+        $fet_SysId      = $this->fet_SysId;                             //API帳號代號
+        $fet_SrcAddress = $this->fet_SrcAddress;                        //發送訊息的來源位址(20個數字)
         $sms_str        = '';
         $_error_code    = '';
 
@@ -6508,8 +6512,8 @@ class SMS_Gateway extends PDO
         $sms_check_code = $this->genCheckCode($last_id, $mobile);
         ##
 
-        //編輯傳送簡訊字串
-        //$txt .= ' 訊息碼' . $sms_check_code ; //簡訊內容加上(簡訊檢查碼)
+                                                //編輯傳送簡訊字串
+                                                //$txt .= ' 訊息碼' . $sms_check_code ; //簡訊內容加上(簡訊檢查碼)
         $max_len = strlen(base64_encode($txt)); //計算簡訊長度(Base64加密後)
 
         $sms_str = '<?xml version="1.0" encoding="UTF-8"?>' .
@@ -6522,18 +6526,18 @@ class SMS_Gateway extends PDO
             '</SmsSubmitReq>';
         ##
 
-        //開始傳送簡訊、透過curl發送
+                                               //開始傳送簡訊、透過curl發送
         $url .= '?xml=' . urlencode($sms_str); //透過GET方式，傳送愈發送的簡訊資料
-        $this->testLog($pid, $tg, 'body: '.$url);
-        
+        $this->testLog($pid, $tg, 'body: ' . $url);
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $output = curl_exec($ch);
+        $output     = curl_exec($ch);
         $outputInfo = curl_getinfo($ch);
         if (curl_errno($ch)) {
             echo 'Curl 錯誤!! Id:' . curl_errno($ch) . ', Error:' . curl_error($ch) . "\n";
-            $this->testLog($pid, $tg, 'error: '.print_r(curl_error($ch), true));
-        
+            $this->testLog($pid, $tg, 'error: ' . print_r(curl_error($ch), true));
+
             exit;
         }
         curl_close($ch);
@@ -6550,7 +6554,7 @@ class SMS_Gateway extends PDO
          */
 
         //取出需求資料
-        $output = str_replace("\n", "", $output);
+        $output     = str_replace("\n", "", $output);
         $output_res = print_r($output, true);
         if (preg_match("/<SubmitRes><ResultCode>(.*)<\/ResultCode><ResultText>(.*)<\/ResultText>(.*)<\/SubmitRes>/", $output, $matches)) {
             $code        = trim($matches[1]); //結果代碼
@@ -6577,7 +6581,7 @@ class SMS_Gateway extends PDO
             //網路連線錯誤失敗
             $reason      = '無法建立網路連線';
             $_error_code = $code = '99999';
-            $_res = $output_res. "\n";
+            $_res        = $output_res . "\n";
             $_res .= print_r($outputInfo, true) . "\n";
             Slack::channelSend('SMS無法建立網路連線' . $mobile);
             ##
@@ -6610,10 +6614,10 @@ class SMS_Gateway extends PDO
     {
         $acc_china   = $this->acc_china; //中華電信帳號
         $pwd_china   = $this->pwd_china; //中華電信密碼
-        $from_addr   = '0911510792'; //發話方電話號碼
-        $max_ch      = 68; //最大簡訊文字數量
-        $sms_success = 0; //發送成功簡訊數量
-        $_error_code = ''; //簡訊錯誤碼
+        $from_addr   = '0911510792';     //發話方電話號碼
+        $max_ch      = 68;               //最大簡訊文字數量
+        $sms_success = 0;                //發送成功簡訊數量
+        $_error_code = '';               //簡訊錯誤碼
 
         //登錄資料庫位置並取的 ID 以便進行簡訊驗證編碼運算
         $last_id = $this->sms_regist2DB($from_addr, $mobile);
@@ -6623,13 +6627,13 @@ class SMS_Gateway extends PDO
         $sms_check_code = $this->genCheckCode($last_id, $mobile);
         ##
 
-        //修正簡訊文字與編碼格式
-        //$txt .= ' 訊息碼' . $sms_check_code ; //於簡訊最後面加入簡訊檢核碼
-        $txt_big5 = $this->n_to_w($txt); //將訊息中的半型數字轉為全型數字
+                                                                     //修正簡訊文字與編碼格式
+                                                                     //$txt .= ' 訊息碼' . $sms_check_code ; //於簡訊最後面加入簡訊檢核碼
+        $txt_big5 = $this->n_to_w($txt);                             //將訊息中的半型數字轉為全型數字
         $txt_big5 = mb_convert_encoding($txt_big5, 'BIG5', 'UTF-8'); //將簡訊內容轉成Big-5編碼
-        $max_len  = mb_strlen($txt_big5, 'big5'); //計算簡訊長度
-        $_divid   = 1; //預設發送一則簡訊
-        ##
+        $max_len  = mb_strlen($txt_big5, 'big5');                    //計算簡訊長度
+        $_divid   = 1;                                               //預設發送一則簡訊
+                                                                     ##
 
         //若單封簡訊長度超長
         if ($max_len > $max_ch) {
@@ -6646,23 +6650,23 @@ class SMS_Gateway extends PDO
             //echo 'str='.mb_convert_encoding($_big5_str,'utf8','big5'),"<br><br>\n" ;
             $sms_success++;
 
-            //https 版本
+                                                                            //https 版本
             $url = 'https://imsp.emome.net:4443/imsp/sms/servlet/SubmitSM'; //網址
-            $url .= '?account=' . $acc_china . '&password=' . $pwd_china; //帳號密碼
-            $url .= '&from_addr_type=0&from_addr=' . $from_addr; //發話方手機號碼
-            $url .= '&to_addr_type=0&to_addr=' . $mobile; //發送至手機號碼
-            $url .= '&msg_expire_time=0&msg_type=0'; //設定資料格式
-            $url .= '&msg=' . urlencode($_big5_str); //發送內容
-            ##
+            $url .= '?account=' . $acc_china . '&password=' . $pwd_china;   //帳號密碼
+            $url .= '&from_addr_type=0&from_addr=' . $from_addr;            //發話方手機號碼
+            $url .= '&to_addr_type=0&to_addr=' . $mobile;                   //發送至手機號碼
+            $url .= '&msg_expire_time=0&msg_type=0';                        //設定資料格式
+            $url .= '&msg=' . urlencode($_big5_str);                        //發送內容
+                                                                            ##
 
             //預設簡訊 ID
             $messageid = $msgid = 'Fake_' . uniqid();
             ##
 
-            //開始發送簡訊
+                                                           //開始發送簡訊
             $res = $this->file_get_contents_curl($url, 1); // 1 : https 連線方式、2 : http 連線方式
-            //echo "RES=".$res."<br>\n" ;
-            ##
+                                                           //echo "RES=".$res."<br>\n" ;
+                                                           ##
 
             //假資料測試
             //$res = "<html>\n<header>\n</header>\n<body>\n".$mobile.'|0|'.$messageid."|Success<br>\n</body>\n</html>" ;
@@ -6671,10 +6675,10 @@ class SMS_Gateway extends PDO
             //取得發送簡訊回傳之相關訊息
             $res = str_replace("\n", "", $res);
             if (preg_match("/<html><header><\/header><body>(.*)\|(.*)\|(.*)\|(.*)<br><\/body><\/html>/", $res, $_data)) { //連線正常取得回傳訊息
-                $_tel        = trim($_data[1]); //收訊端手機號碼
-                $code        = trim($_data[2]); //回傳代碼
-                $messageid   = trim($_data[3]); //中華電信簡訊 ID
-                $description = trim($_data[4]); //描述
+                $_tel        = trim($_data[1]);                                                                               //收訊端手機號碼
+                $code        = trim($_data[2]);                                                                               //回傳代碼
+                $messageid   = trim($_data[3]);                                                                               //中華電信簡訊 ID
+                $description = trim($_data[4]);                                                                               //描述
 
                 //if ($i == 1) { $code = 2 ; }    /////////////////////////////////////// 為了測試單筆多封簡訊 ////////////
 
@@ -6704,9 +6708,9 @@ class SMS_Gateway extends PDO
             }
             ##
 
-            //若中華電信加值簡訊遭拒則改用亞太發送簡訊
-            //if ($code == '48') {    //確認亞太系統發送簡訊
-            if (($code == '48') && (!preg_match("/^H/", $messageid))) { //確認亞太系統發送簡訊
+                                                                        //若中華電信加值簡訊遭拒則改用亞太發送簡訊
+                                                                        //if ($code == '48') {    //確認亞太系統發送簡訊
+            if (($code == '48') && (! preg_match("/^H/", $messageid))) { //確認亞太系統發送簡訊
                 unset($_data);
 
                 $returnAns = $this->send_apol_sms($mobile, $_utf8_str, $tg, $pid, $tid);
@@ -6728,19 +6732,19 @@ class SMS_Gateway extends PDO
                 ##
 
                 //若無企業門號則手動指定企業門號
-                if (!$apol_mdn) {
+                if (! $apol_mdn) {
                     $apol_mdn = '0980013768';
                 }
                 ##
 
                 //若無交易代號則產生唯一鍵值取代亞太回傳碼
-                if (!$apol_tid) {
+                if (! $apol_tid) {
                     $apol_tid = $messageid;
                 }
                 ##
 
                 //若無平台回應時間則手動產生平台回應時間
-                if (!$apol_RDT) {
+                if (! $apol_RDT) {
                     $apol_RDT = date("YmdHis");
                 }
                 ##
@@ -6769,10 +6773,10 @@ class SMS_Gateway extends PDO
                 $this->smsLog_apol($returnAns, $mobile, $tg, $pid, mb_strlen($_utf8_str, 'utf-8'), $_utf8_str);
                 ##
             }
-            ##
+                   ##
             else { //中華系統發送簡訊
-                //將簡訊發送完成紀錄寫到資料庫中
-                //($messageid=>簡訊回傳碼,$reason=>簡訊發送狀態(伺服器錯誤),$_code=>回傳狀態碼,$_desc=>狀態描述,$from_addr=>發送端手機號碼,$_tel=>接收端手機號碼)
+                       //將簡訊發送完成紀錄寫到資料庫中
+                       //($messageid=>簡訊回傳碼,$reason=>簡訊發送狀態(伺服器錯誤),$_code=>回傳狀態碼,$_desc=>狀態描述,$from_addr=>發送端手機號碼,$_tel=>接收端手機號碼)
                 if ($i <= 0) {
                     $this->sms_update2DB($last_id, $messageid, $code, $_tel, $from_addr, '1', $sms_check_code, $reason, $this->cht_sms_code($code), '');
                 } else {
@@ -6839,7 +6843,7 @@ class SMS_Gateway extends PDO
         $url      = 'xsms.aptg.com.tw';
 
         $fp = fsockopen($url, 80, $errno, $errstr, 30);
-        if (!$fp) {
+        if (! $fp) {
             echo 'Could not open connection.';
             return 'error';
         } else {
@@ -6848,8 +6852,8 @@ class SMS_Gateway extends PDO
 			    <soap-env:Body>
 			        <Request>
 			            <MDN>' . $from_addr . '</MDN>
-			            <UID>' .$this->uid. '</UID>
-			            <UPASS>' .$this->upass. '</UPASS>
+			            <UID>' . $this->uid . '</UID>
+			            <UPASS>' . $this->upass . '</UPASS>
 			            <Subject>' . $tg . "_" . substr($pid, 5, 9) . '</Subject>
 			            <Retry>Y</Retry>
 			            <AutoSplit>Y</AutoSplit><Message>' . $txt . '</Message>
@@ -6870,7 +6874,7 @@ class SMS_Gateway extends PDO
 
             fwrite($fp, $out);
             $theOutput = '';
-            while (!feof($fp)) {
+            while (! feof($fp)) {
                 $theOutput .= fgets($fp, 128);
             }
 
@@ -6900,19 +6904,19 @@ class SMS_Gateway extends PDO
                 ##
 
                 //若無企業門號則手動指定企業門號
-                if (!$apol_mdn) {
+                if (! $apol_mdn) {
                     $apol_mdn = $from_addr;
                 }
                 ##
 
                 //若無交易代號則產生唯一鍵值取代亞太回傳碼
-                if (!$apol_tid) {
+                if (! $apol_tid) {
                     $apol_tid = $msg_id;
                 }
                 ##
 
                 //若無平台回應時間則手動產生平台回應時間
-                if (!$apol_RDT) {
+                if (! $apol_RDT) {
                     $apol_RDT = date("YmdHis");
                 }
                 ##
@@ -7059,7 +7063,8 @@ class SMS_Gateway extends PDO
         return $data;
     }
     //
-    private function sms_check_register($_tid, $_reason = '', $_code, $_mdn = '', $_RDT = '', $_telNo)
+    // 修正參數順序，將可選參數移到必填參數之後
+    private function sms_check_register($_tid, $_code, $_telNo, $_reason = '', $_mdn = '', $_RDT = '')
     {
         if (preg_match("/伺服器錯誤/", $_reason)) {$_checked = 'y';} else { $_checked = 'n';}
 
@@ -7069,7 +7074,7 @@ class SMS_Gateway extends PDO
     }
 
     //亞太電信簡訊發送紀錄
-    private function apol_sms_check_register($_tid, $_reason = '', $_code, $_mdn = '', $_RDT = '', $_telNo)
+    private function apol_sms_check_register($_tid, $_code, $_telNo, $_reason = '', $_mdn = '', $_RDT = '')
     {
         if ($_code == '0') {$_checked = 'n';} else { $_checked = 'y';}
 
@@ -7081,7 +7086,7 @@ class SMS_Gateway extends PDO
     ##
 
     //中華電信簡訊發送紀錄
-    private function cht_sms_check_register($_tid, $_reason = '', $_code, $_desc = '', $_mdn = '', $_telNo)
+    private function cht_sms_check_register($_tid, $_code, $_telNo, $_reason = '', $_desc = '', $_mdn = '')
     {
         if (preg_match("/發送失敗/", $_reason)) {$_checked = 'y';} else { $_checked = 'n';}
 
@@ -7118,7 +7123,7 @@ class SMS_Gateway extends PDO
     private function cht_sms_code($no = 0)
     {
         // '77' 為網路錯誤所自行加入之錯誤碼
-        $code_des = array(
+        $code_des = [
             '0'  => '已發出、系統將開始發送簡訊',
             '2'  => '訊息傳送失敗',
             '3'  => '訊息預約時間超過48小時',
@@ -7153,7 +7158,7 @@ class SMS_Gateway extends PDO
             '51' => '預付客戶餘額不足、無法發訊',
             '52' => '抱歉、預付式系統扣款錯誤、請再試',
             '77' => '網路連線錯誤、請連絡相關人員',
-        );
+        ];
 
         if ($no < 0) {
             return '中華電信系統或是資料庫故障';
@@ -7166,12 +7171,12 @@ class SMS_Gateway extends PDO
     // 半形(narrow)、全形(wide)互換 -- 數字版
     private function n_to_w($strs, $types = '0')
     {
-        $nt = array(
+        $nt = [
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-        );
-        $wt = array(
+        ];
+        $wt = [
             "０", "１", "２", "３", "４", "５", "６", "７", "８", "９",
-        );
+        ];
 
         if ($types == '0') {
             $strtmp = str_replace($nt, $wt, $strs); // narrow to wide (半形轉全形)
@@ -7260,7 +7265,7 @@ class SMS_Gateway extends PDO
         $_getData->execute();
         $_myData = $_getData->fetchALL(PDO::FETCH_ASSOC);
 
-        $_returnArr = array();
+        $_returnArr = [];
 
         for ($i = 0; $i < count($_myData); $i++) {
             $_returnArr[$i]['cName']      = $_myData[$i]['cName'];
@@ -7271,7 +7276,7 @@ class SMS_Gateway extends PDO
         return $_returnArr;
         //return $_sql ;
     }
-    ##
+                                                    ##
     private function getProperty($cid, $cat = '')
     { //建物地址
 
@@ -7342,7 +7347,7 @@ class SMS_Gateway extends PDO
     private function sendBossSms($boss, $sms_txt, $target, $pid, $tid, $sys, $ok = 'n')
     {
 
-        if (!empty($boss)) {
+        if (! empty($boss)) {
 
             for ($i = 0; $i < count($boss); $i++) {
                 $mobile_tel  = $boss[$i]["mMobile"];
@@ -7351,7 +7356,7 @@ class SMS_Gateway extends PDO
 
                 // $sms_txt = $text.";".$addr;
 
-                if (!empty($boss[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
+                if (! empty($boss[$i]["smsText"])) { //仲介簡訊自訂簡訊文字
                     $replace   = $addr . '(' . $boss[$i]["smsText"] . ")";
                     $sms_txt_b = str_replace($addr, $replace, $sms_txt);
                     unset($replace);
@@ -7391,7 +7396,7 @@ class SMS_Gateway extends PDO
     private function apol_send_code($code)
     {
         // '999999999' 為網路錯誤所自行加入之錯誤碼
-        $code_list = array(
+        $code_list = [
             '0'         => '已發出、系統將開始發送簡訊',
             '16777217'  => '認證失敗(用戶/企業代表號不存在或密碼錯誤)',
             '16777218'  => '來源IP未授權使用',
@@ -7426,7 +7431,7 @@ class SMS_Gateway extends PDO
             '51450129'  => '系統維護時段，暫停使用',
             '286331153' => '例外錯誤',
             '999999999' => '網路連線錯誤、請連絡相關人員',
-        );
+        ];
 
         //print_r ($code_list[]) ; exit ;
         return $code_list[$code];
@@ -7436,7 +7441,7 @@ class SMS_Gateway extends PDO
     //亞太簡訊查詢代碼轉換表(查詢、TaskStatus)
     private function apol_return_code_TS($code)
     {
-        $code_list = array(
+        $code_list = [
             '00' => '上傳成功',
             '01' => '預約中',
             '11' => '系統正在處裡(展開明細中)',
@@ -7448,7 +7453,7 @@ class SMS_Gateway extends PDO
             '25' => '傳送失敗',
             '30' => '傳送失敗(展開明細失效)',
             '99' => '傳送完成',
-        );
+        ];
 
         return $code_list[$code];
     }
@@ -7457,7 +7462,7 @@ class SMS_Gateway extends PDO
     //亞太簡訊查詢代碼轉換表(查詢、Status)
     private function apol_return_code_S($code)
     {
-        $code_list = array(
+        $code_list = [
             '99' => '成功',
             '21' => '使用者取消',
             '25' => '傳送失敗',
@@ -7466,7 +7471,7 @@ class SMS_Gateway extends PDO
             '28' => '傳送失敗(UNKNOWN)',
             '29' => '傳送失敗(REJECTD)',
             '30' => '傳送中(尚未得到簡訊狀態)',
-        );
+        ];
 
         return $code_list[$code];
     }
@@ -7589,7 +7594,7 @@ class SMS_Gateway extends PDO
             $total = $changeMoney;
         }
 
-        $txt = array();
+        $txt = [];
         $sql = '
 			SELECT
 				*
@@ -7612,7 +7617,7 @@ class SMS_Gateway extends PDO
         if ($data[0]['eExchangeMoney'] > 0) {$txt[] = "換約款" . $data[0]['eExchangeMoney'];}
 
         $msg['owner'] = @implode('+', $txt); //賣方不收服務費跟溢入款也不收買方履保費、買方應付款、契稅、印花稅
-        #####它項####
+                                             #####它項####
         $sql = '
 			SELECT
 				eTitle,
@@ -7645,8 +7650,8 @@ class SMS_Gateway extends PDO
             $txt[] = "買方溢入款" . $data[0]['eExtraMoney'];
         }
 
-        if ($data[0]['eServiceFee'] == 0 && $data[0]['eExtraMoney'] == 0 && !is_array($txtb)) { //沒有買方仲介服務費跟買方溢入款 賣方不用單獨發送
-            // $msg['owner'] = '';
+        if ($data[0]['eServiceFee'] == 0 && $data[0]['eExtraMoney'] == 0 && ! is_array($txtb)) { //沒有買方仲介服務費跟買方溢入款 賣方不用單獨發送
+                                                                                                    // $msg['owner'] = '';
             unset($msg['owner']);
         }
 
@@ -7715,7 +7720,7 @@ class SMS_Gateway extends PDO
             $ch     = curl_init();
             curl_setopt($ch, CURLOPT_URL, $target);
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array("url" => $url)));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(["url" => $url]));
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -7724,7 +7729,7 @@ class SMS_Gateway extends PDO
             $data = json_decode($result, true);
 
             if ($data['code'] == 200) { //成功
-                $sql = "INSERT INTO tShortUrl SET sCategory = '0', storeId = '".$code."', sKey = '" . $key . "',sUrl ='" . $url . "',sShortUrl = '" . $data['url'] . "'";
+                $sql = "INSERT INTO tShortUrl SET sCategory = '0', storeId = '" . $code . "', sKey = '" . $key . "',sUrl ='" . $url . "',sShortUrl = '" . $data['url'] . "'";
                 $rs  = $this->DB_link->prepare($sql);
                 $rs->execute();
 

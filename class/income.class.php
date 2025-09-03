@@ -168,7 +168,7 @@ class Income extends Advance
         //溢入款 6
         // print_r($data);
         // $data['id'] = '66120';
-        if (!$this->checkExpenseDetailALL($data)) {
+        if (! $this->checkExpenseDetailALL($data)) {
             $sql = "SELECT * FROM tExpenseDetail WHERE eExpenseId = '" . $data['id'] . "' AND eItem = '" . $cat . "' AND eTarget = 3";
             // echo $sql."\r\n";
             $stmt = $this->dbh->prepare($sql);
@@ -214,7 +214,7 @@ class Income extends Advance
         //溢入款 6
         // print_r($data);
         // $data['id'] = '66120';
-        if (!$this->checkExpenseDetailALL($data)) {
+        if (! $this->checkExpenseDetailALL($data)) {
             $sql = "SELECT * FROM tExpenseDetailSmsOther WHERE eExpenseId = '" . $data['id'] . "' AND eDel = 0";
             // echo $sql."\r\n";
             $stmt = $this->dbh->prepare($sql);
@@ -232,7 +232,7 @@ class Income extends Advance
                     $cat = 5;
                 }
 
-                if (!$this->checkExpenseDetail($dataEDALL[$i]['eId'])) {
+                if (! $this->checkExpenseDetail($dataEDALL[$i]['eId'])) {
 
                     $sql = 'UPDATE tExpenseDetail SET eMoney="' . $dataEDALL[$i]['eMoney'] . '" WHERE eOtherId = "' . $dataEDALL[$i]['eId'] . '" AND eOK = "";';
                     // echo $sql."\r\n";
@@ -323,7 +323,7 @@ class Income extends Advance
         $title = $this->GetIncomeTitle();
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i]['menu'] = $title;
-            if (!in_array($arr[$i]['eTitle'], $title)) {
+            if (! in_array($arr[$i]['eTitle'], $title)) {
                 // echo $arr[$i]['eTitle'];
                 $arr[$i]['menu'][$arr[$i]['eTitle']] = $arr[$i]['eTitle'];
                 // print_r($arr[$i]['menu']);
@@ -374,6 +374,9 @@ class Income extends Advance
         $stmt = $this->dbh->prepare($sql);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (! $row) {
+            return null; // 如果查詢結果為空，返回 null
+        }
         return $row['tMoney'];
     }
 
@@ -383,19 +386,22 @@ class Income extends Advance
         $stmt = $this->dbh->prepare($sql);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (! $row) {
+            return null; // 如果查詢結果為空，返回 null
+        }
         return $row['eLender'];
     }
 
     public function GetIncomeTitle()
     {
 
-        return array(
+        return [
             ''       => '',
             '買方履保費'  => '買方履保費',
             '買方預收款項' => '買方預收款項',
             '契稅'     => '契稅',
             '印花稅'    => '印花稅',
-        );
+        ];
     }
 
 }

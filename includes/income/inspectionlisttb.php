@@ -27,7 +27,7 @@ if ($_POST['sSearch']) {
             AND eTradeDate <= '" . $_t . "1231%') OR eStatusIncome = 0 OR eStatusIncome = 1)";
 }
 /* Database parameter */
-$aColumns = array('eTradeDate',
+$aColumns = ['eTradeDate',
     'eRegistTime',
     'CertifiedId',
     'ePayTitle',
@@ -37,7 +37,7 @@ $aColumns = array('eTradeDate',
     'StatusIncome',
     'id',
     'sUndertaker1',
-    'bFrom');
+    'bFrom'];
 $sIndexColumn = "id";
 
 $sTable = "
@@ -172,24 +172,24 @@ $aResultTotal = mysqli_fetch_array($rResultTotal);
 $iTotal       = $aResultTotal[0];
 
 /* Output */
-$output = array(
+$output = [
     "sEcho"                => intval($_POST['sEcho']),
     "iTotalRecords"        => $iTotal,
     "iTotalDisplayRecords" => $iFilteredTotal,
-    "aaData"               => array(),
-);
+    "aaData"               => [],
+];
 
 $minus = 0; //20240618 Project S只有特定人員可以查看用
 while ($aRow = mysqli_fetch_array($rResult)) {
-    $row = array();
+    $row = [];
 
     // Add the row ID and class to the object
     $row['DT_RowId']    = 'row_' . $aRow['CertifiedId'] . '_' . $aRow['id'];
-    $row['DT_RowClass'] = 'grade' . $aRow['grade'];
+    $row['DT_RowClass'] = 'grade' . ($aRow['grade'] ?? 'default');
 
     for ($i = 0; $i < count($aColumns); $i++) {
         //20240618 Project S只有特定人員可以查看
-        if (($aColumns[$i] == "CertifiedId") && ($aRow[$aColumns[$i]] == '130119712') && !in_array($_SESSION['member_id'], [1, 3, 6, 12, 13, 36, 84, 90])) {
+        if (($aColumns[$i] == "CertifiedId") && ($aRow[$aColumns[$i]] == '130119712') && ! in_array($_SESSION['member_id'], [1, 3, 6, 12, 13, 36, 84, 90])) {
             $minus++;
             continue;
         }
@@ -224,32 +224,33 @@ while ($aRow = mysqli_fetch_array($rResult)) {
             $tmp_rel = mysqli_query($link, $sql);
 
             $tmp_row = mysqli_fetch_array($tmp_rel);
-
-            switch ($tmp_row['cCaseStatus']) {
-                case '2':
-                    $aRow[$aColumns[$i]] .= "(進行中)";
-                    break;
-                case '3':
-                    $aRow[$aColumns[$i]] .= "(已結案)";
-                    break;
-                case '4':
-                    $aRow[$aColumns[$i]] .= "(解除契約)";
-                    break;
-                case '6':
-                    $aRow[$aColumns[$i]] .= "(異常)";
-                    break;
-                case '8':
-                    $aRow[$aColumns[$i]] .= "(作廢)";
-                    break;
-                case '10':
-                    $aRow[$aColumns[$i]] .= "已結案有保留款";
-                    break;
-                case '9':
-                    $aRow[$aColumns[$i]] .= "(發函終止)";
-                    break;
-                default:
-                    $aRow[$aColumns[$i]] .= "(未建檔)";
-                    break;
+            if ($tmp_row && isset($tmp_row['cCaseStatus'])) {
+                switch ($tmp_row['cCaseStatus']) {
+                    case '2':
+                        $aRow[$aColumns[$i]] .= "(進行中)";
+                        break;
+                    case '3':
+                        $aRow[$aColumns[$i]] .= "(已結案)";
+                        break;
+                    case '4':
+                        $aRow[$aColumns[$i]] .= "(解除契約)";
+                        break;
+                    case '6':
+                        $aRow[$aColumns[$i]] .= "(異常)";
+                        break;
+                    case '8':
+                        $aRow[$aColumns[$i]] .= "(作廢)";
+                        break;
+                    case '10':
+                        $aRow[$aColumns[$i]] .= "已結案有保留款";
+                        break;
+                    case '9':
+                        $aRow[$aColumns[$i]] .= "(發函終止)";
+                        break;
+                    default:
+                        $aRow[$aColumns[$i]] .= "(未建檔)";
+                        break;
+                }
             }
 
             $row[] = $aRow[$aColumns[$i]];
@@ -292,18 +293,20 @@ function tDate_check($_date, $_dateForm = 'ymd', $_dateType = 'r', $_delimiter =
     $_aDate[1] = substr($_date, 3, 2);
     $_aDate[2] = substr($_date, 5);
 
-    //是否遇六日要延後(六延兩天、日延一天)
+                  //是否遇六日要延後(六延兩天、日延一天)
+    $weekend = 0; // 初始化 $weekend，避免未定義錯誤
+
     if ($_sat == '1') {
         $_ss = 0;
         $_ss = date("w", mktime(0, 0, 0, $_aDate[1], ($_aDate[2] + $_minus), $_aDate[0]));
-        if ($_ss == '0') { //如果是星期日的話，則延後一天
+        if ($_ss == '0') { // 如果是星期日的話，則延後一天
             $weekend = 1;
-        } else if ($_ss == '6') { //如果是星期六的話，則延後兩天
+        } else if ($_ss == '6') { // 如果是星期六的話，則延後兩天
             $weekend = 2;
         }
     }
-    ##
-    $_minus = $_minus + $weekend; //傳進來的日期必須加上遇到加日延後的日期
+                                                                                              ##
+    $_minus = $_minus + $weekend;                                                             //傳進來的日期必須加上遇到加日延後的日期
     $_t     = date("Y-m-d", mktime(0, 0, 0, $_aDate[1], ($_aDate[2] + $_minus), $_aDate[0])); //設定日期為 t+1 天
     unset($_aDate);
 
