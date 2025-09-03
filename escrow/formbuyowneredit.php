@@ -714,26 +714,40 @@ $sql = 'SELECT
 		sId
 	ASC';
 
-$rs                           = $conn->Execute($sql);
-$scrivener_office             = $rs->fields['sOffice'];
-$scrivener_sSpRecall          = $rs->fields['sSpRecall'];
-$data_scrivener['sSpRecall2'] = $rs->fields['sSpRecall2'];
+$rs = $conn->Execute($sql);
+// 檢查 SQL 查詢是否成功
+if ($rs !== false && ! $rs->EOF) {
+    $scrivener_office             = $rs->fields['sOffice'];
+    $scrivener_sSpRecall          = $rs->fields['sSpRecall'];
+    $data_scrivener['sSpRecall2'] = $rs->fields['sSpRecall2'];
 
-if ($data_scrivener['sSpRecall2'] != '' && $data_case['cScrivenerSpRecall2'] == '') { //如果沒有存到特殊回饋，就在寫入一次
-    $data_case['cScrivenerSpRecall2'] = $data_scrivener['sSpRecall2'];
+    if ($data_scrivener['sSpRecall2'] != '' && $data_case['cScrivenerSpRecall2'] == '') { //如果沒有存到特殊回饋，就在寫入一次
+        $data_case['cScrivenerSpRecall2'] = $data_scrivener['sSpRecall2'];
+    }
+
+    $scrivener_brand         = $rs->fields['sBrand'];
+    $menu_scrivener_sales[0] = '請選擇';
+    $tmp                     = [];
+    while (! $rs->EOF) {
+        $tmp[]                                   = $rs->fields['sSalesName'];
+        $caseSales[$rs->fields['sSales']]        = $rs->fields['sSales'];     //地政士
+        $scrivener_option[$rs->fields['sSales']] = $rs->fields['sSalesName']; //業務下拉
+        $rs->MoveNext();
+    }
+
+    $scrivener_sales = implode(',', $tmp);
+} else {
+    // 查詢失敗或無結果時的處理
+    $scrivener_office             = '';
+    $scrivener_sSpRecall          = '';
+    $data_scrivener['sSpRecall2'] = '';
+    $scrivener_brand              = '';
+    $menu_scrivener_sales[0]      = '請選擇';
+    $scrivener_sales              = '';
+    $tmp                          = [];
+    $caseSales                    = [];
+    $scrivener_option             = [];
 }
-
-$scrivener_brand         = $rs->fields['sBrand'];
-$menu_scrivener_sales[0] = '請選擇';
-$tmp                     = [];
-while (! $rs->EOF) {
-    $tmp[]                                   = $rs->fields['sSalesName'];
-    $caseSales[$rs->fields['sSales']]        = $rs->fields['sSales'];     //地政士
-    $scrivener_option[$rs->fields['sSales']] = $rs->fields['sSalesName']; //業務下拉
-    $rs->MoveNext();
-}
-
-$scrivener_sales = implode(',', $tmp);
 
 unset($tmp);
 $branch_count = 0;
@@ -2252,11 +2266,26 @@ function tDate_check($_date, $_dateForm = 'ymd', $_dateType = 'r', $_delimiter =
 $tmptotal       = $data_income['cTotalMoney'];
 $certifiedMoney = $data_income['cCertifiedMoney'];
 
-$part                                 = round($certifiedMoney / $tmptotal, 5);
-$tmp                                  = explode('.', $part);
-$data_income['cCertifiedMoneyPower1'] = (int) $tmp[1];
-$data_income['cCertifiedMoneyPower2'] = str_pad(1, (strlen($tmp[1]) + 1), 0, STR_PAD_RIGHT);
-unset($tmp);
+// 避免除以零的錯誤
+if ($tmptotal != 0) {
+    $part = round($certifiedMoney / $tmptotal, 5);
+    $tmp  = explode('.', $part);
+
+    // 確保 $tmp[1] 存在
+    if (isset($tmp[1])) {
+        $data_income['cCertifiedMoneyPower1'] = (int) $tmp[1];
+        $data_income['cCertifiedMoneyPower2'] = str_pad(1, (strlen($tmp[1]) + 1), 0, STR_PAD_RIGHT);
+    } else {
+        // 如果結果是整數（沒有小數部分）
+        $data_income['cCertifiedMoneyPower1'] = 0;
+        $data_income['cCertifiedMoneyPower2'] = 10; // 預設值
+    }
+    unset($tmp);
+} else {
+    // 當 $tmptotal 為 0 時的處理邏輯
+    $data_income['cCertifiedMoneyPower1'] = 0;
+    $data_income['cCertifiedMoneyPower2'] = 10; // 預設值
+}
 ##
 
 $data_property_count   = ($data_property) ? count($data_property) : 0;

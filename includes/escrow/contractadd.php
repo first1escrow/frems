@@ -203,9 +203,11 @@ if ($_POST['cAffixBranch']) {
 
 //20231030 轉換土地使用分區
 $land_category_options = $contract->GetCategoryAreaMenuList();
-foreach ($land_category_options as $v) {
-    if ($_POST['land_category'] == $v['cName']) {
-        $_POST['land_category'] = $v['cId'];
+if (isset($_POST['land_category']) && is_string($_POST['land_category'])) {
+    foreach ($land_category_options as $v) {
+        if (is_array($v) && isset($v['cName']) && $_POST['land_category'] == $v['cName']) {
+            $_POST['land_category'] = $v['cId'];
+        }
     }
 }
 $land_category_options = null;unset($land_category_options);

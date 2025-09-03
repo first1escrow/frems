@@ -67,14 +67,21 @@ function getBC($bc)
 }
 
 $result1 = GetScrivenerInfo($_POST["id"]);
+// 確保 $result1 是陣列
+if ($result1 === false) {
+    $result1 = []; // 初始化為空陣列
+}
+
 $result2 = GetBankCode($_POST["id"], isset($_POST["bc"]) ? $_POST["bc"] : '');
 
 $sql = "SELECT (SELECT pName FROM tPeopleInfo WHERE pId = sSales) AS sales FROM tScrivenerSales WHERE sScrivener = '" . $_POST["id"] . "'";
 $rs  = $conn->Execute($sql);
 
-$result1['sales']    = $rs->fields['sales'];
-$result1['sAddress'] = filterCityAreaName($conn, $result1['sZip1'], $result1['sAddress']);
-$result1['sCity']    = getCityName($conn, $result1['sZip1']);
-$result1['sArea']    = getAreaName($conn, $result1['sZip1']);
+// 安全地設置 sales 欄位
+$result1['sales'] = ($rs && isset($rs->fields['sales'])) ? $rs->fields['sales'] : '';
+// 安全地設置其他欄位
+$result1['sAddress'] = isset($result1['sZip1']) ? filterCityAreaName($conn, $result1['sZip1'], isset($result1['sAddress']) ? $result1['sAddress'] : '') : '';
+$result1['sCity']    = isset($result1['sZip1']) ? getCityName($conn, $result1['sZip1']) : '';
+$result1['sArea']    = isset($result1['sZip1']) ? getAreaName($conn, $result1['sZip1']) : '';
 
 exit(json_encode([$result1, $result2], JSON_UNESCAPED_UNICODE));
