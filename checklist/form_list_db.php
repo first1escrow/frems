@@ -5,7 +5,6 @@ require_once dirname(__DIR__) . '/configs/config.class.php';
 require_once __DIR__ . '/writelog.php';
 require_once dirname(__DIR__) . '/class/traits/PayTax.traits.php';
 
-
 class payTax
 {
     use \First1\V1\Util\PayTax;
@@ -13,7 +12,7 @@ class payTax
 //半形<=>全形
 function n_to_w($strs, $types = '0')
 { // narrow to wide , or wide to narrow
-    $nt = array(
+    $nt = [
         "(", ")", "[", "]", "{", "}", ".", ",", ";", ":",
         "-", "?", "!", "@", "#", "$", "%", "&", "|", "\\",
         "/", "+", "=", "*", "~", "`", "'", "\"", "<", ">",
@@ -26,8 +25,8 @@ function n_to_w($strs, $types = '0')
         "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
         "U", "V", "W", "X", "Y", "Z",
         " ",
-    );
-    $wt = array(
+    ];
+    $wt = [
         "（", "）", "〔", "〕", "｛", "｝", "﹒", "，", "；", "：",
         "－", "？", "！", "＠", "＃", "＄", "％", "＆", "｜", "＼",
         "／", "＋", "＝", "＊", "～", "、", "、", "＂", "＜", "＞",
@@ -40,13 +39,13 @@ function n_to_w($strs, $types = '0')
         "Ｋ", "Ｌ", "Ｍ", "Ｎ", "Ｏ", "Ｐ", "Ｑ", "Ｒ", "Ｓ", "Ｔ",
         "Ｕ", "Ｖ", "Ｗ", "Ｘ", "Ｙ", "Ｚ",
         "　",
-    );
+    ];
 
     if ($types == '0') { //半形轉全形
-        // narrow to wide
+                             // narrow to wide
         $strtmp = str_replace($nt, $wt, $strs);
     } else { //全形轉半形
-        // wide to narrow
+                 // wide to narrow
         $strtmp = str_replace($wt, $nt, $strs);
     }
     return $strtmp;
@@ -59,24 +58,24 @@ function calculate($_id, $_int = 0)
     $_len = strlen($_id); // 個人10碼 公司8碼
 
     if (preg_match("/[A-Za-z]{2}/", $_id) || preg_match("/[a-zA-z]{1}[8|9]{1}[0-9]{8}/", $_id)) { //外國籍自然人(一般民眾)
-        $_o   = 1; // 外國籍自然人(一般民眾)
-        $_tax = 0.2; // 稅率：20%
+        $_o   = 1;                                                                                    // 外國籍自然人(一般民眾)
+        $_tax = 0.2;                                                                                  // 稅率：20%
 
-    } else if ($_len == '10') { // 個人10碼
+    } else if ($_len == '10') {              // 個人10碼
         if (preg_match("/[A-Za-z]{2}/", $_id)) { // 判別是否為外國人(兩碼英文字母者)
-            $_o   = 1; // 外國籍自然人(一般民眾)
-            $_tax = 0.2; // 稅率：20%
+            $_o   = 1;                               // 外國籍自然人(一般民眾)
+            $_tax = 0.2;                             // 稅率：20%
         } else {
-            $_o   = 2; // 本國籍自然人(一般民眾)
+            $_o   = 2;   // 本國籍自然人(一般民眾)
             $_tax = 0.1; // 稅率：10%
         }
     } else if ($_len == '8') { // 公司8碼
-        $_o   = 2; // 本國籍法人(公司)
-        $_tax = 0.1; // 稅率：10%
+        $_o   = 2;                 // 本國籍法人(公司)
+        $_tax = 0.1;               // 稅率：10%
     } else if ($_len == '7') {
         if (preg_match("/^9[0-9]{6}$/", $_id)) { // 判別是否為外國人
-            $_o   = 1; // 外國籍自然人(一般民眾)
-            $_tax = 0.2; // 稅率：20%
+            $_o   = 1;                               // 外國籍自然人(一般民眾)
+            $_tax = 0.2;                             // 稅率：20%
         }
     }
 
@@ -97,8 +96,8 @@ function NHITax($_id, $_ide, $_int = 0)
 {
     $NHI = 0;
     if (preg_match("/\w{10}/", $_id)) { // 若為自然人身分(10碼)則需要代扣 NHI2 稅額        20150303改為只要自然人就要代扣健保補充保費
-        if ($_int >= 20000) { // 若餘額大於等於 5000, 105/01/01起額度改為20000
-            $NHI = round($_int * 0.0211); // 則代扣 2% 保費 2016/01/15改1.91%(0.0191)
+        if ($_int >= 20000) {               // 若餘額大於等於 5000, 105/01/01起額度改為20000
+            $NHI = round($_int * 0.0211);       // 則代扣 2% 保費 2016/01/15改1.91%(0.0191)
         }
     }
     return $NHI;
@@ -109,7 +108,7 @@ function get_realty($_link, $cId, $tg, $_no = 0)
 {
     global $conn;
     if ($_no != '0') {
-        $_realty = array();
+        $_realty = [];
 
         $_sql = '
 			SELECT
@@ -358,7 +357,7 @@ function get_realty($_link, $cId, $tg, $_no = 0)
                 $order2     = '9';
             }
 
-            while (!$rs->EOF) {
+            while (! $rs->EOF) {
                 if ($rs->fields['bUnUsed'] != 1) {
                     $_realty[$i]['cCertifiedId']     = $cId;
                     $_realty[$i]['cIdentity']        = $cIdentity;
@@ -397,10 +396,41 @@ function updateBank($identer)
 {
     global $conn;
 
+    // 檢查參數是否為空或null
+    if (empty($identer) || ! is_array($identer)) {
+        return; // 如果參數為空或不是陣列，則直接返回
+    }
+
     for ($i = 0; $i < count($identer); $i++) {
         if (empty($identer[$i]['cHide'])) {
             $identer[$i]['cHide'] = 0;
         }
+        // 檢查必要的陣列鍵值是否存在，如不存在則設定預設值
+        if (! isset($identer[$i]['cBankMoney'])) {
+            $identer[$i]['cBankMoney'] = '';
+        }
+        if (! isset($identer[$i]['cCertifiedId'])) {
+            $identer[$i]['cCertifiedId'] = '';
+        }
+        if (! isset($identer[$i]['cIdentity'])) {
+            $identer[$i]['cIdentity'] = '';
+        }
+        if (! isset($identer[$i]['cBankMain'])) {
+            $identer[$i]['cBankMain'] = '';
+        }
+        if (! isset($identer[$i]['cBankBranch'])) {
+            $identer[$i]['cBankBranch'] = '';
+        }
+        if (! isset($identer[$i]['cBankAccountNo'])) {
+            $identer[$i]['cBankAccountNo'] = '';
+        }
+        if (! isset($identer[$i]['cBankAccountName'])) {
+            $identer[$i]['cBankAccountName'] = '';
+        }
+        if (! isset($identer[$i]['cOrder'])) {
+            $identer[$i]['cOrder'] = '';
+        }
+
         $_sql = '
 			INSERT INTO
 				tChecklistBank
@@ -453,7 +483,7 @@ $max = $rs->RecordCount();
 
 $ck = $max;
 
-if (!$max) {
+if (! $max) {
     $sql = '
 	SELECT
 		cas.cCertifiedId as cCertifiedId,
@@ -534,13 +564,15 @@ if (!$max) {
 	';
 
     // 處理相關資料明細
-    $rs         = $conn->Execute($sql);
-    $detail     = $rs->fields;
-    $store      = 0;
-    $buyerBrand = '';
-    $buyerStore = '';
-    $ownerBrand = '';
-    $ownerStore = '';
+    $rs             = $conn->Execute($sql);
+    $detail         = ($rs && ! $rs->EOF) ? $rs->fields : [];
+    $store          = 0;
+    $buyerBrand     = '';
+    $buyerStore     = '';
+    $ownerBrand     = '';
+    $ownerStore     = '';
+    $tmpBuyerBranch = []; // 初始化買方分店陣列
+    $tmpOwnerBranch = []; // 初始化賣方分店陣列
 
     $detail['cNote'] = ($detail['cReasonCategory'] == 1) ? 1 : 0;
     $detail['bNote'] = ($detail['cReasonCategory'] == 1) ? 1 : 0;
@@ -652,6 +684,9 @@ if (!$max) {
     unset($tmp);
     ##
 
+                    //初始化變數
+    $bInterest = 0; // 初始化利息變數
+
     //重新計算利息
     $detail['bInterest'] = $bInterest;
     $detail['cInterest'] = $cInterest;
@@ -659,6 +694,8 @@ if (!$max) {
 
     $oTaxId = ''; //其他賣方所得稅樣板ID
     $oNHIId = ''; //賣方代扣保費樣板ID
+    $bTaxId = ''; //初始化賣方稅務ID變數
+    $bNHIId = ''; //初始化賣方健保ID變數
 
     //確認是否有多組買賣方
     $Obuyer = 0;
@@ -680,15 +717,15 @@ if (!$max) {
         $Oowner += 1;
         $detail['cOwner'] .= '等' . $Oowner . '人';
 
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             $id = $rs->fields['cIdentifyId']; //取出賣方 ID
 
             //若賣方 ID 有法人身分，則所得稅旗標加 1
             if (preg_match("/^[0-9]{8}$/", $id)) {
                 $bTaxId = $id;
             }
-            ##
-            //若賣方 ID 有外國人身分，則所得稅旗標加 1
+                                                    ##
+                                                    //若賣方 ID 有外國人身分，則所得稅旗標加 1
             if (preg_match("/[A-Za-z]{2}/", $id)) { //
                 $bTaxId = $id;
             }
@@ -705,7 +742,6 @@ if (!$max) {
     }
     ##
 
-
     //預設所得稅與補充保費均歸給賣方(20130715)、當賣方身分當中有法人時則代扣稅款(20140321)
     $bInterest = 0;
 
@@ -714,7 +750,7 @@ if (!$max) {
     if ($bTaxId == '') { //若查無法人身分，則將主要代表賣方身分證字號進行計算
         $bTaxId = $detail['cOwnerId'];
     }
-    $payTax = new payTax();
+    $payTax         = new payTax();
     $detail['cTax'] = $payTax->incomeTax($cInterest, $bTaxId);
 
     $detail['bNHITax'] = 0;
@@ -729,10 +765,10 @@ if (!$max) {
     //賣方履保費要分兩個項目，但如果有買方履保費則
     $sql  = "SELECT eId,eMoney FROM tExpenseDetail WHERE eTarget =3 AND eItem = 9 AND eCertifiedId='" . $cCertifiedId . "' ";
     $rs   = $conn->Execute($sql);
-    $list = $rs->fields;
+    $list = ($rs && ! $rs->EOF) ? $rs->fields : ['eId' => '', 'eMoney' => 0];
 
     if ($list['eId'] == '') {
-        $m = $detail['cCertifiedMoney'] % 2; //餘數
+        $m = $detail['cCertifiedMoney'] % 2;        //餘數
         $n = floor($detail['cCertifiedMoney'] / 2); //商數
         $m = $m + $n;
 
@@ -742,7 +778,7 @@ if (!$max) {
         $detail['bcertify_remark']  = '點交時由買方找補賣方';
     } else {
         $detail['cCertifiedMoney']  = $detail['cCertifiedMoney'] - $list['eMoney']; //賣方履保費
-        $detail['bCertifiedMoney']  = $list['eMoney']; //買方履保費
+        $detail['bCertifiedMoney']  = $list['eMoney'];                              //買方履保費
         $detail['cCertifiedMoney2'] = 0;
         $detail['bcertify_remark']  = '買方應付履約保證費';
     }
@@ -917,7 +953,7 @@ if (!$max) {
 			cCertifiedId="' . $cCertifiedId . '"
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if ($detail['buyerCB'] == 0) {
             $buyer[$i]['cCertifiedId']     = $rs->fields['cCertifiedId'];
             $buyer[$i]['cIdentity']        = '1';
@@ -955,7 +991,7 @@ if (!$max) {
 			AND cIdentity="1"
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if ($rs->fields['cChecklistBank'] == 0) {
             $buyer[$i]['cCertifiedId']     = $rs->fields['cCertifiedId'];
             $buyer[$i]['cIdentity']        = $rs->fields['cIdentity'];
@@ -993,7 +1029,7 @@ if (!$max) {
 			cCertifiedId="' . $cCertifiedId . '"
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if ($detail['ownerCB'] == 0) {
             $owner[$i]['cCertifiedId']     = $rs->fields['cCertifiedId'];
             $owner[$i]['cIdentity']        = '2';
@@ -1022,7 +1058,7 @@ if (!$max) {
 	';
     $rs = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if ($rs->fields['cChecklistBank'] == 0) {
             $owner[$i]['cCertifiedId']     = $rs->fields['cCertifiedId'];
             $owner[$i]['cIdentity']        = $rs->fields['cIdentity'];
@@ -1040,8 +1076,9 @@ if (!$max) {
     ////
 
     /* 仲介方 */
-    $i   = 0;
-    $sql = '
+    $i    = 0;
+    $link = $conn; // 初始化連結變數，與conn相同
+    $sql  = '
 		SELECT
 			*
 		FROM
@@ -1050,7 +1087,7 @@ if (!$max) {
 			cCertifyId="' . $cCertifiedId . '"
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         //第一組買方
         if ($rs->fields['cBranchNum'] != '0') {
             $arrTmp = get_realty($link, $cCertifiedId, $rs->fields['cServiceTarget'], $rs->fields['cBranchNum']);
@@ -1109,7 +1146,7 @@ if (!$max) {
 	';
     $rs = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $sId = $rs->fields['sId'];
         if ($rs->fields['sAccountUnused'] != 1) {
             $scrivener[$i]['cCertifiedId']     = $cCertifiedId;
@@ -1174,7 +1211,7 @@ if (!$max) {
     $sql = "SELECT * FROM tScrivenerBank WHERE sScrivener ='" . $sId . "' AND sUnUsed = 0";
 
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $scrivener[$i]['cCertifiedId']     = $cCertifiedId;
         $scrivener[$i]['cIdentity']        = '42'; //賣方顯示
         $scrivener[$i]['cBankMain']        = $rs->fields['sBankMain'];
@@ -1222,8 +1259,9 @@ if (!$max) {
             return false;
         }
     }
-    $i   = 0;
-    $sql = '
+    $i    = 0;
+    $tmp2 = []; // 初始化陣列變數
+    $sql  = '
 		SELECT
 			*
 		FROM
@@ -1231,7 +1269,7 @@ if (!$max) {
 		WHERE
 			cCertifiedId="' . $cCertifiedId . '" AND cChecklistBank != 1 ORDER BY cId ASC';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $tmp = $rs->fields;
         if ($tmp['cBankMain'] != 0) {
             if ($tmp['cIdentity'] == 52) { //sell
@@ -1248,7 +1286,7 @@ if (!$max) {
             $tmp2[$i]['cBankBranch']      = $tmp['cBankBranch'];
             $tmp2[$i]['cBankAccountNo']   = $tmp['cBankAccountNo'];
             $tmp2[$i]['cBankAccountName'] = $tmp['cBankAccountName'];
-            $tmp2[$i]['cBankMoney']       = $tmp['cBankMoney'];
+            $tmp2[$i]['cBankMoney']       = isset($tmp['cBankMoney']) ? $tmp['cBankMoney'] : '';
 
             switch ($tmp['cIdentity']) {
                 case '1':
@@ -1289,7 +1327,7 @@ if (!$max) {
                 $tmp2[$i]['cBankBranch']      = $tmp['cBankBranch'];
                 $tmp2[$i]['cBankAccountNo']   = $tmp['cBankAccountNo'];
                 $tmp2[$i]['cBankAccountName'] = $tmp['cBankAccountName'];
-                $tmp2[$i]['cBankMoney']       = $tmp['cBankMoney'];
+                $tmp2[$i]['cBankMoney']       = isset($tmp['cBankMoney']) ? $tmp['cBankMoney'] : '';
                 $tmp2[$i]['cOrder']           = '3';
                 $i++;
             }
@@ -1301,7 +1339,7 @@ if (!$max) {
                 $tmp2[$i]['cBankBranch']      = $tmp['cBankBranch'];
                 $tmp2[$i]['cBankAccountNo']   = $tmp['cBankAccountNo'];
                 $tmp2[$i]['cBankAccountName'] = $tmp['cBankAccountName'];
-                $tmp2[$i]['cBankMoney']       = $tmp['cBankMoney'];
+                $tmp2[$i]['cBankMoney']       = isset($tmp['cBankMoney']) ? $tmp['cBankMoney'] : '';
                 $tmp2[$i]['cOrder']           = '9';
                 $i++;
             }
@@ -1321,7 +1359,7 @@ $rs  = $conn->Execute($sql);
 
 $max = $rs->RecordCount();
 
-if (!$ck) {
+if (! $ck) {
     $sql = '
 		SELECT
 			id,
@@ -1344,17 +1382,17 @@ if (!$ck) {
 		ASC;
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $_money1 = (int) substr($rs->fields["eLender"], 0, 13); // 存入
-        $_money2 = (int) substr($rs->fields["eDebit"], 0, 13); // 支出
+        $_money2 = (int) substr($rs->fields["eDebit"], 0, 13);  // 支出
         $_y      = substr($rs->fields["eTradeDate"], 0, 3) + 1911;
         $_m      = substr($rs->fields["eTradeDate"], 3, 2);
         $_d      = substr($rs->fields["eTradeDate"], 5, 2);
         $_date   = $_y . "/" . $_m . "/" . $_d;
 
-        //
+                                                                                          //
         if ($rs->fields["eStatusIncome"] != "3" && $rs->fields["eStatusIncome"] != "4") { // 調帳交易不顯示
-            $arr[] = array(
+            $arr[] = [
                 'date'        => $_date,
                 'money1'      => $_money1,
                 'money2'      => $_money2,
@@ -1362,16 +1400,18 @@ if (!$ck) {
                 'txt'         => $rs->fields['eRemarkContent'],
                 'eBuyerMoney' => $rs->fields['eBuyerMoney'],
                 'expId'       => $rs->fields['id'],
-            );
+            ];
         }
         $rs->MoveNext();
     }
 
     //設定變更出款日期
-    $sql      = 'SELECT tBankLoansDate AS tExport_time FROM tBankTrans WHERE tVR_Code="' . $tVR_Code . '" AND tObjKind="扣繳稅款";';
-    $rs       = $conn->Execute($sql);
-    $tmp      = $rs->fields;
-    $tmp_date = explode("-", substr($tmp['tExport_time'], 0, 10));
+    $sql         = 'SELECT tBankLoansDate AS tExport_time FROM tBankTrans WHERE tVR_Code="' . $tVR_Code . '" AND tObjKind="扣繳稅款";';
+    $rs          = $conn->Execute($sql);
+    $tmp         = $rs->fields;
+    $export_time = isset($tmp['tExport_time']) ? $tmp['tExport_time'] : '';
+    $tmp_date    = ! empty($export_time) ? explode("-", substr($export_time, 0, 10)) : [];
+    $exp_date    = ''; // 初始化變數
     if (count($tmp_date) > 0) {
         $exp_date = implode('/', $tmp_date);
     }
@@ -1380,7 +1420,7 @@ if (!$ck) {
 
     //
     foreach ($arr as $k => $v) {
-        if (!$exp_date) {
+        if (! $exp_date) {
             $exp_date = $v['date'];
         }
 
@@ -1397,19 +1437,19 @@ if (!$ck) {
 				AND eTarget="3";
 		';
         $rs = $conn->Execute($sql);
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             $tmp_date                     = explode("-", substr($rs->fields['tBankLoansDate'], 0, 10));
             $rs->fields['tBankLoansDate'] = $tmp_date[0] . "/" . $tmp_date[1] . "/" . $tmp_date[2];
 
             unset($tmp_date);
 
-            $c[] = array(
+            $c[] = [
                 'date'   => $rs->fields['tBankLoansDate'],
                 'money1' => 0,
                 'money2' => $rs->fields['eMoney'],
                 'kind'   => $rs->fields['kind'],
                 'expId'  => $v['eExpenseId'],
-            );
+            ];
 
             $rs->MoveNext();
         }
@@ -1418,129 +1458,129 @@ if (!$ck) {
         //主要入款紀錄
         $sql      = "SELECT * FROM tExpenseDetailSms WHERE eExpenseId = '" . $v['expId'] . "'";
         $rs       = $conn->Execute($sql);
-        $tmp      = $rs->fields;
+        $tmp      = ($rs && ! $rs->EOF) ? $rs->fields : [];
         $in_check = 0;
-        if ($tmp['eSignMoney'] > 0) {
+        if (isset($tmp['eSignMoney']) && $tmp['eSignMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eSignMoney'],
                 'money2' => 0,
                 'kind'   => '簽約款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eAffixMoney'] > 0) {
+        if (isset($tmp['eAffixMoney']) && $tmp['eAffixMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eAffixMoney'],
                 'money2' => 0,
                 'kind'   => '用印款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eDutyMoney'] > 0) {
+        if (isset($tmp['eDutyMoney']) && $tmp['eDutyMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eDutyMoney'],
                 'money2' => 0,
                 'kind'   => '完稅款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eEstimatedMoney'] > 0) {
+        if (isset($tmp['eEstimatedMoney']) && $tmp['eEstimatedMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eEstimatedMoney'],
                 'money2' => 0,
                 'kind'   => '尾款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eEstimatedMoney2'] > 0) {
+        if (isset($tmp['eEstimatedMoney2']) && $tmp['eEstimatedMoney2'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eEstimatedMoney2'],
                 'money2' => 0,
                 'kind'   => '尾款差額',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eCompensationMoney'] > 0) { //
-            $in_check = 1; //有輸入金額
-            $c[]      = array(
+        if (isset($tmp['eCompensationMoney']) && $tmp['eCompensationMoney'] > 0) { //
+            $in_check = 1;                                                             //有輸入金額
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eCompensationMoney'],
                 'money2' => 0,
                 'kind'   => '代償後餘額',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
-        if ($tmp['eExtraMoney'] > 0) {
+        if (isset($tmp['eExtraMoney']) && $tmp['eExtraMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eExtraMoney'],
                 'money2' => 0,
                 'kind'   => '買方溢入款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($tmp['eExchangeMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eExchangeMoney'],
                 'money2' => 0,
                 'kind'   => '換約款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($tmp['eServiceFee'] > 0) {
             $in_check = 1; //有輸入金額
-            $c[]      = array(
+            $c[]      = [
                 'date'   => $v['date'],
                 'money1' => $tmp['eServiceFee'],
                 'money2' => 0,
                 'kind'   => '買方仲介服務費',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         $sql = "SELECT * FROM tExpenseDetailSmsOther WHERE eExpenseId = '" . $v['expId'] . "' AND eDel = 0";
         $rs  = $conn->Execute($sql);
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             if ($rs->fields['eMoney'] > 0) {
                 $in_check = 1; //有輸入金額
-                $c[]      = array(
+                $c[]      = [
                     'date'   => $v['date'],
                     'money1' => $rs->fields['eMoney'],
                     'money2' => 0,
                     'kind'   => $rs->fields['eTitle'],
                     'txt'    => '',
                     'expId'  => $v['expId'],
-                );
+                ];
             }
 
             $rs->MoveNext();
@@ -1549,14 +1589,14 @@ if (!$ck) {
 
         if ($in_check == 0) {
             //eTitle
-            $c[] = array(
+            $c[] = [
                 'date'   => $v['date'],
                 'money1' => $v['money1'],
                 'money2' => $v['money2'],
                 'kind'   => $v['kind'],
                 'txt'    => $v['txt'],
                 'expId'  => $v['expId'],
-            );
+            ];
         }
         unset($in_check);
         ##
@@ -1567,17 +1607,17 @@ if (!$ck) {
     //
     $sql = 'SELECT * FROM tBankTrans WHERE tVR_Code="' . $tVR_Code . '" AND tObjKind="仲介服務費" AND tBuyer<>"" AND tPayOk="1";';
     $rs  = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $rs->fields['tBankLoansDate'] = implode('/', explode('-', substr($rs->fields['tBankLoansDate'], 0, 10)));
 
-        $c[] = array(
+        $c[] = [
             'date'   => $rs->fields['tBankLoansDate'],
             'money1' => 0,
             'money2' => $rs->fields['tBuyer'],
             'kind'   => $rs->fields['tObjKind'],
             'txt'    => '',
             'expId'  => '',
-        );
+        ];
 
         $rs->MoveNext();
     }
@@ -1585,7 +1625,7 @@ if (!$ck) {
 
     // 寫入資料庫
     ## 寫入 tChecklistBlist
-    if (!empty($c)) {
+    if (! empty($c)) {
         foreach ($c as $k => $v) {
             $sql = '
 				INSERT INTO	tChecklistBlist
@@ -1617,9 +1657,10 @@ if (!$ck) {
 $sql = 'SELECT * FROM tChecklistOlist WHERE oCertifiedId="' . $cCertifiedId . '" AND oExpense<>"0";';
 $rs  = $conn->Execute($sql);
 $max = $rs->RecordCount();
-if (!$ck) {
-    $b   = array();
-    $sql = '
+if (! $ck) {
+    $b        = [];
+    $tmpArray = []; // 初始化陣列變數
+    $sql      = '
 		SELECT
 			tVR_Code,
 			tObjKind,
@@ -1634,7 +1675,7 @@ if (!$ck) {
 			tVR_Code="' . $tVR_Code . '" ;
 	';
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $tmpArray[] = $rs->fields;
         $rs->MoveNext();
     }
@@ -1659,34 +1700,37 @@ if (!$ck) {
             $rs  = $conn->Execute($sql);
 
             if ($rs->RecordCount() < 1) {
-                $b[] = array(
+                $b[] = [
                     'date'   => $_date,
                     'money1' => '0',
                     'money2' => $_money2,
                     'kind'   => $tmpArray[$i]["tObjKind"],
                     'txt'    => $_name,
                     'expId'  => $v['expId'],
-                );
+                ];
             }
         } else if ($tmpArray[$i]["tObjKind"] != '調帳') {
             //點交單名稱修正
-            if($tmpArray[$i]["tObjKind"] == '履保費先收(結案回饋)') $tmpArray[$i]["tObjKind"] = '履保費';
+            if ($tmpArray[$i]["tObjKind"] == '履保費先收(結案回饋)') {
+                $tmpArray[$i]["tObjKind"] = '履保費';
+            }
+
             //主要入款紀錄
-            $b[] = array(
+            $b[] = [
                 'date'   => $_date,
                 'money1' => '0',
                 'money2' => $_money2,
                 'kind'   => $tmpArray[$i]["tObjKind"],
                 'txt'    => $_name,
                 'expId'  => $v['expId'],
-            );
+            ];
             ##
         }
     }
 
     // 寫入資料庫
     ## 寫入 tCheckOlist (出款)
-    if (!empty($b)) {
+    if (! empty($b)) {
         foreach ($b as $k => $v) {
             $sql = '
 				INSERT INTO	tChecklistOlist
@@ -1719,7 +1763,7 @@ $sql = 'SELECT * FROM tChecklistOlist WHERE oCertifiedId="' . $cCertifiedId . '"
 $rs  = $conn->Execute($sql);
 $max = $rs->RecordCount();
 
-if (!$ck) {
+if (! $ck) {
     $sql = '
 		SELECT
 			id,
@@ -1745,9 +1789,9 @@ if (!$ck) {
 	';
 
     $rs = $conn->Execute($sql);
-    while (!$rs->EOF) {
-        $_money1   = (int) substr($rs->fields["eLender"], 0, 13); // 存入
-        $_money2   = (int) substr($rs->fields["eDebit"], 0, 13); // 支出
+    while (! $rs->EOF) {
+        $_money1   = (int) substr($rs->fields["eLender"], 0, 13);     // 存入
+        $_money2   = (int) substr($rs->fields["eDebit"], 0, 13);      // 支出
         $_buyer    = (int) substr($rs->fields["eBuyerMoney"], 0, 13); // 扣除買方服務費
         $_buyer2   = (int) $rs->fields['eExtraMoney'];
         $tmp_check = 0; //1 買方服務費  2買方溢入款
@@ -1763,7 +1807,7 @@ if (!$ck) {
         $_date  = $_y . "/" . $_m . "/" . $_d;
 
         if ($rs->fields["eStatusIncome"] != "3" && $rs->fields["eStatusIncome"] != "4") { // 調帳交易不顯示
-            $arr[] = array(
+            $arr[] = [
                 'date'   => $_date,
                 'money1' => $_money1,
                 'money2' => $_money2,
@@ -1772,7 +1816,7 @@ if (!$ck) {
                 'txt'    => $rs->fields['eRemarkContent'],
                 'expId'  => $rs->fields['id'],
                 'check'  => $tmp_check,
-            );
+            ];
         }
 
         $rs->MoveNext();
@@ -1782,7 +1826,8 @@ if (!$ck) {
     $sql = 'SELECT tExport_time FROM tBankTrans WHERE tVR_Code="' . $tVR_Code . '" AND tObjKind="扣繳稅款";';
     $rs  = $conn->Execute($sql);
 
-    $tmp_date = explode("-", substr($rs->fields['tExport_time'], 0, 10));
+    $export_time = isset($rs->fields['tExport_time']) ? $rs->fields['tExport_time'] : '';
+    $tmp_date    = ! empty($export_time) ? explode("-", substr($export_time, 0, 10)) : [];
     if (count($tmp_date) > 0) {
         $exp_date = implode('/', $tmp_date);
     }
@@ -1810,9 +1855,9 @@ if (!$ck) {
 				AND eTarget="2";
 		';
         $rs = $conn->Execute($sql);
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             $money2 = (int) $rs->fields['eMoney'];
-            if (!$exp_date) {
+            if (! $exp_date) {
                 $exp_date = $v['date'];
             }
 
@@ -1820,13 +1865,13 @@ if (!$ck) {
             $rs->fields['tBankLoansDate'] = $tmp_date[0] . "/" . $tmp_date[1] . "/" . $tmp_date[2];
             unset($tmp_date);
 
-            $a[] = array(
+            $a[] = [
                 'date'   => $rs->fields['tBankLoansDate'],
                 'money1' => 0,
                 'money2' => $money2,
                 'kind'   => $rs->fields['kind'],
                 'expId'  => $v['eExpenseId'],
-            );
+            ];
 
             $rs->MoveNext();
         }
@@ -1839,102 +1884,102 @@ if (!$ck) {
         $in_check = 0;
         if ($rs->fields['eSignMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eSignMoney'],
                 'money2' => 0,
                 'kind'   => '簽約款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eAffixMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eAffixMoney'],
                 'money2' => 0,
                 'kind'   => '用印款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eDutyMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eDutyMoney'],
                 'money2' => 0,
                 'kind'   => '完稅款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eEstimatedMoney'] > 0) {
             $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eEstimatedMoney'],
                 'money2' => 0,
                 'kind'   => '尾款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eEstimatedMoney2'] > 0) {
             $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eEstimatedMoney2'],
                 'money2' => 0,
                 'kind'   => '尾款差額',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eCompensationMoney'] > 0) { //
-            $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $in_check = 1;                               //有輸入金額
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eCompensationMoney'],
                 'money2' => 0,
                 'kind'   => '代償後餘額',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         if ($rs->fields['eExchangeMoney'] > 0) { //
-            $in_check = 1; //有輸入金額
-            $a[]      = array(
+            $in_check = 1;                           //有輸入金額
+            $a[]      = [
                 'date'   => $v['date'],
                 'money1' => $rs->fields['eExchangeMoney'],
                 'money2' => 0,
                 'kind'   => '換約款',
                 'txt'    => '',
                 'expId'  => $v['expId'],
-            );
+            ];
         }
 
         $sql = "SELECT * FROM tExpenseDetailSmsOther WHERE eExpenseId = '" . $v['expId'] . "' AND eDel = 0";
         $rs  = $conn->Execute($sql);
-        while (!$rs->EOF) {
+        while (! $rs->EOF) {
             if ($rs->fields['eMoney'] > 0) {
                 $in_check = 1; //有輸入金額
-                if (!preg_match("/買方應付款項/", $rs->fields['eTitle']) && !preg_match("/買方預收款項/", $rs->fields['eTitle']) && !preg_match("/買方履保費/", $rs->fields['eTitle']) && !preg_match("/契稅/", $rs->fields['eTitle']) && !preg_match("/印花稅/", $rs->fields['eTitle'])) {
-                    $a[] = array(
+                if (! preg_match("/買方應付款項/", $rs->fields['eTitle']) && ! preg_match("/買方預收款項/", $rs->fields['eTitle']) && ! preg_match("/買方履保費/", $rs->fields['eTitle']) && ! preg_match("/契稅/", $rs->fields['eTitle']) && ! preg_match("/印花稅/", $rs->fields['eTitle'])) {
+                    $a[] = [
                         'date'   => $v['date'],
                         'money1' => $rs->fields['eMoney'],
                         'money2' => 0,
                         'kind'   => $rs->fields['eTitle'],
                         'txt'    => '',
                         'expId'  => $v['expId'],
-                    );
+                    ];
                 }
             }
             $rs->MoveNext();
@@ -1943,6 +1988,11 @@ if (!$ck) {
 
         if ($in_check == 0) {
             $tmp = explode('+', $v['txt']);
+
+            // 確保 $tmp 是陣列
+            if (! is_array($tmp)) {
+                $tmp = [];
+            }
 
             for ($i = 0; $i < count($tmp); $i++) {
                 if ($v['check'] == 1) { //1 買方服務費  2買方溢入款
@@ -1967,14 +2017,14 @@ if (!$ck) {
             }
             unset($tmp);
 
-            $a[] = array(
+            $a[] = [
                 'date'   => $v['date'],
                 'money1' => $v['money1'],
                 'money2' => $v['money2'],
                 'kind'   => $v['kind'],
                 'txt'    => $v['txt'],
                 'expId'  => $v['expId'],
-            );
+            ];
         }
         unset($in_check);
         ##
@@ -1984,7 +2034,7 @@ if (!$ck) {
 
     // 寫入資料庫
     ## 寫入 tCheckOlist (收款)
-    if (!empty($a)) {
+    if (! empty($a)) {
         foreach ($a as $k => $v) {
             $sql = '
 				INSERT INTO	tChecklistOlist
@@ -2014,7 +2064,7 @@ if (!$ck) {
 }
 
 //埋log紀錄
-if (!$ck) {
+if (! $ck) {
     checklist_log('資料寫入點交表(保證號碼:' . $cCertifiedId . ')');
 } else {
     checklist_log('從合約書點開(保證號碼:' . $cCertifiedId . ')');
