@@ -27,8 +27,9 @@ $zip         = trim($_POST['zip']);
 $undertaker  = trim($_POST['undertaker']);
 $owner_agent = trim($_POST['owner_agent']);
 $buyer_agent = trim($_POST['buyer_agent']);
-$addr        = trim($_POST['addr']);
-$uid         = trim($_POST['uid']);
+// Check if 'addr' key exists in POST and is not null before using it
+$addr = isset($_POST['addr']) ? trim($_POST['addr']) : '';
+$uid  = trim($_POST['uid']);
 
 $buyer1     = $buyer;
 $owner1     = $owner;
