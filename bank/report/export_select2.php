@@ -1,140 +1,142 @@
 <?php
-require_once dirname(dirname(__DIR__)) . '/session_check.php';
-require_once dirname(dirname(__DIR__)) . '/openadodb.php';
+    error_reporting(E_ALL & ~E_WARNING);
 
-if ($_SESSION["member_pDep"] == 5 && $_SESSION["member_id"] != 1) {
-    $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
-}
+    require_once dirname(dirname(__DIR__)) . '/session_check.php';
+    require_once dirname(dirname(__DIR__)) . '/openadodb.php';
 
-$CertifiedId = array();
-
-//20241129 過濾法務關注案件
-$sql = 'SELECT tCode2, tMemo, tObjKind, tBank_kind FROM tBankTrans WHERE tOk="2" AND tLegalAllow <> "1" ' . $str . ' GROUP BY tVR_Code, tObjKind ORDER BY tVR_Code ASC;';
-$rs  = $conn->Execute($sql);
-$i   = 0;
-while (!$rs->EOF) {
-    $kind = (in_array($rs->fields['tCode2'], ['大額繳稅', '臨櫃開票'])) ? '【' . $rs->fields['tCode2'] . '】' : '';
-
-    $CertifiedId[$i]['text2'] = '';
-    $CertifiedId[$i]['value']       = $rs->fields['tMemo'] . "_" . $rs->fields['tObjKind'];
-    $CertifiedId[$i]['text']        = '0' . $rs->fields['tBank_kind'] . $rs->fields['tObjKind'] . $kind . "_" . $rs->fields['tMemo']; //
-    if($rs->fields['tObjKind'] == '賣方先動撥'){
-        $CertifiedId[$i]['text2'] = "<a href='../../escrow/bankTransConfirmCall.php?action=banktrans&cid=".$rs->fields['tMemo']."' class='iframe' style='font-size:9pt;'>(照會)</a>";
-        $callFlag[$rs->fields['tMemo']] = checkConfirmCall($conn, $rs->fields['tMemo']);
-    }
-    $CertifiedId[$i]['certifiedId'] = $rs->fields['tMemo'];
-
-    $i++;
-
-    $rs->moveNext();
-}
-
-//確認出款照會規則
-function checkConfirmCall($conn ,$id){
-    $output['flag'] = false; //預設需要確認照會
-    $output['msg'] = [];
-    $output['flag2'] = true;
-    $output['msg2'] = '';
-    $priceCondition = 1500000; //總金額超過150就需要確認照會資料
-    $priceBatch = 0;
-    $tBankTransIds = [];
-
-    // 此案件賣方
-    $owners = [];
-    $sql_owners = "SELECT cName AS name FROM tContractOwner WHERE cCertifiedId = '".$id."'";
-    $sql_owners .= " UNION ALL SELECT cName AS name FROM tContractOthers WHERE cCertifiedId = '".$id."' AND cIdentity = '2'";
-    $rs_owners = $conn->Execute($sql_owners);
-    while (!$rs_owners->EOF) {
-        $owners[] = trim($rs_owners->fields['name']);
-        $rs_owners->moveNext();
+    if ($_SESSION["member_pDep"] == 5 && $_SESSION["member_id"] != 1) {
+        $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
     }
 
-    $ownerFlag = false;
-    $ownerOtherFlag = false;
-    $checkOwners = $owners;
-    $sql_check = "SELECT tId, tMoney, tAccountName FROM tBankTrans WHERE tMemo='".$id."' AND tOk='2' AND tLegalAllow <> '1' AND tObjKind ='賣方先動撥'";
-    $rs_check = $conn->Execute($sql_check);
-    if($rs_check && $rs_check->RecordCount() > 0){
-        $ownerFlag = true;
+    $CertifiedId = [];
+
+    //20241129 過濾法務關注案件
+    $sql = 'SELECT tCode2, tMemo, tObjKind, tBank_kind FROM tBankTrans WHERE tOk="2" AND tLegalAllow <> "1" ' . $str . ' GROUP BY tVR_Code, tObjKind ORDER BY tVR_Code ASC;';
+    $rs  = $conn->Execute($sql);
+    $i   = 0;
+    while (! $rs->EOF) {
+        $kind = (in_array($rs->fields['tCode2'], ['大額繳稅', '臨櫃開票'])) ? '【' . $rs->fields['tCode2'] . '】' : '';
+
+        $CertifiedId[$i]['text2'] = '';
+        $CertifiedId[$i]['value'] = $rs->fields['tMemo'] . "_" . $rs->fields['tObjKind'];
+        $CertifiedId[$i]['text']  = '0' . $rs->fields['tBank_kind'] . $rs->fields['tObjKind'] . $kind . "_" . $rs->fields['tMemo']; //
+        if ($rs->fields['tObjKind'] == '賣方先動撥') {
+            $CertifiedId[$i]['text2']       = "<a href='../../escrow/bankTransConfirmCall.php?action=banktrans&cid=" . $rs->fields['tMemo'] . "' class='iframe' style='font-size:9pt;'>(照會)</a>";
+            $callFlag[$rs->fields['tMemo']] = checkConfirmCall($conn, $rs->fields['tMemo']);
+        }
+        $CertifiedId[$i]['certifiedId'] = $rs->fields['tMemo'];
+
+        $i++;
+
+        $rs->moveNext();
     }
 
+    //確認出款照會規則
+    function checkConfirmCall($conn, $id)
+    {
+        $output['flag']  = false; //預設需要確認照會
+        $output['msg']   = [];
+        $output['flag2'] = true;
+        $output['msg2']  = '';
+        $priceCondition  = 1500000; //總金額超過150就需要確認照會資料
+        $priceBatch      = 0;
+        $tBankTransIds   = [];
 
-    while (!$rs_check->EOF) {
-        $tBankTransIds[] = $rs_check->fields['tId'];
-        $priceBatch += $rs_check->fields['tMoney'];
+        // 此案件賣方
+        $owners     = [];
+        $sql_owners = "SELECT cName AS name FROM tContractOwner WHERE cCertifiedId = '" . $id . "'";
+        $sql_owners .= " UNION ALL SELECT cName AS name FROM tContractOthers WHERE cCertifiedId = '" . $id . "' AND cIdentity = '2'";
+        $rs_owners = $conn->Execute($sql_owners);
+        while (! $rs_owners->EOF) {
+            $owners[] = trim($rs_owners->fields['name']);
+            $rs_owners->moveNext();
+        }
 
-        // 只要出款帳戶有一個是非此案賣方就不通過
-        if(!in_array(trim($rs_check->fields['tAccountName']), $owners)){
-            if($ownerFlag){
-                $ownerFlag = false;
-                $ownerOtherFlag = true;
+        $ownerFlag      = false;
+        $ownerOtherFlag = false;
+        $checkOwners    = $owners;
+        $sql_check      = "SELECT tId, tMoney, tAccountName FROM tBankTrans WHERE tMemo='" . $id . "' AND tOk='2' AND tLegalAllow <> '1' AND tObjKind ='賣方先動撥'";
+        $rs_check       = $conn->Execute($sql_check);
+        if ($rs_check && $rs_check->RecordCount() > 0) {
+            $ownerFlag = true;
+        }
+
+        while (! $rs_check->EOF) {
+            $tBankTransIds[] = $rs_check->fields['tId'];
+            $priceBatch += $rs_check->fields['tMoney'];
+
+            // 只要出款帳戶有一個是非此案賣方就不通過
+            if (! in_array(trim($rs_check->fields['tAccountName']), $owners)) {
+                if ($ownerFlag) {
+                    $ownerFlag      = false;
+                    $ownerOtherFlag = true;
+                }
+            }
+
+            //比對每個賣方
+            $checkOwners = array_diff($checkOwners, [$rs_check->fields['tAccountName']]);
+            $rs_check->moveNext();
+        }
+
+        if ($ownerOtherFlag) {
+            $output['flag']  = false;
+            $output['msg'][] = '出款非賣方帳戶';
+        } else if (! empty($checkOwners)) {
+            $output['flag']  = false;
+            $output['msg'][] = '出款未包含所有賣方';
+        } else if ($ownerFlag) {
+            $output['flag'] = true;
+        } else {
+            $output['flag']  = false;
+            $output['msg'][] = '...';
+        }
+
+        //超過規定金額就需要照會
+        if ($priceBatch >= $priceCondition) {
+            $output['flag']  = false;
+            $output['msg'][] = '出款總額超過' . $priceCondition . '元';
+        }
+
+        if (! $output['flag']) {
+            $kindCalls[1]    = $kindCalls[2]    = 0;
+            $output['flag2'] = false; //未過照會規則
+            $output['msg2']  = '需照會買賣雙方';
+
+            $sql_call = "SELECT bKind FROM tBankTransConfirmCall WHERE bBankTransId in (" . implode(",", $tBankTransIds) . ") AND bDeletedAt is null";
+            $rs_call  = $conn->Execute($sql_call);
+            while (! $rs_call->EOF) {
+                $kindCalls[$rs_call->fields['bKind']]++;
+                $rs_call->moveNext();
+            }
+
+                                     // 判斷是否填寫買賣雙方照會資料
+            if ($kindCalls[3] > 0) { //只要有副總確認就直接過
+                $output['flag2'] = true;
+                $output['msg2']  = '';
+            } else if ($kindCalls[1] > 0 && $kindCalls[2] > 0) {
+                $output['flag2'] = true;
+                $output['msg2']  = '';
             }
         }
 
-        //比對每個賣方
-        $checkOwners = array_diff($checkOwners, [$rs_check->fields['tAccountName']]);
-        $rs_check->moveNext();
+        if ($rs_owners) {$rs_owners->Close();}
+        if ($rs_check) {$rs_check->Close();}
+        if ($rs_call) {$rs_call->Close();}
+
+        return $output;
     }
 
-    if($ownerOtherFlag){
-        $output['flag'] = false;
-        $output['msg'][] = '出款非賣方帳戶';
-    } else if(!empty($checkOwners)) {
-        $output['flag'] = false;
-        $output['msg'][] = '出款未包含所有賣方';
-    } else if($ownerFlag){
-        $output['flag'] = true;
-    } else {
-        $output['flag'] = false;
-        $output['msg'][] = '...';
-    }
+    $sendFlag  = true;
+    $sendMsg   = "";
+    $callArray = [];
 
-    //超過規定金額就需要照會
-    if($priceBatch >= $priceCondition){
-        $output['flag'] = false;
-        $output['msg'][] = '出款總額超過'.$priceCondition.'元';
-    }
-
-    if(!$output['flag']){
-        $kindCalls[1] = $kindCalls[2] = 0;
-        $output['flag2'] = false; //未過照會規則
-        $output['msg2'] = '需照會買賣雙方';
-
-        $sql_call = "SELECT bKind FROM tBankTransConfirmCall WHERE bBankTransId in (".implode(",",$tBankTransIds).") AND bDeletedAt is null";
-        $rs_call = $conn->Execute($sql_call);
-        while (!$rs_call->EOF) {
-            $kindCalls[$rs_call->fields['bKind']]++;
-            $rs_call->moveNext();
-        }
-
-        // 判斷是否填寫買賣雙方照會資料
-        if($kindCalls[3] > 0 ){ //只要有副總確認就直接過
-            $output['flag2'] = true;
-            $output['msg2'] = '';
-        } else if($kindCalls[1] > 0 && $kindCalls[2] > 0){
-            $output['flag2'] = true;
-            $output['msg2'] = '';
+    foreach ($callFlag as $k => $v) {
+        if (! $v['flag'] && ! $v['flag2']) {
+            $sendFlag = false;
+            $sendMsg .= $k . "：" . implode('、', $v['msg']) . "<br>";
+            $callArray[] = (string) $k;
         }
     }
-
-    if($rs_owners){ $rs_owners->Close(); }
-    if($rs_check){ $rs_check->Close(); }
-    if($rs_call){ $rs_call->Close(); }
-
-    return $output;
-}
-
-$sendFlag = true;
-$sendMsg = "";
-$callArray = [];
-
-foreach($callFlag as $k => $v){
-    if(!$v['flag'] && !$v['flag2']){
-        $sendFlag = false;
-        $sendMsg .= $k."：".implode('、',$v['msg'])."<br>";
-        $callArray[] = (string)$k;
-    }
-}
 ?>
 <!DOCTYPE html
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -154,7 +156,7 @@ foreach($callFlag as $k => $v){
     <script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="../../js/jquery.colorbox.js"></script>
     <script type="text/javascript">
-        var callArray = <?php echo json_encode($callArray); ?>;
+        var callArray =                        <?php echo json_encode($callArray); ?>;
 
     $(document).ready(function() {
         $('body').on('click', '.accoont', function(e) {
@@ -428,9 +430,9 @@ foreach($callFlag as $k => $v){
                 <div id="show">
                     <?php foreach ($CertifiedId as $value): ?>
                     <div style="padding: 5px; text-align: left;margin-left: 30%">
-                        <span class=""><input type="checkbox" name="CertifiedId[]" value="<?=$value['value']?>"
-                                id="CertifiedId<?=$value['certifiedId']?>"><label
-                                for="CertifiedId<?=$value['certifiedId']?>"><span></span><?=$value['text']?></label><?=$value['text2']?></span>
+                        <span class=""><input type="checkbox" name="CertifiedId[]" value="<?php echo $value['value']?>"
+                                id="CertifiedId<?php echo $value['certifiedId']?>"><label
+                                for="CertifiedId<?php echo $value['certifiedId']?>"><span></span><?php echo $value['text']?></label><?php echo $value['text2']?></span>
                     </div>
                     <?php endforeach?>
                 </div>
@@ -441,12 +443,12 @@ foreach($callFlag as $k => $v){
                 </div>
 
                 <input type="button" name="button" id="button" value="送出" class="xxx-button" onclick="send()" />
-                <?php if(!$sendFlag){?>
+                <?php if (! $sendFlag) {?>
                     <div style="text-align: left; padding: 15px; color: red;">
                         <b>【需填寫買賣雙方照會紀錄】</b><br>
-                        <?php echo $sendMsg;?>
+                        <?php echo $sendMsg; ?>
                     </div>
-                <?php } ?>
+                <?php }?>
             </form>
         </div>
     </center>

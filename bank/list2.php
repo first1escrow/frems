@@ -1,221 +1,223 @@
 <?php
-require_once dirname(__DIR__) . '/configs/config.class.php';
-require_once dirname(__DIR__) . '/class/payByCase/payByCaseScrivener.class.php';
-require_once dirname(__DIR__) . '/openadodb.php';
-require_once dirname(__DIR__) . '/web_addr.php';
-require_once dirname(__DIR__) . '/session_check.php';
-require_once dirname(__DIR__) . '/tracelog.php';
-require_once dirname(__DIR__) . '/first1DB.php';
+    error_reporting(E_ALL & ~E_WARNING);
 
-use First1\V1\PayByCase\PayByCaseScrivener;
+    require_once dirname(__DIR__) . '/configs/config.class.php';
+    require_once dirname(__DIR__) . '/class/payByCase/payByCaseScrivener.class.php';
+    require_once dirname(__DIR__) . '/openadodb.php';
+    require_once dirname(__DIR__) . '/web_addr.php';
+    require_once dirname(__DIR__) . '/session_check.php';
+    require_once dirname(__DIR__) . '/tracelog.php';
+    require_once dirname(__DIR__) . '/first1DB.php';
 
-$tlog = new TraceLog();
-$tlog->updateWrite($_SESSION['member_id'], json_encode($_POST), '查看/編修待出款案件明細');
+    use First1\V1\PayByCase\PayByCaseScrivener;
 
-$del = $_REQUEST["del"];
-//是否有刪除
-if ($del == 'ok') {
-    $tid = $_REQUEST["tid"];
+    $tlog = new TraceLog();
+    $tlog->updateWrite($_SESSION['member_id'], json_encode($_POST), '查看/編修待出款案件明細');
 
-    $sql   = 'SELECT * FROM tBankTrans WHERE tId="' . $tid . '" AND tOk = 1;';
-    $rs    = $conn->Execute($sql);
-    $total = $rs->RecordCount();
+    $del = $_REQUEST["del"];
+    //是否有刪除
+    if ($del == 'ok') {
+        $tid = $_REQUEST["tid"];
 
-    if ($total == 0) {
-        //找到要被刪除的保證號碼
-        $sql  = 'SELECT tMemo, tKind, tInvoice, tObjKind FROM tBankTrans WHERE tId = ' . $tid . ';';
-        $_rs  = $conn->Execute($sql);
-        $_cId = $_rs->fields['tMemo'];
-        $kind = $_rs->fields['tKind']; //類別
-        $objKind = $_rs->fields['tObjKind']; //項目
-        $invoice = $_rs->fields['tInvoice']; //開發票
-
-        $_rs = null;unset($_rs);
-        ##
-
-        //刪除出款紀錄
-        $delx = 'DELETE FROM tBankTrans WHERE tId="' . $tid . '";';
-        $conn->Execute($delx);
-        ##
-
-        //恢復稅款為未出款
-        $sql = 'UPDATE tExpenseDetail SET eOK="" WHERE eOK="' . $tid . '";';
-        $conn->Execute($sql);
-
-        //返還稅款清除ID
-        $sql = "UPDATE  tBankTrans SET tObjKind2Item = '' WHERE tObjKind2Item = '" . $tid . "'";
-        $conn->Execute($sql);
-
-        //20230421 回饋金隨案支付 20250306因為重審沒意義 所以先移除
-//        $pay_by_case_scrivener = new PayByCaseScrivener(new first1DB);
-//        $pay_by_case_scrivener->modifyAffectCaseBankAccountByCase($_cId);
-
-        //如果刪除保證費 或 刪除所有代墊利息開發票 就解鎖代書回饋金欄位
-        if($kind == '保證費' or $invoice != null) {
-            $invoiceCount = 0; //要開發票的總筆數
-            $certifiedMoneyCount = 0; //保證費的總筆數
-
-            if($invoice != null) {
-                $sql   = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tInvoice is not null;';
-                $rs    = $conn->Execute($sql);
-                $invoiceCount = $rs->RecordCount();
-            }
-            if($kind == '保證費') {
-                $sql   = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tKind = "保證費";';
-                $rs    = $conn->Execute($sql);
-                $certifiedMoneyCount = $rs->RecordCount();
-            }
-            if($invoiceCount == 0 and $certifiedMoneyCount == 0) {
-                $sql = 'UPDATE `tContractCase` SET cFeedBackScrivenerClose = 0 WHERE cCertifiedId = ' . $_cId;
-                $conn->Execute($sql);
-            }
-            if($objKind == '履保費先收(結案回饋)') {
-                $sql   = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tKind = "保證費" AND tObjKind = "履保費先收(結案回饋)";';
-                $rs    = $conn->Execute($sql);
-                if($rs->RecordCount() == 0) {
-                    $sql = 'UPDATE `tContractCase` SET cBankRelay  = "N" WHERE cCertifiedId = ' . $_cId;
-                    $conn->Execute($sql);
-                }
-            }
-        }
-
-        $_cId = $pay_by_case_scrivener = $kind = $objKind = null;
-        unset($_cId, $pay_by_case_scrivener, $kind, $objKind);
-        ##
-    } else {
-        echo "<script>alert(\"此筆已打包，頁面過期即將重整!!\") ;location.href='list2.php'</script>";
-    }
-}
-##
-
-$save = $_POST["save"];
-
-//更新儲存
-if ($save == 'ok') {
-    $vr_code        = $_POST["vr_code"];
-    $bid            = $_POST["bid"];
-    $bank_kind      = $_POST["bank_kind"];
-    $target         = $_POST["target"];
-    $export         = $_POST["export"];
-    $code2          = $_POST["code2"];
-    $bank3          = $_POST["bank3"];
-    $bank4          = $_POST["bank4"];
-    $t_name         = $_POST["t_name"];
-    $t_account      = $_POST["t_account"];
-    $t_cost         = $_POST["t_cost"];
-    $t_money        = $_POST["t_money"];
-    $t_txt          = $_POST["t_txt"];
-    $pid            = $_POST["pid"];
-    $objKind        = $_POST["objKind"];
-    $email          = $_POST["email"];
-    $fax            = $_POST["fax"];
-    $send           = $_POST["tSend"];
-    $showTxt        = $_POST['bankshowtxt'];
-    $tScrivenerNote = $_POST['scrivenerNote'];
-
-    $replace_patt = array("\r\n", "\n", "\r", " ", "　");
-
-    $_total = count($vr_code);
-
-    for ($i = 0; $i < $_total; $i++) {
-        $_tid                 = $bid[$i];
-        $record["tVR_Code"]   = $vr_code[$i];
-        $record["tBank_kind"] = $bank_kind[$i];
-        $record["tCode"]      = $export[$i];
-        $record['tCode2']     = $code2[$i];
-        $record["tKind"]      = $target[$i];
-        $record["tObjKind"]   = $objKind[$i];
-
-        $bank                = $bank3[$i] . $bank4[$i];
-        $record["tBankCode"] = $bank;
-
-        $record["tAccount"]     = $t_account[$i];
-        $record["tAccountName"] = $t_name[$i];
-        $record["tAccountId"]   = $pid[$i];
-        $record["tMoney"]       = $t_money[$i];
-
-        $serial          = substr($vr_code[$i], 5);
-        $record["tMemo"] = $serial;
-
-        $t_txt[$i]                = str_replace($replace_patt, "", $t_txt[$i]);
-        $record["tTxt"]           = $t_txt[$i];
-        $record["tEmail"]         = $email[$i];
-        $record["tFax"]           = $fax[$i];
-        $record["tSend"]          = $send[$i];
-        $record['tBankShowTxt']   = $showTxt[$i];
-        $record['tScrivenerNote'] = $tScrivenerNote[$i];
-
-        if ($record['tBankShowTxt'] == null) {
-            $record['tBankShowTxt'] = '';
-        }
-
-        $sql   = 'SELECT * FROM tBankTrans WHERE tId="' . $_tid . '" AND tOk = 1;';
+        $sql   = 'SELECT * FROM tBankTrans WHERE tId="' . $tid . '" AND tOk = 1;';
         $rs    = $conn->Execute($sql);
         $total = $rs->RecordCount();
 
         if ($total == 0) {
-            $conn->AutoExecute("tBankTrans", $record, 'UPDATE', "tId=$_tid");
+            //找到要被刪除的保證號碼
+            $sql     = 'SELECT tMemo, tKind, tInvoice, tObjKind FROM tBankTrans WHERE tId = ' . $tid . ';';
+            $_rs     = $conn->Execute($sql);
+            $_cId    = $_rs->fields['tMemo'];
+            $kind    = $_rs->fields['tKind'];    //類別
+            $objKind = $_rs->fields['tObjKind']; //項目
+            $invoice = $_rs->fields['tInvoice']; //開發票
+
+            $_rs = null;unset($_rs);
+            ##
+
+            //刪除出款紀錄
+            $delx = 'DELETE FROM tBankTrans WHERE tId="' . $tid . '";';
+            $conn->Execute($delx);
+            ##
+
+            //恢復稅款為未出款
+            $sql = 'UPDATE tExpenseDetail SET eOK="" WHERE eOK="' . $tid . '";';
+            $conn->Execute($sql);
+
+            //返還稅款清除ID
+            $sql = "UPDATE  tBankTrans SET tObjKind2Item = '' WHERE tObjKind2Item = '" . $tid . "'";
+            $conn->Execute($sql);
+
+            //20230421 回饋金隨案支付 20250306因為重審沒意義 所以先移除
+    //        $pay_by_case_scrivener = new PayByCaseScrivener(new first1DB);
+    //        $pay_by_case_scrivener->modifyAffectCaseBankAccountByCase($_cId);
+
+            //如果刪除保證費 或 刪除所有代墊利息開發票 就解鎖代書回饋金欄位
+            if ($kind == '保證費' or $invoice != null) {
+                $invoiceCount        = 0; //要開發票的總筆數
+                $certifiedMoneyCount = 0; //保證費的總筆數
+
+                if ($invoice != null) {
+                    $sql          = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tInvoice is not null;';
+                    $rs           = $conn->Execute($sql);
+                    $invoiceCount = $rs->RecordCount();
+                }
+                if ($kind == '保證費') {
+                    $sql                 = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tKind = "保證費";';
+                    $rs                  = $conn->Execute($sql);
+                    $certifiedMoneyCount = $rs->RecordCount();
+                }
+                if ($invoiceCount == 0 and $certifiedMoneyCount == 0) {
+                    $sql = 'UPDATE `tContractCase` SET cFeedBackScrivenerClose = 0 WHERE cCertifiedId = ' . $_cId;
+                    $conn->Execute($sql);
+                }
+                if ($objKind == '履保費先收(結案回饋)') {
+                    $sql = 'SELECT `tMemo` FROM tBankTrans WHERE tMemo="' . $_cId . '" AND tKind = "保證費" AND tObjKind = "履保費先收(結案回饋)";';
+                    $rs  = $conn->Execute($sql);
+                    if ($rs->RecordCount() == 0) {
+                        $sql = 'UPDATE `tContractCase` SET cBankRelay  = "N" WHERE cCertifiedId = ' . $_cId;
+                        $conn->Execute($sql);
+                    }
+                }
+            }
+
+            $_cId = $pay_by_case_scrivener = $kind = $objKind = null;
+            unset($_cId, $pay_by_case_scrivener, $kind, $objKind);
+            ##
         } else {
             echo "<script>alert(\"此筆已打包，頁面過期即將重整!!\") ;location.href='list2.php'</script>";
         }
-
-        $ok = 1;
     }
-}
-##
+    ##
 
-//半形<=>全形
-function n_to_w($strs, $types = '0')
-{ // narrow to wide , or wide to narrow
-    $nt = array(
-        "(", ")", "[", "]", "{", "}", ".", ",", ";", ":",
-        "-", "?", "!", "@", "#", "$", "%", "&", "|", "\\",
-        "/", "+", "=", "*", "~", "`", "'", "\"", "<", ">",
-        "^", "_",
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-        "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-        "u", "v", "w", "x", "y", "z",
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-        "U", "V", "W", "X", "Y", "Z",
-        " ",
-    );
-    $wt = array(
-        "（", "）", "〔", "〕", "｛", "｝", "﹒", "，", "；", "：",
-        "－", "？", "！", "＠", "＃", "＄", "％", "＆", "｜", "＼",
-        "／", "＋", "＝", "＊", "～", "、", "、", "＂", "＜", "＞",
-        "︿", "＿",
-        "０", "１", "２", "３", "４", "５", "６", "７", "８", "９",
-        "ａ", "ｂ", "ｃ", "ｄ", "ｅ", "ｆ", "ｇ", "ｈ", "ｉ", "ｊ",
-        "ｋ", "ｌ", "ｍ", "ｎ", "ｏ", "ｐ", "ｑ", "ｒ", "ｓ", "ｔ",
-        "ｕ", "ｖ", "ｗ", "ｘ", "ｙ", "ｚ",
-        "Ａ", "Ｂ", "Ｃ", "Ｄ", "Ｅ", "Ｆ", "Ｇ", "Ｈ", "Ｉ", "Ｊ",
-        "Ｋ", "Ｌ", "Ｍ", "Ｎ", "Ｏ", "Ｐ", "Ｑ", "Ｒ", "Ｓ", "Ｔ",
-        "Ｕ", "Ｖ", "Ｗ", "Ｘ", "Ｙ", "Ｚ",
-        "　",
-    );
+    $save = $_POST["save"];
 
-    if ($types == '0') { //半形轉全形
-        // narrow to wide
-        $strtmp = str_replace($nt, $wt, $strs);
-    } else { //全形轉半形
-        // wide to narrow
-        $strtmp = str_replace($wt, $nt, $strs);
+    //更新儲存
+    if ($save == 'ok') {
+        $vr_code        = $_POST["vr_code"];
+        $bid            = $_POST["bid"];
+        $bank_kind      = $_POST["bank_kind"];
+        $target         = $_POST["target"];
+        $export         = $_POST["export"];
+        $code2          = $_POST["code2"];
+        $bank3          = $_POST["bank3"];
+        $bank4          = $_POST["bank4"];
+        $t_name         = $_POST["t_name"];
+        $t_account      = $_POST["t_account"];
+        $t_cost         = $_POST["t_cost"];
+        $t_money        = $_POST["t_money"];
+        $t_txt          = $_POST["t_txt"];
+        $pid            = $_POST["pid"];
+        $objKind        = $_POST["objKind"];
+        $email          = $_POST["email"];
+        $fax            = $_POST["fax"];
+        $send           = $_POST["tSend"];
+        $showTxt        = $_POST['bankshowtxt'];
+        $tScrivenerNote = $_POST['scrivenerNote'];
+
+        $replace_patt = ["\r\n", "\n", "\r", " ", "　"];
+
+        $_total = count($vr_code);
+
+        for ($i = 0; $i < $_total; $i++) {
+            $_tid                 = $bid[$i];
+            $record["tVR_Code"]   = $vr_code[$i];
+            $record["tBank_kind"] = $bank_kind[$i];
+            $record["tCode"]      = $export[$i];
+            $record['tCode2']     = $code2[$i];
+            $record["tKind"]      = $target[$i];
+            $record["tObjKind"]   = $objKind[$i];
+
+            $bank                = $bank3[$i] . $bank4[$i];
+            $record["tBankCode"] = $bank;
+
+            $record["tAccount"]     = $t_account[$i];
+            $record["tAccountName"] = $t_name[$i];
+            $record["tAccountId"]   = $pid[$i];
+            $record["tMoney"]       = $t_money[$i];
+
+            $serial          = substr($vr_code[$i], 5);
+            $record["tMemo"] = $serial;
+
+            $t_txt[$i]                = str_replace($replace_patt, "", $t_txt[$i]);
+            $record["tTxt"]           = $t_txt[$i];
+            $record["tEmail"]         = $email[$i];
+            $record["tFax"]           = $fax[$i];
+            $record["tSend"]          = $send[$i];
+            $record['tBankShowTxt']   = $showTxt[$i];
+            $record['tScrivenerNote'] = $tScrivenerNote[$i];
+
+            if ($record['tBankShowTxt'] == null) {
+                $record['tBankShowTxt'] = '';
+            }
+
+            $sql   = 'SELECT * FROM tBankTrans WHERE tId="' . $_tid . '" AND tOk = 1;';
+            $rs    = $conn->Execute($sql);
+            $total = $rs->RecordCount();
+
+            if ($total == 0) {
+                $conn->AutoExecute("tBankTrans", $record, 'UPDATE', "tId=$_tid");
+            } else {
+                echo "<script>alert(\"此筆已打包，頁面過期即將重整!!\") ;location.href='list2.php'</script>";
+            }
+
+            $ok = 1;
+        }
     }
-    return $strtmp;
-}
+    ##
 
-function getCount($kind, $cId, $objKind)
-{
-    global $conn;
+    //半形<=>全形
+    function n_to_w($strs, $types = '0')
+    { // narrow to wide , or wide to narrow
+        $nt = [
+            "(", ")", "[", "]", "{", "}", ".", ",", ";", ":",
+            "-", "?", "!", "@", "#", "$", "%", "&", "|", "\\",
+            "/", "+", "=", "*", "~", "`", "'", "\"", "<", ">",
+            "^", "_",
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
+            "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+            "u", "v", "w", "x", "y", "z",
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+            "U", "V", "W", "X", "Y", "Z",
+            " ",
+        ];
+        $wt = [
+            "（", "）", "〔", "〕", "｛", "｝", "﹒", "，", "；", "：",
+            "－", "？", "！", "＠", "＃", "＄", "％", "＆", "｜", "＼",
+            "／", "＋", "＝", "＊", "～", "、", "、", "＂", "＜", "＞",
+            "︿", "＿",
+            "０", "１", "２", "３", "４", "５", "６", "７", "８", "９",
+            "ａ", "ｂ", "ｃ", "ｄ", "ｅ", "ｆ", "ｇ", "ｈ", "ｉ", "ｊ",
+            "ｋ", "ｌ", "ｍ", "ｎ", "ｏ", "ｐ", "ｑ", "ｒ", "ｓ", "ｔ",
+            "ｕ", "ｖ", "ｗ", "ｘ", "ｙ", "ｚ",
+            "Ａ", "Ｂ", "Ｃ", "Ｄ", "Ｅ", "Ｆ", "Ｇ", "Ｈ", "Ｉ", "Ｊ",
+            "Ｋ", "Ｌ", "Ｍ", "Ｎ", "Ｏ", "Ｐ", "Ｑ", "Ｒ", "Ｓ", "Ｔ",
+            "Ｕ", "Ｖ", "Ｗ", "Ｘ", "Ｙ", "Ｚ",
+            "　",
+        ];
 
-    $sql   = "SELECT * FROM tBankTrans WHERE tMemo = '" . $cId . "' AND tKind = '" . $kind . "' AND tObjKind ='" . $objKind . "' AND tOk='2'";
-    $rs    = $conn->Execute($sql);
-    $total = $rs->RecordCount();
+        if ($types == '0') { //半形轉全形
+                                 // narrow to wide
+            $strtmp = str_replace($nt, $wt, $strs);
+        } else { //全形轉半形
+                     // wide to narrow
+            $strtmp = str_replace($wt, $nt, $strs);
+        }
+        return $strtmp;
+    }
 
-    return $total;
-}
+    function getCount($kind, $cId, $objKind)
+    {
+        global $conn;
+
+        $sql   = "SELECT * FROM tBankTrans WHERE tMemo = '" . $cId . "' AND tKind = '" . $kind . "' AND tObjKind ='" . $objKind . "' AND tOk='2'";
+        $rs    = $conn->Execute($sql);
+        $total = $rs->RecordCount();
+
+        return $total;
+    }
 ?>
 <!DOCTYPE html
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -293,11 +295,11 @@ function getCount($kind, $cId, $objKind)
     $(document).ready(function() {
         <?php if ($_SESSION["refresh"] == "1") {?>
             window.opener.document.location.reload();
-        <?php $_SESSION["refresh"] = 0 ?>
-        <?php }?>
+        <?php $_SESSION["refresh"] = 0?>
+<?php }?>
 
         //AJAX 重新跑合約書帳務收支明細(刪除)
-        var ck = "<?=$_REQUEST['del']?>";
+        var ck = "<?php echo $_REQUEST['del']?>";
         if (ck == 'ok') {
             tran_table();
         }
@@ -940,14 +942,14 @@ function getCount($kind, $cId, $objKind)
             <font color=red><strong>待修改資料</strong></font>
         </div>
         <?php
-if ($_SESSION["member_id"] == '6' || in_array($_SESSION["member_pDep"], [5, 6])) { //個別權限顯示
-    echo '<div style="float:left;margin-left: 10px;"> <a href="/bank/BankTransProcess.php">出款進度</a> </div>' . "\n";
-}
+            if ($_SESSION["member_id"] == '6' || in_array($_SESSION["member_pDep"], [5, 6])) { //個別權限顯示
+                echo '<div style="float:left;margin-left: 10px;"> <a href="/bank/BankTransProcess.php">出款進度</a> </div>' . "\n";
+            }
 
-if ($_SESSION["member_bankcheck"] == '1') { //個別權限顯示
-    echo '<div style="float:left; margin-left: 10px;"> <a href="/bank/list.php">未審核列表</a></div>' . "\n";
-}
-?>
+            if ($_SESSION["member_bankcheck"] == '1') { //個別權限顯示
+                echo '<div style="float:left; margin-left: 10px;"> <a href="/bank/list.php">未審核列表</a></div>' . "\n";
+            }
+        ?>
     </div>
 
     <div>
@@ -957,274 +959,274 @@ if ($_SESSION["member_bankcheck"] == '1') { //個別權限顯示
         &nbsp;&nbsp;
         <table width="1550px" border="0" cellpadding="0" cellspacing="0" class="font12">
             <?php
-if ($_SESSION["member_pDep"] == 5 && !in_array($_SESSION["member_id"], [1, 12])) {
-    $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
-} elseif (($_SESSION["member_bankcheck"] == '0')) {
-    $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
-    if (in_array($_SESSION["member_pDep"], [6])) {
-        // if (in_array($_SESSION["member_id"], [22])) {
-        $str = '';
-    }
-}
+                if ($_SESSION["member_pDep"] == 5 && ! in_array($_SESSION["member_id"], [1, 12])) {
+                    $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
+                } elseif (($_SESSION["member_bankcheck"] == '0')) {
+                    $str = " AND tOwner ='" . $_SESSION['member_name'] . "'";
+                    if (in_array($_SESSION["member_pDep"], [6])) {
+                        // if (in_array($_SESSION["member_id"], [22])) {
+                        $str = '';
+                    }
+                }
 
-$sql = "SELECT * FROM tBankTrans WHERE tOk='2'" . $str;
-$rs  = $conn->Execute($sql);
+                $sql = "SELECT * FROM tBankTrans WHERE tOk='2'" . $str;
+                $rs  = $conn->Execute($sql);
 
-$legalAllow = '';
-$_error     = 0;
-$j          = 1;
-while (!$rs->EOF) {
-    //20240618 Project S只有特定人員可以查看
-    if (!in_array($_SESSION['member_id'], [1, 3, 6, 12, 13, 36, 84, 90]) && ($rs->fields["tMemo"] == '130119712')) {
-        continue;
-    }
+                $legalAllow = '';
+                $_error     = 0;
+                $j          = 1;
+                while (! $rs->EOF) {
+                    //20240618 Project S只有特定人員可以查看
+                    if (! in_array($_SESSION['member_id'], [1, 3, 6, 12, 13, 36, 84, 90]) && ($rs->fields["tMemo"] == '130119712')) {
+                        continue;
+                    }
 
-    $_target = $rs->fields["tBank_kind"];
+                    $_target = $rs->fields["tBank_kind"];
 
-    //20241128 非法務關注案件或法務放行案件不限制修改與出款
-    $tLegalAllow = $rs->fields["tLegalAllow"];
-    $legalAllow  = (!empty($tLegalAllow) && ($tLegalAllow == '1')) ? ' disabled' : '';
-    $modifyAllow = (in_array($_SESSION["member_pDep"], [6]) && ($_SESSION["member_id"] != 22)) ? ' disabled' : '';
+                    //20241128 非法務關注案件或法務放行案件不限制修改與出款
+                    $tLegalAllow = $rs->fields["tLegalAllow"];
+                    $legalAllow  = (! empty($tLegalAllow) && ($tLegalAllow == '1')) ? ' disabled' : '';
+                    $modifyAllow = (in_array($_SESSION["member_pDep"], [6]) && ($_SESSION["member_id"] != 22)) ? ' disabled' : '';
 
-    if ($rs->fields["tOk"] != '1') {
-        $_error++;
-    }
+                    if ($rs->fields["tOk"] != '1') {
+                        $_error++;
+                    }
 
-    switch ($rs->fields["tCode"]) {
-        case "01":
-            $_title = "聯行轉帳";
-            break;
-        case "02":
-            $_title = "跨行代清償";
-            break;
-        case "03":
-            $_title = "聯行代清償";
-            break;
-        case "04":
-            $_title = "大額繳稅";
-            break;
-        case "05":
-            $_title = "臨櫃開票";
-            break;
-        case "06":
-            $_title = "利息";
-            break;
-    }
+                    switch ($rs->fields["tCode"]) {
+                        case "01":
+                            $_title = "聯行轉帳";
+                            break;
+                        case "02":
+                            $_title = "跨行代清償";
+                            break;
+                        case "03":
+                            $_title = "聯行代清償";
+                            break;
+                        case "04":
+                            $_title = "大額繳稅";
+                            break;
+                        case "05":
+                            $_title = "臨櫃開票";
+                            break;
+                        case "06":
+                            $_title = "利息";
+                            break;
+                    }
 
-    $bank3 = substr($rs->fields["tBankCode"], 0, 3);
-    $bank4 = substr($rs->fields["tBankCode"], 3, 4);
+                    $bank3 = substr($rs->fields["tBankCode"], 0, 3);
+                    $bank4 = substr($rs->fields["tBankCode"], 3, 4);
 
-    $sql         = "SELECT * FROM tBank WHERE bBank3='$bank3' AND bBank4='' LIMIT 1";
-    $rs1         = $conn->Execute($sql);
-    $_bank_title = $rs1->fields["bBank4_name"];
+                    $sql         = "SELECT * FROM tBank WHERE bBank3='$bank3' AND bBank4='' LIMIT 1";
+                    $rs1         = $conn->Execute($sql);
+                    $_bank_title = $rs1->fields["bBank4_name"];
 
-    $sql           = "SELECT * FROM tBank WHERE bBank4='$bank4' LIMIT 1";
-    $rs2           = $conn->Execute($sql);
-    $_bank_cotitle = $rs2->fields["bBank4_name"];
+                    $sql           = "SELECT * FROM tBank WHERE bBank4='$bank4' LIMIT 1";
+                    $rs2           = $conn->Execute($sql);
+                    $_bank_cotitle = $rs2->fields["bBank4_name"];
 
-    ##是否要顯示顏色
-    if ($rs->fields['tKind'] == '仲介' && getCount($rs->fields['tKind'], $rs->fields['tMemo'], $rs->fields['tObjKind']) > 1) {
-        $color = 'rgb(255,255,170)';
-    } elseif ($rs->fields['tKind'] == '地政士' && getCount($rs->fields['tKind'], $rs->fields['tMemo'], $rs->fields['tObjKind']) > 1) {
-        $color = 'rgb(218,242,142)';
-    } else {
-        $color = 'rgb(255,255,255)';
-    }
+                    ##是否要顯示顏色
+                    if ($rs->fields['tKind'] == '仲介' && getCount($rs->fields['tKind'], $rs->fields['tMemo'], $rs->fields['tObjKind']) > 1) {
+                        $color = 'rgb(255,255,170)';
+                    } elseif ($rs->fields['tKind'] == '地政士' && getCount($rs->fields['tKind'], $rs->fields['tMemo'], $rs->fields['tObjKind']) > 1) {
+                        $color = 'rgb(218,242,142)';
+                    } else {
+                        $color = 'rgb(255,255,255)';
+                    }
 
-    $color = (!empty($tLegalAllow) && ($tLegalAllow == '1')) ? 'rgb(250,240,230)' : $color;
-    ?>
-            <form id="form<?=$j?>" name="form<?=$j?>" method="post" action="" style="margin:0px; padding:0px;">
+                    $color = (! empty($tLegalAllow) && ($tLegalAllow == '1')) ? 'rgb(250,240,230)' : $color;
+                ?>
+            <form id="form<?php echo $j?>" name="form<?php echo $j?>" method="post" action="" style="margin:0px; padding:0px;">
 
-                <tr style='background-color:<?=$color?>'>
+                <tr style='background-color:<?php echo $color?>'>
                     <td colspan="2">專屬帳號 <strong><?php echo $rs->fields["tVR_Code"]; ?></strong>
                         <div style="display:block;">
                             <?php
-if ($rs->fields['tStoreId'] > 0) {
-        $sql = "SELECT bStore,bName,(SELECT bName FROM tBrand WHERE bId=bBrand) AS Brand FROM tBranch WHERE bId = '" . $rs->fields['tStoreId'] . "'";
-        $rsS = $conn->Execute($sql);
-        echo $rsS->fields["Brand"] . "_" . $rsS->fields["bStore"] . "_" . $rsS->fields["bName"];
-    }
-    ?>
+                                if ($rs->fields['tStoreId'] > 0) {
+                                        $sql = "SELECT bStore,bName,(SELECT bName FROM tBrand WHERE bId=bBrand) AS Brand FROM tBranch WHERE bId = '" . $rs->fields['tStoreId'] . "'";
+                                        $rsS = $conn->Execute($sql);
+                                        echo $rsS->fields["Brand"] . "_" . $rsS->fields["bStore"] . "_" . $rsS->fields["bName"];
+                                    }
+                                ?>
                         </div>
                         <input name="save" type="hidden" id="save" value="ok" />
                         <label for="vr_code2">
-                            <input name="vr_code[]" type="hidden" id="vr_code<?=$j?>"
+                            <input name="vr_code[]" type="hidden" id="vr_code<?php echo $j?>"
                                 value="<?php echo $rs->fields["tVR_Code"]; ?>" />
 
-                            <input type="hidden" name="bid[]" id="bid<?=$j?>"
+                            <input type="hidden" name="bid[]" id="bid<?php echo $j?>"
                                 value="<?php echo $rs->fields["tId"]; ?>" />
                         </label>
                     </td>
                     <td width="172">
                         <select name="bank_kind[]" id="bank_kind[]">
                             <?php
-$sql = 'SELECT * FROM tContractBank WHERE cShow="1" ORDER BY cId ASC;';
-    $rsb = $conn->Execute($sql);
+                                $sql = 'SELECT * FROM tContractBank WHERE cShow="1" ORDER BY cId ASC;';
+                                    $rsb = $conn->Execute($sql);
 
-    while (!$rsb->EOF) {
-        $bk_tmp = $rsb->fields['cBankName'];
+                                    while (! $rsb->EOF) {
+                                        $bk_tmp = $rsb->fields['cBankName'];
 
-        echo '<option value="' . $bk_tmp . '"';
-        if (preg_match("/$bk_tmp/", $rs->fields["tBank_kind"])) {
-            echo ' selected="selected"';
-        }
-        echo '>' . $bk_tmp . "</option>\n";
+                                        echo '<option value="' . $bk_tmp . '"';
+                                        if (preg_match("/$bk_tmp/", $rs->fields["tBank_kind"])) {
+                                            echo ' selected="selected"';
+                                        }
+                                        echo '>' . $bk_tmp . "</option>\n";
 
-        $rsb->MoveNext();
-    }
-    ?>
+                                        $rsb->MoveNext();
+                                    }
+                                ?>
                         </select>
                     </td>
                     <td width="167">&nbsp;</td>
-                    <td width="182"><?php if($rs->fields['tInvoice'] != null):?><span style="color: blue; ">代墊利息或履保費已收需開發票</span><?php endif?></td>
+                    <td width="182"><?php if ($rs->fields['tInvoice'] != null): ?><span style="color: blue; ">代墊利息或履保費已收需開發票</span><?php endif?></td>
                     <td width="132" align="center">
                         <input type="button" name="button" id="button" value="修改"
-                            onclick="checkFrom(<?=$j?>,'<?=$rs->fields["tMemo"]?>')" <?=$legalAllow?>
-                            <?=$modifyAllow?> />
+                            onclick="checkFrom(<?php echo $j?>,'<?php echo $rs->fields["tMemo"]?>')" <?php echo $legalAllow?>
+                            <?php echo $modifyAllow?> />
                         <input type="button" name="button3" id="button3" value="刪除"
                             onclick="location.href='list2.php?tid=<?php echo $rs->fields["tId"]; ?>&del=ok';"
-                            <?=$legalAllow?> <?=$modifyAllow?> />
+                            <?php echo $legalAllow?> <?php echo $modifyAllow?> />
                         <?php
-if (!empty($tLegalAllow) && ($tLegalAllow == '1') && ($_SESSION['member_pDep'] == '6' or $_SESSION['member_id'] == '6')) {
-        ?>
-                        <button type="button" onclick="legalUnLock(<?=$rs->fields["tId"]?>)">法務解鎖</button>
+                            if (! empty($tLegalAllow) && ($tLegalAllow == '1') && ($_SESSION['member_pDep'] == '6' or $_SESSION['member_id'] == '6')) {
+                                ?>
+                        <button type="button" onclick="legalUnLock(<?php echo $rs->fields["tId"]?>)">法務解鎖</button>
                         <?php
-}
-    ?>
+                            }
+                            ?>
                     </td>
                     <td width="100">&nbsp;</td>
                     <td width="50">&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
-                <tr id="tr_pos" style='background-color:<?=$color?>'>
+                <tr id="tr_pos" style='background-color:<?php echo $color?>'>
                     <td width="148"><label for="target[]"></label>
                         *
-                        <select name="target[]" id="target<?=$j?>"
-                            onchange="setTxt(<?=$j?>,this.value,'t_txt','<?=$rs->fields["tVR_Code"]?>','objKind')">
+                        <select name="target[]" id="target<?php echo $j?>"
+                            onchange="setTxt(<?php echo $j?>,this.value,'t_txt','<?php echo $rs->fields["tVR_Code"]?>','objKind')">
                             <option value="">角色選擇</option>
                             <option value="賣方"
-                                <?php echo ($rs->fields["tKind"] == "賣方") ? 'selected="selected"' : ''; ?>>賣方</option>
+                                <?php echo($rs->fields["tKind"] == "賣方") ? 'selected="selected"' : ''; ?>>賣方</option>
                             <option value="買方"
-                                <?php echo ($rs->fields["tKind"] == "買方") ? 'selected="selected"' : ''; ?>>買方</option>
+                                <?php echo($rs->fields["tKind"] == "買方") ? 'selected="selected"' : ''; ?>>買方</option>
                             <option value="地政士"
-                                <?php echo ($rs->fields["tKind"] == "地政士") ? 'selected="selected"' : ''; ?>>地政士</option>
+                                <?php echo($rs->fields["tKind"] == "地政士") ? 'selected="selected"' : ''; ?>>地政士</option>
                             <option value="仲介"
-                                <?php echo ($rs->fields["tKind"] == "仲介") ? 'selected="selected"' : ''; ?>>仲介</option>
+                                <?php echo($rs->fields["tKind"] == "仲介") ? 'selected="selected"' : ''; ?>>仲介</option>
                             <option value="保證費"
-                                <?php echo ($rs->fields["tKind"] == "保證費") ? 'selected="selected"' : ''; ?>>保證費</option>
+                                <?php echo($rs->fields["tKind"] == "保證費") ? 'selected="selected"' : ''; ?>>保證費</option>
                             <option value="地政士回饋金"
-                                <?php echo ($rs->fields["tKind"] == "地政士回饋金") ? 'selected="selected"' : ''; ?>>地政士回饋金
+                                <?php echo($rs->fields["tKind"] == "地政士回饋金") ? 'selected="selected"' : ''; ?>>地政士回饋金
                             </option>
                         </select>
                         <br />
                         <label for="export[]"></label>
                         *
-                        <input type="hidden" name="code2[]" id="code2<?=$j?>" value="<?=$rs->fields["tCode2"]?>" />
-                        <select name="export[]" id="export<?=$j?>" onchange="setCode2('export<?=$j?>',<?=$j?>)">
+                        <input type="hidden" name="code2[]" id="code2<?php echo $j?>" value="<?php echo $rs->fields["tCode2"]?>" />
+                        <select name="export[]" id="export<?php echo $j?>" onchange="setCode2('export<?php echo $j?>',<?php echo $j?>)">
                             <option value="">交易類別</option>
                             <option value="01"
-                                <?php echo ($rs->fields["tCode"] == "01" && $rs->fields["tCode2"] == '聯行轉帳') ? 'selected="selected"' : ''; ?>>
+                                <?php echo($rs->fields["tCode"] == "01" && $rs->fields["tCode2"] == '聯行轉帳') ? 'selected="selected"' : ''; ?>>
                                 聯行轉帳</option>
                             <option value="01"
-                                <?php echo ($rs->fields["tCode"] == "01" && $rs->fields["tCode2"] == '一銀內轉') ? 'selected="selected"' : ''; ?>>
+                                <?php echo($rs->fields["tCode"] == "01" && $rs->fields["tCode2"] == '一銀內轉') ? 'selected="selected"' : ''; ?>>
                                 一銀內轉</option>
                             <option value="02"
-                                <?php echo ($rs->fields["tCode"] == "02") ? 'selected="selected"' : ''; ?>>跨行代清償
+                                <?php echo($rs->fields["tCode"] == "02") ? 'selected="selected"' : ''; ?>>跨行代清償
                             </option>
                             <option value="03"
-                                <?php echo ($rs->fields["tCode"] == "03") ? 'selected="selected"' : ''; ?>>聯行代清償
+                                <?php echo($rs->fields["tCode"] == "03") ? 'selected="selected"' : ''; ?>>聯行代清償
                             </option>
                             <option value="04"
-                                <?php echo ($rs->fields["tCode"] == "04") ? 'selected="selected"' : ''; ?>>大額繳稅</option>
+                                <?php echo($rs->fields["tCode"] == "04") ? 'selected="selected"' : ''; ?>>大額繳稅</option>
                             <option value="05"
-                                <?php echo ($rs->fields["tCode"] == "05" && $rs->fields["tCode2"] == '臨櫃開票') ? 'selected="selected"' : ''; ?>>
+                                <?php echo($rs->fields["tCode"] == "05" && $rs->fields["tCode2"] == '臨櫃開票') ? 'selected="selected"' : ''; ?>>
                                 臨櫃開票</option>
                             <option value="05"
-                                <?php echo ($rs->fields["tCode"] == "05" && $rs->fields["tCode2"] == '臨櫃領現') ? 'selected="selected"' : ''; ?>>
+                                <?php echo($rs->fields["tCode"] == "05" && $rs->fields["tCode2"] == '臨櫃領現') ? 'selected="selected"' : ''; ?>>
                                 臨櫃領現</option>
                         </select><br />
-                        * <select name="objKind[]" id="objKind<?=$j?>" class="objKind<?=$j?>"
-                            onchange="setBankTxt(<?=$j?>,'')">
+                        * <select name="objKind[]" id="objKind<?php echo $j?>" class="objKind<?php echo $j?>"
+                            onchange="setBankTxt(<?php echo $j?>,'')">
                             <option value="" selected="selected">項目</option>
                             <?php
-if ($rs->fields["tKind"] != "保證費") {?>
+                            if ($rs->fields["tKind"] != "保證費") {?>
                             <option value="賣方先動撥"
-                                <?php echo ($rs->fields["tObjKind"] == "賣方先動撥") ? 'selected="selected"' : ''; ?>>賣方先動撥
+                                <?php echo($rs->fields["tObjKind"] == "賣方先動撥") ? 'selected="selected"' : ''; ?>>賣方先動撥
                             </option>
                             <option value="仲介服務費"
-                                <?php echo ($rs->fields["tObjKind"] == "仲介服務費") ? 'selected="selected"' : ''; ?>>仲介服務費
+                                <?php echo($rs->fields["tObjKind"] == "仲介服務費") ? 'selected="selected"' : ''; ?>>仲介服務費
                             </option>
                             <?php if ($rs->fields["tObjKind"] == "扣繳稅款"): ?>
                             <option value="扣繳稅款"
-                                <?php echo ($rs->fields["tObjKind"] == "扣繳稅款") ? 'selected="selected"' : ''; ?>>扣繳稅款
+                                <?php echo($rs->fields["tObjKind"] == "扣繳稅款") ? 'selected="selected"' : ''; ?>>扣繳稅款
                             </option>
                             <?php endif?>
                             <option value="代清償"
-                                <?php echo ($rs->fields["tObjKind"] == "代清償") ? 'selected="selected"' : ''; ?>>代清償
+                                <?php echo($rs->fields["tObjKind"] == "代清償") ? 'selected="selected"' : ''; ?>>代清償
                             </option>
                             <?php
-}
-    ?>
+                                }
+                                ?>
 
                             <option value="點交(結案)"
-                                <?php echo ($rs->fields["tObjKind"] == "點交(結案)") ? 'selected="selected"' : ''; ?>>點交(結案)
+                                <?php echo($rs->fields["tObjKind"] == "點交(結案)") ? 'selected="selected"' : ''; ?>>點交(結案)
                             </option>
                             <?php
-if ($rs->fields["tKind"] != "保證費") {?>
+                            if ($rs->fields["tKind"] != "保證費") {?>
                             <option value="其他"
-                                <?php echo ($rs->fields["tObjKind"] == "其他") ? 'selected="selected"' : ''; ?>>其他
+                                <?php echo($rs->fields["tObjKind"] == "其他") ? 'selected="selected"' : ''; ?>>其他
                             </option>
                             <option value="調帳"
-                                <?php echo ($rs->fields["tObjKind"] == "調帳") ? 'selected="selected"' : ''; ?>>調帳
+                                <?php echo($rs->fields["tObjKind"] == "調帳") ? 'selected="selected"' : ''; ?>>調帳
                             </option>
                             <?php }
-    ?>
+                                ?>
                             <option value="解除契約"
-                                <?php echo ($rs->fields["tObjKind"] == '解除契約') ? 'selected="selected"' : ''; ?>>解約/終止履保
+                                <?php echo($rs->fields["tObjKind"] == '解除契約') ? 'selected="selected"' : ''; ?>>解約/終止履保
                             </option>
                             <?php
-if ($rs->fields["tKind"] != "保證費") {?>
+                            if ($rs->fields["tKind"] != "保證費") {?>
                             <option value="保留款撥付"
-                                <?php echo ($rs->fields["tObjKind"] == '保留款撥付') ? 'selected="selected"' : ''; ?>>保留款撥付
+                                <?php echo($rs->fields["tObjKind"] == '保留款撥付') ? 'selected="selected"' : ''; ?>>保留款撥付
                             </option>
                             <?php }
-    ?>
+                                ?>
                             <option value="建經發函終止"
-                                <?php echo ($rs->fields["tObjKind"] == '建經發函終止') ? 'selected="selected"' : ''; ?>>建經發函終止
+                                <?php echo($rs->fields["tObjKind"] == '建經發函終止') ? 'selected="selected"' : ''; ?>>建經發函終止
                             </option>
                             <option value="預售屋"
-                                <?php echo ($rs->fields["tObjKind"] == '預售屋') ? 'selected="selected"' : ''; ?>>預售屋
+                                <?php echo($rs->fields["tObjKind"] == '預售屋') ? 'selected="selected"' : ''; ?>>預售屋
                             </option>
                             <option value="代墊利息"
-                                <?php echo ($rs->fields["tObjKind"] == '代墊利息') ? 'selected="selected"' : ''; ?>>代墊利息
+                                <?php echo($rs->fields["tObjKind"] == '代墊利息') ? 'selected="selected"' : ''; ?>>代墊利息
                             </option>
                             <?php
-if ($rs->fields["tKind"] == "保證費" and $rs->fields["tObjKind"] == '履保費先收(結案回饋)') {?>
+                            if ($rs->fields["tKind"] == "保證費" and $rs->fields["tObjKind"] == '履保費先收(結案回饋)') {?>
                             <option value="履保費先收(結案回饋)"
-                                <?php echo ($rs->fields["tObjKind"] == '履保費先收(結案回饋)') ? 'selected="selected"' : ''; ?>>履保費先收(結)
+                                <?php echo($rs->fields["tObjKind"] == '履保費先收(結案回饋)') ? 'selected="selected"' : ''; ?>>履保費先收(結)
                             </option>
 <?php }
-                            ?>
+    ?>
                         </select>
                         *
                         <?php if (($rs->fields["tObjKind"] == '扣繳稅款' || $rs->fields["tObjKind"] == '賣方先動撥' || $rs->fields["tObjKind"] == '代清償') && $rs->fields["tBank_kind"] == '台新' && $rs->fields["tCode"] != "04"): ?>
                         <br />*
-                        <select name="taxScrivener[]" id="taxScrivener<?=$j?>" class="taxScrivener" disabled="disabled">
+                        <select name="taxScrivener[]" id="taxScrivener<?php echo $j?>" class="taxScrivener" disabled="disabled">
                             <option value="">特殊項目</option>
                             <option value="01"
-                                <?php echo ($rs->fields["tObjKind2"] == '01') ? 'selected="selected"' : ''; ?>>申請公司代墊
+                                <?php echo($rs->fields["tObjKind2"] == '01') ? 'selected="selected"' : ''; ?>>申請公司代墊
                             </option>
                             <option value="02"
-                                <?php echo ($rs->fields["tObjKind2"] == '02') ? 'selected="selected"' : ''; ?>>返還公司代墊
+                                <?php echo($rs->fields["tObjKind2"] == '02') ? 'selected="selected"' : ''; ?>>返還公司代墊
                             </option>
                             <option value="03"
-                                <?php echo ($rs->fields["tObjKind2"] == '03') ? 'selected="selected"' : ''; ?>>不用代墊
+                                <?php echo($rs->fields["tObjKind2"] == '03') ? 'selected="selected"' : ''; ?>>不用代墊
                             </option>
                             <option value="04"
-                                <?php echo ($rs->fields["tObjKind2"] == '04') ? 'selected="selected"' : ''; ?>>申請代理出款
+                                <?php echo($rs->fields["tObjKind2"] == '04') ? 'selected="selected"' : ''; ?>>申請代理出款
                             </option>
                             <option value="05"
-                                <?php echo ($rs->fields["tObjKind2"] == '05') ? 'selected="selected"' : ''; ?>>公司代理出款
+                                <?php echo($rs->fields["tObjKind2"] == '05') ? 'selected="selected"' : ''; ?>>公司代理出款
                             </option>
                         </select>
                         <?php endif?>
@@ -1232,48 +1234,48 @@ if ($rs->fields["tKind"] == "保證費" and $rs->fields["tObjKind"] == '履保�
                     <td width="214">*解匯行
                         <label for="bank3[]"></label>
                         <?php
-$sql = "SELECT * FROM tBank WHERE bBank4 = '' ORDER BY bBank3 ASC";
-    $rsb = $conn->Execute($sql);
-    ?>
+                            $sql = "SELECT * FROM tBank WHERE bBank4 = '' ORDER BY bBank3 ASC";
+                                $rsb = $conn->Execute($sql);
+                            ?>
                         <select name="bank3[]" id="bank3[]" class="bank b3_<?php echo $j; ?>"
                             onchange="bank_select_index(this.value,'b4_<?php echo $j; ?>','<?php echo $j; ?>')"
                             style=" width:110px;">
                             <option value="">選擇銀行</option>
                             <?php
-while (!$rsb->EOF) {
-        echo '<option value="' . $rsb->fields["bBank3"] . '" ';
-        echo (substr($rs->fields["tBankCode"], 0, 3) == $rsb->fields["bBank3"]) ? 'selected="selected"' : '';
-        echo '>(' . $rsb->fields["bBank3"] . ')' . $rsb->fields["bBank4_name"] . '</option>' . "\n";
-        $rsb->MoveNext();
-    }
-    ?>
+                                while (! $rsb->EOF) {
+                                        echo '<option value="' . $rsb->fields["bBank3"] . '" ';
+                                        echo(substr($rs->fields["tBankCode"], 0, 3) == $rsb->fields["bBank3"]) ? 'selected="selected"' : '';
+                                        echo '>(' . $rsb->fields["bBank3"] . ')' . $rsb->fields["bBank4_name"] . '</option>' . "\n";
+                                        $rsb->MoveNext();
+                                    }
+                                ?>
                         </select>
                         <label for="bank4[]"><br />
                             *分行別</label>
                         <?php
-$sql  = "SELECT * FROM tBank WHERE bBank4 <> '' AND bOK = 0 AND bBank3='" . substr($rs->fields["tBankCode"], 0, 3) . "' ORDER BY bBank3 ASC";
-    $rsb2 = $conn->Execute($sql);
-    ?>
+                            $sql  = "SELECT * FROM tBank WHERE bBank4 <> '' AND bOK = 0 AND bBank3='" . substr($rs->fields["tBankCode"], 0, 3) . "' ORDER BY bBank3 ASC";
+                                $rsb2 = $conn->Execute($sql);
+                            ?>
                         <select name="bank4[]" id="bank4[]" style="width:110px;" class="bank b4_<?php echo $j; ?>"
                             onchange="bankphone(<?php echo $j; ?>,1)">
                             <?php
-while (!$rsb2->EOF) {
-        echo '<option value="' . $rsb2->fields["bBank4"] . '" ';
-        echo (substr($rs->fields["tBankCode"], 3, 4) == $rsb2->fields["bBank4"]) ? 'selected="selected"' : '';
-        echo '>(' . $rsb2->fields['bBank4'] . ')' . $rsb2->fields["bBank4_name"] . '</option>' . "\n";
-        $rsb2->MoveNext();
-    }
-    ?>
+                                while (! $rsb2->EOF) {
+                                        echo '<option value="' . $rsb2->fields["bBank4"] . '" ';
+                                        echo(substr($rs->fields["tBankCode"], 3, 4) == $rsb2->fields["bBank4"]) ? 'selected="selected"' : '';
+                                        echo '>(' . $rsb2->fields['bBank4'] . ')' . $rsb2->fields["bBank4_name"] . '</option>' . "\n";
+                                        $rsb2->MoveNext();
+                                    }
+                                ?>
                         </select><br />
                         <span id="bankp<?php echo $j; ?>" style="color:#FF0000;">
                             <?php
-if ($rs->fields["tObjKind"] == "代清償") {
-        $sql         = "SELECT bBank_area,bBank_tel FROM tBank WHERE bBank3 = '" . substr($rs->fields["tBankCode"], 0, 3) . "' AND bBank4 = '" . substr($rs->fields["tBankCode"], 3, 4) . "'";
-        $bank_search = $conn->Execute($sql);
+                                if ($rs->fields["tObjKind"] == "代清償") {
+                                        $sql         = "SELECT bBank_area,bBank_tel FROM tBank WHERE bBank3 = '" . substr($rs->fields["tBankCode"], 0, 3) . "' AND bBank4 = '" . substr($rs->fields["tBankCode"], 3, 4) . "'";
+                                        $bank_search = $conn->Execute($sql);
 
-        echo "電話：" . $bank_search->fields['bBank_area'] . "-" . $bank_search->fields['bBank_tel'];
-    }
-    ?>
+                                        echo "電話：" . $bank_search->fields['bBank_area'] . "-" . $bank_search->fields['bBank_tel'];
+                                    }
+                                ?>
                         </span>
                     </td>
                     <td>*戶名
@@ -1307,17 +1309,17 @@ if ($rs->fields["tObjKind"] == "代清償") {
                     <td>*金額NT$<br />
                         <label for="t_money[]"></label>
                         <?php
-$readonly = in_array($rs->fields["tObjKind"], ["扣繳稅款", "仲介服務費"]) ? 'readonly=readonly' : '';
-if($readonly == '' and $rs->fields["tKind"] == '保證費') { $readonly = 'readonly=readonly'; };
-    ?>
+                            $readonly = in_array($rs->fields["tObjKind"], ["扣繳稅款", "仲介服務費"]) ? 'readonly=readonly' : '';
+                                if ($readonly == '' and $rs->fields["tKind"] == '保證費') {$readonly = 'readonly=readonly';}
+                            ?>
                         <input name="t_money[]" type="text" id="t_money[]" size="10"
-                            value="<?php echo $rs->fields["tMoney"]; ?>" class="c<?=$rs->fields['tMemo']?>"
-                            <?=$readonly?> />
+                            value="<?php echo $rs->fields["tMoney"]; ?>" class="c<?php echo $rs->fields['tMemo']?>"
+                            <?php echo $readonly?> />
                         元
                         <input name="t_cost[]" type="hidden" id="t_cost[]" value="0" />
                         <?php if ($rs->fields["tBank_kind"] == '台新' && $rs->fields["tObjKind2Date"] != ""): ?>
                         <br />繳稅日期
-                        <input type="text" name="datepicker<?php echo $j; ?>" value="<?=$rs->fields["tObjKind2Date"]?>"
+                        <input type="text" name="datepicker<?php echo $j; ?>" value="<?php echo $rs->fields["tObjKind2Date"]?>"
                             disabled="disabled" style="width:100px;" />
                         <?php endif?>
                     </td>
@@ -1331,37 +1333,37 @@ if($readonly == '' and $rs->fields["tKind"] == '保證費') { $readonly = 'reado
                     <td align="center">
                         不發送簡訊<br>
                         <input type="checkbox" name="tSend[]" id="" value="1"
-                            <?php echo ($rs->fields["tSend"] == 1) ? 'checked' : ''; ?> />
+                            <?php echo($rs->fields["tSend"] == 1) ? 'checked' : ''; ?> />
                     </td>
                     <td>
                         <?php
-if (in_array($rs->fields["tCode"], ["01", "02"]) && in_array($rs->fields["tBank_kind"], ['永豐', '台新']) && ($rs->fields["tKind"] == "地政士")) {
-        ?>
-                        <span id="Note<?=$j?>">存摺備註欄<br>(限聯行轉帳、跨行代清償且字數為六個字)</span>
-                        <span id="bs<?=$j?>"><input type="text" id="bankshowtxt<?=$j?>" maxlength="6"
-                                value="<?php echo $rs->fields["tBankShowTxt"]; ?>" onblur="setBankT(<?=$j?>)" />
+                            if (in_array($rs->fields["tCode"], ["01", "02"]) && in_array($rs->fields["tBank_kind"], ['永豐', '台新']) && ($rs->fields["tKind"] == "地政士")) {
+                                ?>
+                        <span id="Note<?php echo $j?>">存摺備註欄<br>(限聯行轉帳、跨行代清償且字數為六個字)</span>
+                        <span id="bs<?php echo $j?>"><input type="text" id="bankshowtxt<?php echo $j?>" maxlength="6"
+                                value="<?php echo $rs->fields["tBankShowTxt"]; ?>" onblur="setBankT(<?php echo $j?>)" />
                         </span>
-                        <input type="hidden" name="bankshowtxt[]" id="bst<?=$j?>"
+                        <input type="hidden" name="bankshowtxt[]" id="bst<?php echo $j?>"
                             value="<?php echo $rs->fields["tBankShowTxt"]; ?>" />
                         <?php
-} else {?>
-                        <span id="Note<?=$j?>"></span>
-                        <span id="bs<?=$j?>"></span>
-                        <input type="hidden" name="bankshowtxt[]" id="bst<?=$j?>" />
+                        } else {?>
+                        <span id="Note<?php echo $j?>"></span>
+                        <span id="bs<?php echo $j?>"></span>
+                        <input type="hidden" name="bankshowtxt[]" id="bst<?php echo $j?>" />
                         <?php }
-    ?>
+                            ?>
                     </td>
                     <td>
                         官網代書用備註
                         <textarea name="scrivenerNote[]" id="" cols="20"
                             rows="5"><?php echo $rs->fields["tScrivenerNote"]; ?></textarea>
                     </td>
-                    <td align="center" id="showb<?=$j?>">
+                    <td align="center" id="showb<?php echo $j?>">
                         <?php
-if (($rs->fields["tCode2"] == '一銀內轉') || in_array($rs->fields["tCode"], ['05', '04'])) {
-        echo '<input type="button" value="指示書" onclick="book(' . $rs->fields["tId"] . ')" />' . "\n";
-    }
-    ?>
+                            if (($rs->fields["tCode2"] == '一銀內轉') || in_array($rs->fields["tCode"], ['05', '04'])) {
+                                    echo '<input type="button" value="指示書" onclick="book(' . $rs->fields["tId"] . ')" />' . "\n";
+                                }
+                            ?>
                     </td>
                 </tr>
                 <tr>
@@ -1371,11 +1373,11 @@ if (($rs->fields["tCode2"] == '一銀內轉') || in_array($rs->fields["tCode"], 
                 </tr>
             </form>
             <?php
-$rs->MoveNext();
-    $j++;
-}
+                $rs->MoveNext();
+                    $j++;
+                }
 
-?>
+            ?>
         </table>
         <input type="button" name="button2" id="button2" value="批次列印"
             onclick="window.open ('/bank/report/export_select2.php', 'newwindow2', 'height=800, width=920, top=0, left=0, toolbar=no, menubar=no, scrollbars=yes, resizable=no,location=no, status=no')" />

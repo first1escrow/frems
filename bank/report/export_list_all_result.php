@@ -25,17 +25,17 @@ $keywords = [
     ],
 ];
 
-$_POST = escapeStr($_POST);
+$_POST    = escapeStr($_POST);
 $Category = $_POST['cat'];
 $count    = 0;
 
 //檢查是否有同保證號碼案件
-$listExport = array();
+$listExport = [];
 foreach ($_POST['CertifiedId'] as $bankTrans) {
     $exp = explode('_', $bankTrans);
 
     if (empty($listExport[$exp[0]])) {
-        $listExport[$exp[0]] = array('account_id' => '', 'objkind' => array());
+        $listExport[$exp[0]] = ['account_id' => '', 'objkind' => []];
     }
 
     $listExport[$exp[0]]['account_id'] = $exp[0];
@@ -77,7 +77,7 @@ foreach ($listExport as $key => $bankTrans) {
 			FROM tBankTrans WHERE tMemo='" . $_account_id . "' AND tObjKind IN ('" . $objkind . "') AND tPayOk ='2' AND (tObjKind2 = '01' OR tObjKind2 = '02')";
     $rs = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $TranSp[] = $rs->fields;
         $rs->MoveNext();
     }
@@ -141,7 +141,7 @@ foreach ($listExport as $key => $bankTrans) {
     $list[$count]['cBank'] = $list[$count]['cBankFullName'];
     $list[$count]['cBank'] .= $list[$count]['cBranchFullName'];
 
-    //仲介服務對象
+                                                //仲介服務對象
     if ($list[$count]['cServiceTarget'] == 1) { //1.買賣方、2.賣方、3.買方
         $list[$count]['cServiceTarget'] = '買賣方';
     } else if ($list[$count]['cServiceTarget'] == 2) {
@@ -177,7 +177,7 @@ foreach ($listExport as $key => $bankTrans) {
     //建物地址
     $sql = 'SELECT B.zCity,B.zArea,A.cAddr FROM tContractProperty AS A, tZipArea AS B WHERE A.cCertifiedId="' . $_account_id . '" AND A.cZip=B.zZip ;';
     $rs  = $conn->Execute($sql);
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $list[$count]['ContractProperty'][] = $rs->fields;
         $rs->MoveNext();
     }
@@ -195,7 +195,7 @@ foreach ($listExport as $key => $bankTrans) {
         $list[$count]['ownerO'] = '等' . ($rs->RecordCount() + 1) . '人';
     }
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         //若為法人身分，則將ID填入稅款旗標ID中
         if (preg_match("/^[0-9]{8}$/", $rs->fields['cIdentifyId'])) {
             $oTaxId = $rs->fields['cIdentifyId'];
@@ -245,32 +245,32 @@ foreach ($listExport as $key => $bankTrans) {
     $rs   = $conn->Execute($sql);
     $i    = 0;
     $tmpC = $rs->RecordCount();
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $list[$count]['BankTransMoney'] += $rs->fields["tMoney"]; //取款總金額
         $list[$count]['BankTrans'][$i] = $rs->fields;
 
         //撈點交單上的利息、代扣稅額
-        $sql      = 'SELECT cInterest, bInterest, cTax, bTax, cNHITax, bNHITax  FROM tChecklist WHERE cCertifiedId="' . substr($rs->fields['tAccount'], 5) . '" ;';
-        $_rs      = $conn->Execute($sql);
-        $interest = 0;
-        $interest = (int) $_rs->fields['cInterest'] + (int) $_rs->fields['bInterest'];
+        $sql                                       = 'SELECT cInterest, bInterest, cTax, bTax, cNHITax, bNHITax  FROM tChecklist WHERE cCertifiedId="' . substr($rs->fields['tAccount'], 5) . '" ;';
+        $_rs                                       = $conn->Execute($sql);
+        $interest                                  = 0;
+        $interest                                  = (int) $_rs->fields['cInterest'] + (int) $_rs->fields['bInterest'];
         $list[$count]['BankTrans'][$i]['interest'] = $interest;
         //代扣所得稅
-        $tax = 0;
-        $tax = (int) $_rs->fields['cTax'] + (int) $_rs->fields['bTax'];
+        $tax                                  = 0;
+        $tax                                  = (int) $_rs->fields['cTax'] + (int) $_rs->fields['bTax'];
         $list[$count]['BankTrans'][$i]['tax'] = $tax;
         //二代健保費用
-        $NHITax = 0;
-        $NHITax = (int) $_rs->fields['cNHITax'] + (int) $_rs->fields['bNHITax'];
+        $NHITax                                  = 0;
+        $NHITax                                  = (int) $_rs->fields['cNHITax'] + (int) $_rs->fields['bNHITax'];
         $list[$count]['BankTrans'][$i]['NHITax'] = $NHITax;
 
         //二代健保 所得稅 隨案
         $pay_by_case = $paybycase->getPayByCase(substr($rs->fields['tAccount'], 5));
 
         //有隨案
-        if(!empty($pay_by_case)) {
+        if (! empty($pay_by_case)) {
 
-            $fDetail   = json_decode($pay_by_case['fDetail']);
+            $fDetail                                            = json_decode($pay_by_case['fDetail']);
             $list[$count]['BankTrans'][$i]['caseFeedBackMoney'] = $fDetail->case[0]->cCaseFeedBackMoney;
         }
 
@@ -317,8 +317,8 @@ foreach ($listExport as $key => $bankTrans) {
         $fg        = 0;
         $flag      = 0;
         $_tObjKind = $rs->fields['tObjKind']; //出款項目(選項)
-        $_tTxt     = $rs->fields['tTxt']; //附言
-        $_tKind    = $rs->fields['tKind']; //角色
+        $_tTxt     = $rs->fields['tTxt'];     //附言
+        $_tKind    = $rs->fields['tKind'];    //角色
 
         if ($_tObjKind == '點交(結案)') {
             $_target = '點交角色';
@@ -329,19 +329,19 @@ foreach ($listExport as $key => $bankTrans) {
                 }
             } else if (preg_match("/保證費/", $_tKind)) { //保證費
                 $_tTxt = n_to_w($_tTxt, 1);
-                if (!preg_match("/\d{9}/", $_tTxt)) {
+                if (! preg_match("/\d{9}/", $_tTxt)) {
                     $fg++;
                 }
             } else { //其他(地政士、仲介服務費)
                 $patt = $keywords[$_tObjKind][$_tKind];
-                if (!preg_match("/$patt/", $_tTxt)) {
+                if (! preg_match("/$patt/", $_tTxt)) {
                     $fg++;
                 }
             }
         } else {
             $patt = $keywords[$_tObjKind];
 
-            if (!preg_match("/$patt/", $_tTxt)) {
+            if (! preg_match("/$patt/", $_tTxt)) {
                 $fg++;
             }
         }
@@ -388,11 +388,11 @@ foreach ($listExport as $key => $bankTrans) {
         }
 
         // 賣方先動撥 照會紀錄
-        if($rs->fields['tObjKind'] == "賣方先動撥"){
-            $sql_call = 'SELECT * FROM tBankTransConfirmCall WHERE bCertifiedId="' . $_account_id . '" AND bBankTransId = '.$rs->fields['tId'].' AND bDeletedAt IS NULL;';
-            $rs_call = $conn->Execute($sql_call);
-            while (!$rs_call->EOF) {
-                switch($rs_call->fields['bKind']){
+        if ($rs->fields['tObjKind'] == "賣方先動撥") {
+            $sql_call = 'SELECT * FROM tBankTransConfirmCall WHERE bCertifiedId="' . $_account_id . '" AND bBankTransId = ' . $rs->fields['tId'] . ' AND bDeletedAt IS NULL;';
+            $rs_call  = $conn->Execute($sql_call);
+            while (! $rs_call->EOF) {
+                switch ($rs_call->fields['bKind']) {
                     case 1:
                         $callKind = "買方";
                         break;
@@ -405,7 +405,7 @@ foreach ($listExport as $key => $bankTrans) {
                     default:
                         $callKind = "...";
                 }
-                $list[$count]['ConfirmCall'][$rs->fields['tId']][] = '【'.substr($rs_call->fields['bCalledAt'],0,10).'】'.$callKind.'/'.$rs_call->fields['bName'].'：'.$rs_call->fields['bPhone'];
+                $list[$count]['ConfirmCall'][$rs->fields['tId']][] = '【' . substr($rs_call->fields['bCalledAt'], 0, 10) . '】' . $callKind . '/' . $rs_call->fields['bName'] . '：' . $rs_call->fields['bPhone'];
                 $rs_call->MoveNext();
             }
         }
@@ -442,7 +442,7 @@ foreach ($listExport as $key => $bankTrans) {
     $sql = 'SELECT eBuyerMoney,eExtraMoney,id FROM tExpense WHERE eDepAccount = "00' . $list[$count]['cEscrowBankAccount'] . '"';
     $rs  = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         $list[$count]['buyerExtraMoney'] += ($rs->fields['eBuyerMoney'] + $rs->fields['eExtraMoney']); //買方服務費 買方溢入款
         $list[$count]['buyerExtraMoney'] += getExpenseDetailSmsOther($rs->fields['id']);
 
@@ -461,7 +461,7 @@ foreach ($listExport as $key => $bankTrans) {
     $sql = 'SELECT tMoney,tTxt FROM `tBankTrans` WHERE `tTxt` LIKE "%買方%" AND tStoreId >0 AND tMemo = "' . $_account_id . '"';
     $rs  = $conn->Execute($sql);
 
-    while (!$rs->EOF) {
+    while (! $rs->EOF) {
         if (preg_match("/服務費/", $rs->fields['tTxt'])) {
             $list[$count]['buyerExtraPay'] -= $rs->fields['tMoney'];
         }
@@ -474,7 +474,7 @@ foreach ($listExport as $key => $bankTrans) {
     $TranSpMoney = 0;
 
     //代墊要分開
-    for ($i = 0; $i < count($TranSp); $i++) {
+    for ($i = 0; $i < count(is_array($TranSp) ? $TranSp : []); $i++) {
         if ($tmpC == 0 && $i == 0) {
             $count        = 0;
             $list[$count] = $list[0];
@@ -563,7 +563,7 @@ if ($Category == 'msg') {
 
         require __DIR__ . '/export_list_all_pdf.php';
 
-        if (!empty($data['BankTrans'])) {
+        if (! empty($data['BankTrans'])) {
             foreach ($data['BankTrans'] as $v) {
 
                 if ($_SESSION['member_id'] == $v['staff'] and '代墊利息' == $v['tObjKind']) {
@@ -575,7 +575,7 @@ if ($Category == 'msg') {
         $data = null;unset($data);
     }
 
-    if (!empty($extra_form)) {
+    if (! empty($extra_form)) {
         require_once __DIR__ . '/export_list_all_pdf_extra.php';
     }
 
@@ -585,7 +585,7 @@ if ($Category == 'msg') {
 //半形 <=> 全形
 function n_to_w($strs, $types = '0')
 {
-    $nt = array(
+    $nt = [
         "(", ")", "[", "]", "{", "}", ".", ",", ";", ":",
         "-", "?", "!", "@", "#", "$", "%", "&", "|", "\\",
         "/", "+", "=", "*", "~", "`", "'", "\"", "<", ">",
@@ -598,8 +598,8 @@ function n_to_w($strs, $types = '0')
         "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
         "U", "V", "W", "X", "Y", "Z",
         " ",
-    );
-    $wt = array(
+    ];
+    $wt = [
         "（", "）", "〔", "〕", "｛", "｝", "﹒", "，", "；", "：",
         "－", "？", "！", "＠", "＃", "＄", "％", "＆", "｜", "＼",
         "／", "＋", "＝", "＊", "～", "、", "、", "＂", "＜", "＞",
@@ -612,13 +612,13 @@ function n_to_w($strs, $types = '0')
         "Ｋ", "Ｌ", "Ｍ", "Ｎ", "Ｏ", "Ｐ", "Ｑ", "Ｒ", "Ｓ", "Ｔ",
         "Ｕ", "Ｖ", "Ｗ", "Ｘ", "Ｙ", "Ｚ",
         "　",
-    );
+    ];
 
     if ($types == '0') { //半形轉全形
-        // narrow to wide
+                             // narrow to wide
         $strtmp = str_replace($nt, $wt, $strs);
     } else { //全形轉半形
-        // wide to narrow
+                 // wide to narrow
         $strtmp = str_replace($wt, $nt, $strs);
     }
     return $strtmp;
@@ -636,7 +636,7 @@ function NumtoStr($num)
     $i         = str_replace(',', '', $num); #取代逗號
 
     $c0  = 0;
-    $str = array();
+    $str = [];
     do {
         $aa = 0;
         $c1 = 0;
